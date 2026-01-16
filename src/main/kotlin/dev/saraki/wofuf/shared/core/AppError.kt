@@ -6,9 +6,7 @@ package dev.saraki.wofuf.shared.core
  *   @date 2026/1/14 11:18
  *   @description:
  */
-sealed class AppError {
-    data class NotFound(val message: String) : AppError()
-    data class ValidationError(val message: String) : AppError()
-    data class Unauthorized(val message: String) : AppError()
-    data class Unknown(val message: String) : AppError()
-}
+open class AppError(
+    message: String,
+    val isOperational: Boolean = true
+) : RuntimeException(message)

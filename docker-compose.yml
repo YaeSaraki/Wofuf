@@ -1,0 +1,14 @@
+version: "1"
+
+services:
+  db:
+    container_name: Woffo_db
+    image: mysql:latest
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${Woffo_ROOT_PASS}
+      - MYSQL_DATABASE=${Woffo_DB_NAME}
+      - MYSQL_USER=${Woffo_DB_USER}
+      - MYSQL_PASSWORD=${Woffo_DB_PASS}
