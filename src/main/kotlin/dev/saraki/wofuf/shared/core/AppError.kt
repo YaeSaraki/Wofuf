@@ -8,5 +8,5 @@ package dev.saraki.wofuf.shared.core
  */
 open class AppError(
     message: String,
-    val isOperational: Boolean = true
+    val code: String = "UNKNOWN_ERROR",
 ) : RuntimeException(message)

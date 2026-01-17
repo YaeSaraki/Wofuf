@@ -68,6 +68,4 @@ object DomainEvents {
             handler(event)
         }
     }
-
-
 }

@@ -9,99 +9,60 @@ package dev.saraki.wofuf.modules.users.domain
 
 
 import dev.saraki.wofuf.modules.users.domain.events.UserCreated
-import dev.saraki.wofuf.modules.users.domain.events.UserLoggedIn
+import dev.saraki.wofuf.modules.users.domain.events.UserDeleted
+import dev.saraki.wofuf.modules.users.useCases.deleteUser.DeleteUserErrors
+import dev.saraki.wofuf.shared.core.Guard
+import dev.saraki.wofuf.shared.core.Result
+import dev.saraki.wofuf.shared.domain.AggregateRoot
+import org.hibernate.sql.Delete
 import java.time.LocalDateTime
+import kotlin.Boolean
 
-class User private constructor(
-    val id: UserId,
-    private val props: UserProps
-) : UserProps by props {
+class User: AggregateRoot<User> {
+    val id: UserId
+    val userProps: UserProps
+
+    constructor(id: UserId, props: UserProps) {
+        this.id = id
+        this.userProps = props
+    }
+
+    fun delete(): Result<Unit> {
+        userProps.isDeleted?.let {
+            if (!it) {
+                addDomainEvent(UserDeleted(this, LocalDateTime.now()))
+                userProps.isDeleted = true
+                return Result.success(Unit)
+            }
+        }
+        return DeleteUserErrors.UserDeleteError(this.id.value.id)
+    }
 
     companion object {
-        fun create(
-            email: UserEmail,
-            username: UserName,
-            password: UserPassword,
-            isAdmin: Boolean = false
-        ): Result<User> {
-            val now = LocalDateTime.now()
+        fun create(props: UserProps, id: UserId?): Result<User> {
+            val guardResult = Guard.againstNullOrUndefinedBulk(
+                listOf(
+                    Guard.GuardArgument(props.username, "props"),
+                    Guard.GuardArgument(id, "id")
+                )
+            )
+            if (guardResult.isFailure) return Result.failure(guardResult.exceptionOrNull()!!)
+
             val user = User(
-                id = UserId.create().getOrThrow(),
-                props = object : UserProps {
-                    override val email: UserEmail = email
-                    override val username: UserName = username
-                    override val password: UserPassword = password
-                    override val isEmailVerified: Boolean = false
-                    override val isAdminUser: Boolean = isAdmin
-                    override val createdAt: LocalDateTime = now
-                    override val updatedAt: LocalDateTime = now
-                }
+                props = props,
+                id = id ?: UserId.create().getOrThrow()
             )
 
-            // 发布用户创建事件
-            UserCreated(user.id, user.email, user.username, now)
+            if (id != null) {
+                // 发布用户创建事件
+                user.addDomainEvent(UserCreated(user, LocalDateTime.now()))
+                return Result.success(user)
+            }
 
             return Result.success(user)
         }
 
-        fun fromExisting(
-            id: UserId,
-            email: UserEmail,
-            username: UserName,
-            password: UserPassword,
-            isEmailVerified: Boolean,
-            isAdminUser: Boolean,
-            createdAt: LocalDateTime,
-            updatedAt: LocalDateTime
-        ): User {
-            return User(
-                id = id,
-                props = object : UserProps {
-                    override val email: UserEmail = email
-                    override val username: UserName = username
-                    override val password: UserPassword = password
-                    override val isEmailVerified: Boolean = isEmailVerified
-                    override val isAdminUser: Boolean = isAdminUser
-                    override val createdAt: LocalDateTime = createdAt
-                    override val updatedAt: LocalDateTime = updatedAt
-                }
-            )
-        }
-    }
 
-    fun verifyEmail(): User {
-        return User(
-            id = this.id,
-            props = object : UserProps {
-                override val email: UserEmail = this@User.email
-                override val username: UserName = this@User.username
-                override val password: UserPassword = this@User.password
-                override val isEmailVerified: Boolean = true
-                override val isAdminUser: Boolean = this@User.isAdminUser
-                override val createdAt: LocalDateTime = this@User.createdAt
-                override val updatedAt: LocalDateTime = LocalDateTime.now()
-            }
-        )
-    }
-
-    fun updatePassword(newPassword: UserPassword): User {
-        return User(
-            id = this.id,
-            props = object : UserProps {
-                override val email: UserEmail = this@User.email
-                override val username: UserName = this@User.username
-                override val password: UserPassword = newPassword
-                override val isEmailVerified: Boolean = this@User.isEmailVerified
-                override val isAdminUser: Boolean = this@User.isAdminUser
-                override val createdAt: LocalDateTime = this@User.createdAt
-                override val updatedAt: LocalDateTime = LocalDateTime.now()
-            }
-        )
-    }
-
-    fun login(): User {
-        UserLoggedIn(this.id, this.email, LocalDateTime.now())
-        return this
     }
 
     override fun equals(other: Any?): Boolean {

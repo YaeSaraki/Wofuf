@@ -10,11 +10,18 @@ import java.util.UUID
  */
 class UniqueEntityId {
     val id: String
+    val uuid: UUID
 
     constructor(id: String) {
         this.id = id
+        this.uuid = UUID.fromString(id)
+    }
+    constructor(id: UUID) {
+        this.uuid = id
+        this.id = id.toString()
     }
     constructor() {
-        this.id = UUID.randomUUID().toString()
+        this.uuid = UUID.randomUUID()
+        this.id = this.uuid.toString()
     }
 }

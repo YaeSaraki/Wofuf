@@ -1,7 +1,9 @@
 package dev.saraki.wofuf.modules.users.domain
 
+import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import dev.saraki.wofuf.shared.domain.ValueObject
+import java.util.UUID
 
 /**
  *   @author YaeSaraki
@@ -12,9 +14,6 @@ import dev.saraki.wofuf.shared.domain.ValueObject
 class UserId(val value: UniqueEntityId) : ValueObject<UserId>() {
 
         companion object {
-            fun create(id: UniqueEntityId): Result<UserId> {
-                return Result.success(UserId(id))
-            }
             fun create(): Result<UserId> {
                 return Result.success(UserId(UniqueEntityId()))
             }

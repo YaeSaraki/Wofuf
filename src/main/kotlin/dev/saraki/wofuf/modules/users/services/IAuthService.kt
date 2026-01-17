@@ -4,7 +4,6 @@ import dev.saraki.wofuf.modules.users.domain.JwtClaims
 import dev.saraki.wofuf.modules.users.domain.JwtToken
 import dev.saraki.wofuf.modules.users.domain.RefreshToken
 import dev.saraki.wofuf.modules.users.repos.persistence.UserEntity
-import org.springframework.stereotype.Service
 
 /**
  *   @author YaeSaraki
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service
  *   @description:
  */
 
-@Service
 interface IAuthService {
     fun signJWT(jwtClaims: JwtClaims): JwtToken
     fun decodeJWT(jwtToken: JwtToken): JwtClaims?

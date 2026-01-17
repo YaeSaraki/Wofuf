@@ -10,6 +10,6 @@ package dev.saraki.wofuf.shared.core
  * Base UseCase. Implement execute to run use case logic and return Result.
  * Keep non-suspending for compatibility; convert to 'suspend' if you use coroutines across the app.
  */
-abstract class UseCase<Request, Response> {
-    abstract fun execute(request: Request): Result<Response>
+interface UseCase<Request, Response> {
+    fun execute(request: Request): Result<Response>
 }

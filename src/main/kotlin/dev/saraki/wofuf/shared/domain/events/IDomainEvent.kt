@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.shared.domain.events
 
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
+import java.time.LocalDateTime
 
 /**
  *   @author YaeSaraki
@@ -9,6 +10,6 @@ import dev.saraki.wofuf.shared.domain.UniqueEntityId
  *   @description:
  */
 interface IDomainEvent {
-    val dataTimeOccurred: String
+    val dataTimeOccurred: LocalDateTime
     fun getAggregateId(): UniqueEntityId
 }

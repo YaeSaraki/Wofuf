@@ -1,36 +1,35 @@
 package dev.saraki.wofuf.modules.users.domain
 
-import dev.saraki.wofuf.shared.core.Guard
-import dev.saraki.wofuf.shared.domain.ValueObject
-
 /**
  *   @author YaeSaraki
  *   @email ikaraswork@iCloud.com
  *   @date 2026/1/14 23:16
  *   @description: 用户邮箱值对象
  */
-class UserEmail private constructor(val value: String) : ValueObject<UserEmail>() {
+
+import dev.saraki.wofuf.modules.users.useCases.createUser.CreateUserErrors
+import dev.saraki.wofuf.shared.core.Result
+import dev.saraki.wofuf.shared.domain.ValueObject
+
+class UserEmail(val value: String) : ValueObject<UserEmail>() {
     companion object {
         private val emailRegex = Regex("^[A-Za-z0-9+_.-]+@(.+)$")
 
         fun create(email: String): Result<UserEmail> {
-            val trimmedEmail = email.trim()
+            val trimmedEmail = format(email)
+            if (!this.isValidEmail(trimmedEmail)) {
+                return CreateUserErrors.EmailFormatError(trimmedEmail)
 
-            val validation = Guard.combine(listOf(
-                Guard.againstNullOrUndefined(trimmedEmail, "email"),
-                Guard.againstAtLeast(3, trimmedEmail),
-                Guard.againstAtMost(255, trimmedEmail)
-            ))
-
-            if (validation.isFailure) {
-                return Result.failure(validation.exceptionOrNull()!!)
             }
+            return Result.success(UserEmail(trimmedEmail))
+        }
 
-            if (!emailRegex.matches(trimmedEmail)) {
-                return Result.failure(Exception("Invalid email format"))
-            }
+        fun isValidEmail(email: String): Boolean {
+            return email.matches(emailRegex)
+        }
 
-            return Result.success(UserEmail(trimmedEmail.lowercase()))
+        fun format(email: String): String {
+            return email.trim().lowercase()
         }
     }
 

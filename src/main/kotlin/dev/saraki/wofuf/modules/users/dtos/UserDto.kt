@@ -7,45 +7,73 @@ package dev.saraki.wofuf.modules.users.dtos
  *   @description:
  */
 
+import dev.saraki.wofuf.modules.users.domain.JwtToken
 import dev.saraki.wofuf.modules.users.domain.User
+import dev.saraki.wofuf.modules.users.domain.UserEmail
+import dev.saraki.wofuf.modules.users.domain.UserId
+import dev.saraki.wofuf.modules.users.domain.UserName
+import dev.saraki.wofuf.modules.users.domain.UserPassword
+import dev.saraki.wofuf.modules.users.domain.UserProps
+import dev.saraki.wofuf.modules.users.mappers.UserMap
+import dev.saraki.wofuf.modules.users.repos.persistence.UserEntity
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
+import java.io.Serializable
 import java.time.LocalDateTime
 
-class UserDto(
+data class UserDto(
     val id: String,
     val email: String,
-    val username: String,
+    val userName: String,
+    val password: String,
     val isEmailVerified: Boolean,
     val isAdminUser: Boolean,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime
-) {
-    companion object {
-        fun fromDomain(user: User): UserDto {
-            return UserDto(
-                id = user.id.toString(),
-                email = user.email.value,
-                username = user.username.value,
-                isEmailVerified = user.isEmailVerified,
-                isAdminUser = user.isAdminUser,
-                createdAt = user.createdAt,
-                updatedAt = user.updatedAt
-            )
-        }
+    val accessToken: JwtToken?,
+    val isDeleted: Boolean,
+    val lastLogin: LocalDateTime?,
+) : UserMap(), Serializable {
+    override fun toEntity(): UserEntity {
+        return toEntity(this)
     }
+    override fun toDomain(): User {
+        return toDomain(this)
+    }
+    fun toEntity(userDto: UserDto): UserEntity {
+        return UserEntity(
+            id = userDto.id,
+            email = userDto.email,
+            username = userDto.userName,
+            isEmailVerified = userDto.isEmailVerified,
+            isAdminUser = userDto.isAdminUser,
+            accessToken = userDto.accessToken,
+            isDeleted = userDto.isDeleted,
+            password = UserPassword(userDto.password).value,
+            lastLogin = userDto.lastLogin,
+        )
+    }
+    fun toDomain(userDto: UserDto): User {
+        return User(
+            props = UserProps(
+                email = UserEmail(userDto.email),
+                username = UserName(userDto.userName),
+                isEmailVerified = userDto.isEmailVerified,
+                isAdminUser = userDto.isAdminUser,
+                accessToken = userDto.accessToken,
+                isDeleted = userDto.isDeleted,
+                password = UserPassword(userDto.password),
+                lastLogin = userDto.lastLogin,
+            ),
+            id = UserId(UniqueEntityId(userDto.id)),
+        )
+    }
+
 }
-
-class CreateUserRequest(
-    val email: String,
-    val username: String,
-    val password: String
-)
-
-class LoginUserRequest(
-    val email: String,
-    val password: String
-)
-
-class UpdatePasswordRequest(
-    val currentPassword: String,
-    val newPassword: String
-)
+//
+//class LoginUserRequest(
+//    val email: String,
+//    val password: String
+//)
+//
+//class UpdatePasswordRequest(
+//    val currentPassword: String,
+//    val newPassword: String
+//)

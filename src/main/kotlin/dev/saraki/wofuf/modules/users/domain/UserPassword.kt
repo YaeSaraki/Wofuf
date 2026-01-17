@@ -1,17 +1,21 @@
 package dev.saraki.wofuf.modules.users.domain
 
-import dev.saraki.wofuf.shared.core.Guard
-import dev.saraki.wofuf.shared.domain.ValueObject
-import java.security.MessageDigest
-import java.util.Base64
-
 /**
  *   @author YaeSaraki
  *   @email ikaraswork@iCloud.com
  *   @date 2026/1/14 23:17
  *   @description: 用户密码值对象
  */
-class UserPassword private constructor(private val value: String) : ValueObject<UserPassword>() {
+
+import dev.saraki.wofuf.modules.users.useCases.createUser.CreateUserErrors
+import dev.saraki.wofuf.shared.core.Guard
+import dev.saraki.wofuf.shared.core.Result
+import dev.saraki.wofuf.shared.domain.ValueObject
+import java.security.MessageDigest
+import java.util.Base64
+
+
+class UserPassword(val value: String) : ValueObject<UserPassword>() {
     companion object {
         private val digest = MessageDigest.getInstance("SHA-256")
 
@@ -23,7 +27,7 @@ class UserPassword private constructor(private val value: String) : ValueObject<
             ))
 
             if (validation.isFailure) {
-                return Result.failure(validation.exceptionOrNull()!!)
+                return CreateUserErrors.PasswordFormatError(password)
             }
 
             val hashedPassword = hashPassword(password)
@@ -52,3 +56,4 @@ class UserPassword private constructor(private val value: String) : ValueObject<
     override fun hashCode(): Int = value.hashCode()
     override fun toString(): String = value
 }
+

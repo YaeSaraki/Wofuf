@@ -1,15 +1,18 @@
 package dev.saraki.wofuf.modules.users.domain
 
-import dev.saraki.wofuf.shared.core.Guard
-import dev.saraki.wofuf.shared.domain.ValueObject
-
 /**
  *   @author YaeSaraki
  *   @email ikaraswork@iCloud.com
  *   @date 2026/1/14 23:17
  *   @description: 用户名值对象
  */
-class UserName private constructor(val value: String) : ValueObject<UserName>() {
+
+import dev.saraki.wofuf.modules.users.useCases.createUser.CreateUserErrors
+import dev.saraki.wofuf.shared.core.Guard
+import dev.saraki.wofuf.shared.core.Result
+import dev.saraki.wofuf.shared.domain.ValueObject
+
+class UserName(val value: String) : ValueObject<UserName>() {
     companion object {
         fun create(userName: String): Result<UserName> {
             val trimmedUserName = userName.trim()
@@ -21,12 +24,12 @@ class UserName private constructor(val value: String) : ValueObject<UserName>() 
             ))
 
             if (validation.isFailure) {
-                return Result.failure(validation.exceptionOrNull()!!)
+                return CreateUserErrors.UsernameTakenError(trimmedUserName)
             }
 
             // 检查用户名是否只包含允许的字符
             if (!trimmedUserName.matches(Regex("^[a-zA-Z0-9_-]+$"))) {
-                return Result.failure(Exception("Username can only contain letters, numbers, underscores and hyphens"))
+                return CreateUserErrors.UsernameFormatError(trimmedUserName)
             }
 
             return Result.success(UserName(trimmedUserName))

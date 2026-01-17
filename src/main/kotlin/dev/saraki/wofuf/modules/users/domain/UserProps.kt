@@ -8,12 +8,13 @@ import java.time.LocalDateTime
  *   @date 2026/1/15 18:51
  *   @description:
  */
-interface UserProps {
-    val email: UserEmail
-    val username: UserName
-    val password: UserPassword
-    val isEmailVerified: Boolean
-    val isAdminUser: Boolean
-    val createdAt: LocalDateTime
-    val updatedAt: LocalDateTime
-}
+data class UserProps(
+    val email: UserEmail,
+    val username: UserName,
+    val password: UserPassword,
+    val isEmailVerified: Boolean? = false,
+    val isAdminUser: Boolean? = false,
+    val accessToken: JwtToken? = null,
+    var isDeleted: Boolean? = false,
+    val lastLogin: LocalDateTime? = null,
+)

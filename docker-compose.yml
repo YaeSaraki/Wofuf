@@ -4,11 +4,18 @@ services:
   db:
     container_name: Woffo_db
     image: mysql:latest
-    restart: always
     ports:
-      - 3306:3306
+      - 3307:3306
     environment:
-      - MYSQL_ROOT_PASSWORD=${Woffo_ROOT_PASS}
-      - MYSQL_DATABASE=${Woffo_DB_NAME}
-      - MYSQL_USER=${Woffo_DB_USER}
-      - MYSQL_PASSWORD=${Woffo_DB_PASS}
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=Woffo_db
+      - MYSQL_USER=Woffo_db_user
+      - MYSQL_PASSWORD=password
+  redis:
+    container_name: Woffo_redis
+    image: redis:latest
+    ports:
+      - 6380:6379
+    environment:
+      - REDIS_PASSWORD=
+      - REDIS_DATABASES=16
