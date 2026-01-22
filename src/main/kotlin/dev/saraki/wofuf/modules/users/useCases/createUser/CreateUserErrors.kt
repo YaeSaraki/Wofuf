@@ -1,9 +1,9 @@
 package dev.saraki.wofuf.modules.users.useCases.createUser
 
+import dev.saraki.wofuf.modules.users.domain.User
 import dev.saraki.wofuf.modules.users.domain.UserEmail
 import dev.saraki.wofuf.modules.users.domain.UserName
 import dev.saraki.wofuf.modules.users.domain.UserPassword
-import dev.saraki.wofuf.modules.users.dtos.UserDto
 import dev.saraki.wofuf.shared.core.UseCaseError
 import dev.saraki.wofuf.shared.core.Result
 
@@ -16,7 +16,7 @@ import dev.saraki.wofuf.shared.core.Result
 object CreateUserErrors {
 
     // ID已存在错误
-    class IdAlreadyExistsError(id: String) : Result.Failure<UserDto>(
+    class IdAlreadyExistsError(id: String) : Result.Failure<User>(
         exception = UseCaseError(
             code = "ID_ALREADY_EXISTS",
             message = "The id $id associated for this account already exists"
@@ -24,7 +24,7 @@ object CreateUserErrors {
     )
 
     // 邮箱已存在错误
-    class EmailAlreadyExistsError(email: String) : Result.Failure<UserDto>(
+    class EmailAlreadyExistsError(email: String) : Result.Failure<User>(
         exception = UseCaseError(
             code = "EMAIL_ALREADY_EXISTS",
             message = "The email $email associated for this account already exists"
@@ -32,7 +32,7 @@ object CreateUserErrors {
     )
 
     // 用户名已存在错误
-    class UsernameAlreadyExistsError(username: String) : Result.Failure<UserDto>(
+    class UsernameAlreadyExistsError(username: String) : Result.Failure<User>(
         exception = UseCaseError(
             code = "USERNAME_ALREADY_EXISTS",
             message = "The username $username associated for this account already exists"

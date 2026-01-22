@@ -1,14 +1,8 @@
 package dev.saraki.wofuf.modules.users.mappers
 
 import dev.saraki.wofuf.modules.users.domain.User
-import dev.saraki.wofuf.modules.users.domain.UserEmail
-import dev.saraki.wofuf.modules.users.domain.UserId
-import dev.saraki.wofuf.modules.users.domain.UserName
-import dev.saraki.wofuf.modules.users.domain.UserPassword
-import dev.saraki.wofuf.modules.users.domain.UserProps
 import dev.saraki.wofuf.modules.users.dtos.UserDto
-import dev.saraki.wofuf.modules.users.repos.persistence.UserEntity
-import dev.saraki.wofuf.shared.domain.UniqueEntityId
+import dev.saraki.wofuf.modules.users.infra.repos.entities.UserEntity
 
 /**
  *   @author YaeSaraki
@@ -28,9 +22,8 @@ abstract class UserMap {
                 userName = user.userProps.username.value,
                 isEmailVerified = user.userProps.isEmailVerified ?: false,
                 isAdminUser = user.userProps.isAdminUser ?: false,
-                accessToken = user.userProps.accessToken,
                 isDeleted = user.userProps.isDeleted ?: false,
-                password = user.userProps.password.value,
+                password = user.userProps.password.getHashedValue(),
                 lastLogin = user.userProps.lastLogin,
             )
         }
@@ -42,7 +35,6 @@ abstract class UserMap {
                 userName = user.username,
                 isEmailVerified = user.isEmailVerified,
                 isAdminUser = user.isAdminUser,
-                accessToken = user.accessToken,
                 isDeleted = user.isDeleted ?: false,
                 password = user.password,
                 lastLogin = user.lastLogin,

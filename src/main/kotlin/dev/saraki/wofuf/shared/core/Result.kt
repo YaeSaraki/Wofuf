@@ -80,6 +80,12 @@ sealed class Result<out T> {
         /** 快速创建失败结果（带消息） */
         fun <T> failure(message: String): Result<T> = failure(AppError(message))
 
+        /** 快速创建失败结果（带消息和代码） */
+        fun <T> failure(message: String, code: String): Result<T> = failure(AppError(message, code))
+
+
+
+
         /**
          * 合并多个Result（通用版）
          * 全部成功返回值列表，失败返回第一个异常

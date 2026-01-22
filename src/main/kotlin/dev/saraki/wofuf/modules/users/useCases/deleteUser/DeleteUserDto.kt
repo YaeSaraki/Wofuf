@@ -7,5 +7,6 @@ package dev.saraki.wofuf.modules.users.useCases.deleteUser
  *   @description:
  */
 data class DeleteUserDto(
-    val userId: String
+    val userId: String,
+    val accessToken: String,
 )

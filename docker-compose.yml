@@ -18,4 +18,4 @@ services:
       - 6380:6379
     environment:
       - REDIS_PASSWORD=
-      - REDIS_DATABASES=16
+      - REDIS_DATABASES=0

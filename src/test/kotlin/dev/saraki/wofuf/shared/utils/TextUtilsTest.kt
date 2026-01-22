@@ -11,7 +11,7 @@ import kotlin.test.Test
 class TextUtilsTest {
     @Test
     fun createRandomNumericStringTest() {
-        val randomString = TextUtils.createRandomNumericString(6)
+        val randomString = TextUtil.createRandomNumericString(6)
         assert(randomString.length == 6)
         assert(randomString.all { it.isDigit() })
     }

@@ -10,11 +10,11 @@ package dev.saraki.wofuf.modules.users.domain
 
 import dev.saraki.wofuf.modules.users.domain.events.UserCreated
 import dev.saraki.wofuf.modules.users.domain.events.UserDeleted
+import dev.saraki.wofuf.modules.users.domain.events.UserLoggedIn
 import dev.saraki.wofuf.modules.users.useCases.deleteUser.DeleteUserErrors
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.AggregateRoot
-import org.hibernate.sql.Delete
 import java.time.LocalDateTime
 import kotlin.Boolean
 
@@ -36,6 +36,12 @@ class User: AggregateRoot<User> {
             }
         }
         return DeleteUserErrors.UserDeleteError(this.id.value.id)
+    }
+
+    fun setAccessToken(accessToken: String, refreshToken: String) {
+        addDomainEvent(UserLoggedIn(this, LocalDateTime.now()))
+        userProps.accessToken = accessToken
+        userProps.refreshToken = refreshToken
     }
 
     companion object {
@@ -61,8 +67,6 @@ class User: AggregateRoot<User> {
 
             return Result.success(user)
         }
-
-
     }
 
     override fun equals(other: Any?): Boolean {

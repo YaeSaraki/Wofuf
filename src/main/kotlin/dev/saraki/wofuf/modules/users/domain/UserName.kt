@@ -24,7 +24,7 @@ class UserName(val value: String) : ValueObject<UserName>() {
             ))
 
             if (validation.isFailure) {
-                return CreateUserErrors.UsernameTakenError(trimmedUserName)
+                return Result.failure(validation.exceptionOrThrow())
             }
 
             // 检查用户名是否只包含允许的字符
