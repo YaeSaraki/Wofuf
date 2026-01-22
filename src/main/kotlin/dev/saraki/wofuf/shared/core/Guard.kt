@@ -21,7 +21,7 @@ object Guard {
         return if (actualValue > minValue) {
             Result.success("")
         } else {
-            Result.failure(AppError("$actualValue > $minValue", code = "VALUE_TOO_SMALL"))
+            Result.failure(AppError("$actualValue > $minValue", "VALUE_TOO_SMALL"))
         }
     }
 
@@ -29,7 +29,7 @@ object Guard {
         return if (text.length >= numChars) {
             Result.success(text)
         } else {
-            Result.failure(AppError("Text is not at least $numChars chars.", code = "TEXT_TOO_SHORT"))
+            Result.failure(AppError("$text is not at least $numChars chars.", "TEXT_TOO_SHORT"))
         }
     }
 
@@ -37,7 +37,7 @@ object Guard {
         return if (text.length <= numChars) {
             Result.success(text)
         } else {
-            Result.failure(AppError("Text is greater than $numChars chars.", code = "TEXT_TOO_LONG"))
+            Result.failure(AppError("$text is greater than $numChars chars.", "TEXT_TOO_LONG"))
         }
     }
 
@@ -45,12 +45,12 @@ object Guard {
         return if (argument != null) {
             Result.success("")
         } else {
-            Result.failure(AppError("$argumentName is null or undefined", code = "ARGUMENT_IS_NULL"))
+            Result.failure(AppError("$argumentName is null or undefined", "ARGUMENT_IS_NULL"))
         }
     }
 
     fun againstNullOrUndefinedBulk(args: List<GuardArgument>?): Result<String> {
-        if (args == null) return Result.failure(AppError("$args is null or undefined", code = "ARGUMENT_IS_NULL"))
+        if (args == null) return Result.failure(AppError("$args is null or undefined", "ARGUMENT_IS_NULL"))
         for (arg in args) {
             val result = againstNullOrUndefined(arg.argument, arg.argumentName)
             if (result.isFailure) return result
@@ -63,7 +63,7 @@ object Guard {
         return if (isValid) {
             Result.success("")
         } else {
-            Result.failure(AppError("$argumentName isn't oneOf the correct types in ${validValues}. Got \"$value\".", code = "INVALID_ARGUMENT_VALUE"))
+            Result.failure(AppError("$argumentName isn't oneOf the correct types in ${validValues}. Got \"$value\".", "INVALID_ARGUMENT_VALUE"))
         }
     }
 
@@ -72,7 +72,7 @@ object Guard {
         return if (isInRange) {
             Result.success("")
         } else {
-            Result.failure(AppError("$argumentName is not within range $min to $max.", code = "VALUE_OUT_OF_RANGE"))
+            Result.failure(AppError("$argumentName is not within range $min to $max.", "VALUE_OUT_OF_RANGE"))
         }
     }
 

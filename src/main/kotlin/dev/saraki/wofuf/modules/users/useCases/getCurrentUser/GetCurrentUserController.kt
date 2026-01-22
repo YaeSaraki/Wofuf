@@ -7,7 +7,6 @@ package dev.saraki.wofuf.modules.users.useCases.getCurrentUser
  *   @description:
  */
 
-import dev.saraki.wofuf.modules.users.dtos.UserDto
 import dev.saraki.wofuf.modules.users.useCases.getUserByUsername.GetUserByUsernameDto
 import dev.saraki.wofuf.modules.users.useCases.getUserByUsername.GetUserByUsernameUseCase
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
@@ -25,10 +24,10 @@ class GetCurrentUserController: BaseController() {
     private lateinit var getUserByUsernameUseCase: GetUserByUsernameUseCase
 
     @GetMapping("")
-    fun getUserByUsername(@RequestBody request: GetUserByUsernameDto): ApiResponse<UserDto> {
+    fun getUserByUsername(@RequestBody request: GetUserByUsernameDto.GetUserRequest): ApiResponse<GetUserByUsernameDto.GetUserResponse> {
         val resultOrError = getUserByUsernameUseCase.execute(request)
         if (resultOrError.isFailure) {
-            return ApiResponse.error(resultOrError.exceptionOrNull()?.message ?: "Unknown error")
+            return ApiResponse.error(resultOrError.exceptionOrThrow())
         }
         val result = resultOrError.getOrThrow()
         return ApiResponse.success(result)

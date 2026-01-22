@@ -10,14 +10,14 @@ package dev.saraki.wofuf.modules.users.useCases.createUser
 import dev.saraki.wofuf.modules.users.domain.*
 import dev.saraki.wofuf.modules.users.dtos.UserDto
 import dev.saraki.wofuf.modules.users.mappers.UserMap
-import dev.saraki.wofuf.modules.users.repos.IUserRepo
+import dev.saraki.wofuf.modules.users.infra.repos.IUserRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import org.springframework.stereotype.Service
 
 @Service
-class CreateUserUseCase(val userRepo: IUserRepo) : UseCase<CreateUserDto, UserDto> {
-    override fun execute(request: CreateUserDto): Result<UserDto> {
+class CreateUserUseCase(private val userRepo: IUserRepo) : UseCase<CreateUserDto, User> {
+    override fun execute(request: CreateUserDto): Result<User> {
         val idOrError = UserId.create()
         val emailOrError = UserEmail.create(request.email)
         val usernameOrError = UserName.create(request.username)
@@ -74,7 +74,6 @@ class CreateUserUseCase(val userRepo: IUserRepo) : UseCase<CreateUserDto, UserDt
         val userEntity = UserMap.from(userResult.getOrThrow()).toEntity()
         userRepo.save(userEntity)
 
-        // 返回DTO
-        return Result.success(UserMap.from(userEntity))
+        return Result.success(userResult.getOrThrow())
     }
 }

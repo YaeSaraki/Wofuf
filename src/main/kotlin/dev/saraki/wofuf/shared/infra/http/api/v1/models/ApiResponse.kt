@@ -10,29 +10,26 @@ import dev.saraki.wofuf.shared.core.AppError
  */
 data class ApiResponse<T> constructor(
     val success: Boolean,
-    val message: String?,
+    val code: String?,
     val data: T?,
-    val error: String?
+    val message: String?
 ) {
     companion object {
         fun <T> success(data: T): ApiResponse<T> {
-            return ApiResponse(true, "Operation successful", data, null)
+            return ApiResponse(true, "Success" , data, "Operation successful")
         }
 
         fun <T> success(message: String, data: T): ApiResponse<T> {
-            return ApiResponse(true, message, data, null)
+            return ApiResponse(true, "Success", data, message)
         }
 
-        fun <T> error(error: String): ApiResponse<T> {
-            return ApiResponse(false, null, null, error)
+        fun <T> error(message: String): ApiResponse<T>  {
+            return ApiResponse(false, "Error", null, message)
         }
 
         fun <T> error(error: AppError): ApiResponse<T> {
-            return ApiResponse(false, error.message, null, error.code)
+            return ApiResponse(false, error.code, null, error.message)
         }
 
-        fun <T> error(message: String, error: String): ApiResponse<T> {
-            return ApiResponse(false, message, null, error)
-        }
     }
 }

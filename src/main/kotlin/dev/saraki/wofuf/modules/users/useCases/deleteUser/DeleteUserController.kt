@@ -1,7 +1,5 @@
 package dev.saraki.wofuf.modules.users.useCases.deleteUser
 
-import dev.saraki.wofuf.modules.users.useCases.createUser.CreateUserDto
-import dev.saraki.wofuf.modules.users.useCases.createUser.CreateUserUseCase
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,7 +24,7 @@ class DeleteUserController: BaseController() {
     fun deleteUser(@RequestBody request: DeleteUserDto): ApiResponse<String> {
         val result = deleteUserUseCase.execute(request)
         if (result.isFailure) {
-            return ApiResponse.error(result.exceptionOrNull()?.message ?: "Unknown error")
+            return ApiResponse.error(result.exceptionOrThrow())
         }
         return ApiResponse.success("User deleted")
     }

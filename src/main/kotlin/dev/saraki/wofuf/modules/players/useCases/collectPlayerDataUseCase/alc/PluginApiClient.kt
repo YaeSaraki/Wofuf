@@ -1,0 +1,14 @@
+package dev.saraki.wofuf.modules.players.useCases.collectPlayerDataUseCase.alc
+
+import java.util.UUID
+
+interface PluginApiClient {
+
+    fun fetchOnlinePlayers(): List<PlayerResult>?
+
+    fun fetchPlayerStatistics(uuid: UUID): StatisticResult?
+
+    fun fetchPlayerAdvancements(uuid: UUID): AdvancementResult?
+
+    fun fetchPlayerSkin(uuid: UUID): PlayerSkinResult?
+}

@@ -1,0 +1,102 @@
+erDiagram
+%% 用户表
+    users {
+        string id PK "用户ID (UUID)"
+        string email UK "用户邮箱"
+        string username UK "用户名"
+        string password "加密后的密码"
+        boolean is_email_verified "邮箱是否已验证"
+        boolean is_admin_user "是否为管理员"
+        boolean is_deleted "是否已删除"
+        datetime last_login "最后登录时间"
+        datetime created_at "创建时间"
+        datetime updated_at "更新时间"
+    }
+
+%% 玩家表
+    players {
+        string uuid PK "玩家UUID"
+        string name "玩家名称"
+        long first_login "首次登录时间戳"
+        long last_login "最后登录时间戳"
+        long total_playtime "总游戏时长(秒)"
+        long update_time "数据更新时间戳"
+        longtext advancements_json "成就数据(JSON格式)"
+        longtext statistics_json "统计数据(JSON格式)"
+    }
+
+%% 用户-玩家关联表
+    user_player_links {
+        string user_id PK,FK "用户ID"
+        string player_uuid PK,FK "玩家UUID"
+        datetime linked_at "关联时间"
+    }
+
+%% 论坛主题表
+    forum_topics {
+        string id PK "主题ID (UUID)"
+        string title "主题标题"
+        string content "主题内容"
+        string user_id FK "发布用户ID"
+        string player_uuid FK "发布玩家UUID"
+        int view_count "浏览次数"
+        int reply_count "回复次数"
+        datetime created_at "创建时间"
+        datetime updated_at "更新时间"
+        boolean is_pinned "是否置顶"
+        boolean is_locked "是否锁定"
+    }
+
+%% 论坛回复表
+    forum_replies {
+        string id PK "回复ID (UUID)"
+        string topic_id FK "主题ID"
+        string content "回复内容"
+        string user_id FK "回复用户ID"
+        string player_uuid FK "回复玩家UUID"
+        string parent_reply_id FK "父回复ID (用于多级回复)"
+        datetime created_at "创建时间"
+        datetime updated_at "更新时间"
+    }
+
+%% 论坛分类表
+    forum_categories {
+        string id PK "分类ID (UUID)"
+        string name "分类名称"
+        string description "分类描述"
+        int sort_order "排序顺序"
+        datetime created_at "创建时间"
+        datetime updated_at "更新时间"
+    }
+
+%% 主题-分类关联表
+    topic_categories {
+        string topic_id PK,FK "主题ID"
+        string category_id PK,FK "分类ID"
+    }
+
+%% 用户与玩家的关联
+    users ||--o{ user_player_links : "关联"
+    players ||--o{ user_player_links : "被关联"
+
+%% 用户与论坛主题的关系
+    users ||--o{ forum_topics : "发布"
+
+%% 玩家与论坛主题的关系
+    players ||--o{ forum_topics : "发布"
+
+%% 用户与论坛回复的关系
+    users ||--o{ forum_replies : "发布"
+
+%% 玩家与论坛回复的关系
+    players ||--o{ forum_replies : "发布"
+
+%% 论坛主题与回复的关系
+    forum_topics ||--o{ forum_replies : "包含"
+
+%% 回复之间的父子关系
+    forum_replies ||--o{ forum_replies : "回复"
+
+%% 分类与主题的关系
+    forum_categories ||--o{ topic_categories : "包含"
+    forum_topics ||--o{ topic_categories : "属于"

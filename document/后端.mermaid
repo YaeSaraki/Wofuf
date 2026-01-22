@@ -1,0 +1,27 @@
+flowchart TB
+subgraph API网关层
+Gateway["Spring Cloud Gateway\n- 路由转发\n- 限流熔断\n- 跨域处理"]
+end
+
+subgraph 微服务层
+PlayerService["玩家服务\n- 数据采集\n- 统计分析\n- 成就管理"]
+UserService["用户服务\n- 认证授权\n- 用户管理\n- 权限控制"]
+ForumService["论坛服务\n- 帖子管理\n- 评论互动\n- 内容审核"]
+end
+
+subgraph 基础设施层
+MySQL["MySQL数据库\n- 关系型数据存储"]
+Redis["Redis缓存\n- 会话存储\n- 热点数据缓存"]
+Taboolib["Taboolib框架\n- Minecraft数据集成"]
+end
+
+Gateway --> PlayerService
+Gateway --> UserService
+Gateway --> ForumService
+PlayerService --> MySQL
+PlayerService --> Redis
+PlayerService --> Taboolib
+UserService --> MySQL
+UserService --> Redis
+ForumService --> MySQL
+ForumService --> Redis

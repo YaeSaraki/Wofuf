@@ -1,0 +1,23 @@
+flowchart TD
+    subgraph 视图层
+        Views["视图组件\n(.vue文件)"]
+        Components["通用组件\n(可复用UI组件)"]
+    end
+
+    subgraph 逻辑层
+        Composables["组合式函数\n(业务逻辑复用)"]
+        Stores["状态管理\n(如Pinia)"]
+    end
+
+    subgraph 数据层
+        API["API接口封装\n(前后端交互)"]
+        Utils["工具函数\n(通用功能)"]
+    end
+
+    Views --> Components
+    Views --> Composables
+    Views --> Stores
+    Components --> Composables
+    Composables --> API
+    Stores --> API
+    API --> Utils

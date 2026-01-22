@@ -1,0 +1,60 @@
+graph LR
+%% 定义样式（可选，增强可读性）
+
+
+%% 基础模块
+    BASE[基础模块]:::base --> GET_API_ROOT["GET /api/v1/
+    功能：API根路径
+响应：ApiResponse<String>"]
+
+%% 用户模块
+USER[用户模块]:::user --> POST_CREATE["POST /api/v1/users/create
+功能：创建新用户
+参数：CreateUserDto
+响应：ApiResponse<String>"]
+USER --> POST_DELETE["POST /api/v1/users/delete
+功能：删除用户
+参数：DeleteUserDto
+响应：ApiResponse<String>"]
+USER --> POST_LOGIN["POST /api/v1/users/login
+功能：用户登录
+参数：LoginRequest(用户名/密码)
+响应：LoginResponse(令牌)"]
+USER --> POST_LOGOUT["POST /api/v1/users/logout
+功能：用户登出
+参数：LogoutRequest(刷新令牌)
+响应：LogoutResponse"]
+USER --> POST_REFRESH["POST /api/v1/users/token/refresh
+功能：刷新令牌
+参数：RefreshTokenRequest
+响应：新访问令牌"]
+USER --> GET_USER_NAME["GET /api/v1/users/{username}
+功能：按用户名查用户
+参数：路径参数username
+响应：用户详细信息"]
+USER --> GET_USER_ME["GET /api/v1/users/me
+功能：获取当前用户信息
+参数：用户名
+响应：当前用户详细信息"]
+
+%% 玩家模块
+PLAYER[玩家模块]:::player --> GET_PLAYER_PROFILE["GET /api/v1/players/profile/{playerName}
+功能：获取玩家资料
+参数：路径参数playerName
+响应：GetPlayerView(玩家资料)"]
+PLAYER --> GET_PLAYER_STAT["GET /api/v1/players/statistics/{playerName}
+功能：获取玩家统计数据
+参数：路径参数playerName + 可选查询参数(category/key)
+响应：GetPlayerStatisticsView"]
+PLAYER --> GET_PLAYER_ADV["GET /api/v1/players/advancements/{playerName}
+功能：获取玩家成就
+参数：路径参数playerName
+响应：GetPlayerAdvancementsView"]
+PLAYER --> GET_PLAYER_YESTERDAY["GET /api/v1/players/yesterday
+功能：获取昨日在线玩家列表
+参数：无
+响应：昨日在线玩家列表"]
+PLAYER --> GET_PLAYER_RANDOM["GET /api/v1/players/random-profile
+功能：获取随机玩家资料
+参数：可选查询参数count(默认1)
+响应：随机玩家资料列表"]

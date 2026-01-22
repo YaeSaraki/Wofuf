@@ -7,6 +7,6 @@ package dev.saraki.wofuf.shared.core
  *   @description:
  */
 open class AppError(
-    message: String,
+    override val message: String,
     val code: String = "UNKNOWN_ERROR",
 ) : RuntimeException(message)

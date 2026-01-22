@@ -12,4 +12,5 @@ package dev.saraki.wofuf.shared.core
  */
 interface UseCase<Request, Response> {
     fun execute(request: Request): Result<Response>
+
 }

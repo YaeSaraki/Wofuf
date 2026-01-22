@@ -1,0 +1,14 @@
+/* 成就项容器 */
+.adv-item-container {
+  justify-content: flex-start;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+/* 成就项 */
+.adv-item {
+  width: 216px;
+  height: 72px;
+  box-sizing: border-box;
+}
+

@@ -26,4 +26,12 @@ class DeleteUserErrors {
             message = "The user with id $id cannot be deleted"
         )
     )
+
+    // 未授权错误
+    class UnauthorizedError : Result.Failure<Unit>(
+        exception = UseCaseError(
+            code = "UNAUTHORIZED",
+            message = "The user is not authorized to delete this user"
+        )
+    )
 }

@@ -15,7 +15,7 @@ import java.security.MessageDigest
 import java.util.Base64
 
 
-class UserPassword(val value: String) : ValueObject<UserPassword>() {
+class UserPassword(private val value: String) : ValueObject<UserPassword>() {
     companion object {
         private val digest = MessageDigest.getInstance("SHA-256")
 

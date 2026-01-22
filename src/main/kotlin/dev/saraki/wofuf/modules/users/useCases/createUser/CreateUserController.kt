@@ -7,7 +7,7 @@ package dev.saraki.wofuf.modules.users.useCases.createUser
  *   @description:
  */
 
-import dev.saraki.wofuf.shared.core.AppError
+import dev.saraki.wofuf.modules.users.mappers.UserMap
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,10 +26,8 @@ class CreateUserController: BaseController() {
     fun createUser(@RequestBody request: CreateUserDto): ApiResponse<String> {
         val result = createUserUseCase.execute(request)
         if (result.isFailure) {
-            val error = result.exceptionOrNull() as AppError
-            return ApiResponse.error(error)
+            return ApiResponse.error(result.map{ UserMap.from(it) }.exceptionOrThrow())
         }
         return ApiResponse.success("User created")
     }
-
 }
