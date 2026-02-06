@@ -1,8 +1,10 @@
 package dev.saraki.wofuf.modules.players.domain
 
+import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import dev.saraki.wofuf.shared.domain.ValueObject
 import dev.saraki.wofuf.shared.core.Result
+import java.util.UUID
 
 /**
  *   @author YaeSaraki
@@ -10,22 +12,24 @@ import dev.saraki.wofuf.shared.core.Result
  *   @date 2026/1/19 15:21
  *   @description:
  */
-class PlayerId(val value: UniqueEntityId) : ValueObject<PlayerId>() {
-    companion object {
-        fun create(): Result<PlayerId> {
-            return Result.success(PlayerId(UniqueEntityId()))
-        }
-        fun create(id: String): Result<PlayerId> {
-            return Result.success(PlayerId(UniqueEntityId(id)))
-        }
-    }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as PlayerId
-        return value == other.value
+data class PlayerIdProps(
+    val value: UniqueEntityId
+)
+
+class PlayerId private constructor(
+    override val props: PlayerIdProps
+) : ValueObject<PlayerIdProps>(props) {
+    val stringValue: String
+        get() = props.value.uuid.toString()
+
+    companion object {
+        fun create(value: UniqueEntityId): Result<PlayerId> {
+            val guardResult = Guard.againstNullOrUndefined(value, "PlayerId")
+            if (guardResult.isFailure) {
+                return Result.failure(guardResult.getOrThrow())
+            }
+            return Result.success(PlayerId(PlayerIdProps(value)))
+        }
     }
-    override fun hashCode(): Int = value.hashCode()
-    override fun toString(): String = value.toString()
 }

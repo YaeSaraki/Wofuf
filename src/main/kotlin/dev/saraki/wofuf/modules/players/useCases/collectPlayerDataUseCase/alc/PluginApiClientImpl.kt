@@ -58,15 +58,26 @@ class PluginApiClientImpl(
             val capeUrl = playerSkinUrl.cape
             val type = playerSkinUrl.type
 
-            val skinImg = restTemplate.getForObject(skinUrl, ByteArray::class.java)
-                ?: restTemplate.getForObject(backupUrl + ".png", ByteArray::class.java)
+            var skinImg: ByteArray? = null
+            var capeImg: ByteArray? = null
 
-            val capeImg = restTemplate.getForObject(capeUrl, ByteArray::class.java)
-                ?: restTemplate.getForObject(backupUrl + ".png", ByteArray::class.java)
+            try {
+                skinImg = restTemplate.getForObject(skinUrl, ByteArray::class.java)
+                    ?: restTemplate.getForObject(backupUrl + ".png", ByteArray::class.java)
 
+                if (capeUrl != "") {
+                    capeImg = restTemplate.getForObject(capeUrl, ByteArray::class.java)
+                        ?: restTemplate.getForObject(backupUrl + ".png", ByteArray::class.java)
+                }
 
-            val skinString = Base64.getEncoder().encodeToString(skinImg)
-            val capeString = Base64.getEncoder().encodeToString(capeImg)
+            } catch (
+                e: Exception
+            ) {
+                log.info("Failed to fetch skin for player $uuid", e)
+            }
+
+            val skinString = Base64.getEncoder().encodeToString(skinImg ?: ByteArray(0))
+            val capeString = Base64.getEncoder().encodeToString(capeImg ?: ByteArray(0))
             return PlayerSkinResult(
                 type = type,
                 skin = skinString,

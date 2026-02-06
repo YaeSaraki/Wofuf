@@ -11,8 +11,10 @@ import dev.saraki.wofuf.shared.domain.events.IDomainEvent
  *   @date 2026/1/14 11:21
  *   @description:
  */
-abstract class AggregateRoot<T> {
-    var _id: UniqueEntityId = UniqueEntityId()
+abstract class AggregateRoot<T>(
+    props: T,
+    id: UniqueEntityId? = null
+): Entity<T>(props, id) {
     private val _domainEvents: MutableList<IDomainEvent> = mutableListOf()
 
     val domainEvents: List<IDomainEvent>

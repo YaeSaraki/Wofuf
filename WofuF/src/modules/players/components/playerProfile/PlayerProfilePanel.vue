@@ -6,7 +6,7 @@ import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
 import { Render, WalkingAnimation } from 'skin3d'
 import type { PlayerSkin } from '@M/players/dtos/PlayerSkin.ts'
 import { translate } from '@S/services/i18n'
-import { base64Util } from '@SU/Base64Util.ts'
+import { addImagePrefixToBase64 } from '@SU/Base64Util.ts'
 
 const props = defineProps<{ player: Player | null }>()
 const playerService = new PlayerService()
@@ -104,8 +104,8 @@ function initOrUpdateViewer(skinData: PlayerSkin) {
       canvas: canvas.value,
       width: dims.width,
       height: dims.height,
-      skin: base64Util(skinData.skin || ''),
-      cape: base64Util(skinData.cape || ''),
+      skin: addImagePrefixToBase64(skinData.skin || ''),
+      cape: addImagePrefixToBase64(skinData.cape || ''),
     })
 
     viewer.animation = new WalkingAnimation()
@@ -213,7 +213,7 @@ onUnmounted(() => {
           {{ translate('players', 'player.playtime') }}
         </p>
         <p class="text-lg font-semibold text-zinc-800 dark:text-zinc-100">
-          {{ (player.totalPlaytimeSeconds / 360000000).toFixed(1) }} h
+          {{ (player.totalPlaytimeSeconds / (20 * 60 * 60)).toFixed(1) }} h
         </p>
       </div>
 

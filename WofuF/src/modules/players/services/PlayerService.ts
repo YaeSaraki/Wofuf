@@ -6,6 +6,9 @@ import type { PlayerNameList } from '@M/players/dtos/PlayerName.ts'
 import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
 import { Result } from '@S/core/Result.ts'
 import { http } from '@S/infra/api/http.ts'
+import { cacheService } from '@S/infra/cache'
+import { renderAvatar } from '@S/utils/renderUTil.ts'
+
 
 export interface IPlayerService {
   /* ---------------- 随机玩家 ---------------- */
@@ -17,22 +20,44 @@ export interface IPlayerService {
   getPlayerProfile(playerNameOrUuid: string, options?: RequestOptions): Promise<Result<Player>>
   /* ---------------- 昨日在线玩家 ---------------- */
   getPlayerYesterdayOnline(options?: RequestOptions): Promise<Result<PlayerNameList>>
+  /* ---------------- 获取玩家皮肤 ---------------- */
+  getPlayerSkin(playerUuid: PlayerUuid, options?: RequestOptions): Promise<Result<PlayerSkin>>
 }
 
 export class PlayerService implements IPlayerService {
+  private static readonly CACHE_MODULE = 'player_service'
+
   /* ---------------- 随机玩家 ---------------- */
   public async getRandomPlayerProfile(
     params?: { limit?: number },
     options?: RequestOptions,
   ): Promise<Result<PlayerNameList>> {
-    const response = await http.get<ApiResponse<PlayerNameList>>('/v1/players/random-profile', {
-      signal: options?.signal,
-      params,
-    })
-    if (response.data.success) {
-      return Result.success<PlayerNameList>(response.data.data)
+    const limit = params?.limit || 10
+    const cacheKey = `random_limit_${limit}`
+
+    // 尝试从缓存获取
+    const cached = cacheService.get<PlayerNameList>(PlayerService.CACHE_MODULE, cacheKey)
+    if (cached) {
+      return Result.success<PlayerNameList>(cached)
     }
-    return Result.failure<PlayerNameList>(response.data.message)
+
+    try {
+      const response = await http.get<ApiResponse<PlayerNameList>>('/v1/players/random-profile', {
+        signal: options?.signal,
+        params,
+      })
+
+      if (response.data.success) {
+        // 缓存结果
+        cacheService.set(PlayerService.CACHE_MODULE, cacheKey, response.data.data)
+        return Result.success<PlayerNameList>(response.data.data)
+      }
+      return Result.failure<PlayerNameList>(response.data.message)
+    } catch (error) {
+      return Result.failure<PlayerNameList>(
+        error instanceof Error ? error.message : '获取随机玩家资料失败'
+      )
+    }
   }
 
   /* ---------------- 获取玩家信息 ---------------- */
@@ -40,42 +65,98 @@ export class PlayerService implements IPlayerService {
     playerNameOrUuid: string,
     options?: RequestOptions,
   ): Promise<Result<Player>> {
-    const response = await http.get<ApiResponse<Player>>(`/api/v1/players/profile/${playerNameOrUuid}`, {
-      signal: options?.signal,
-    })
-    if (response.data.success) {
-      return Result.success<Player>(response.data.data)
+    const cacheKey = `profile_${playerNameOrUuid}`
+
+    // 尝试从缓存获取
+    const cached = cacheService.get<Player>(PlayerService.CACHE_MODULE, cacheKey)
+    if (cached) {
+      return Result.success<Player>(cached)
     }
-    return Result.failure<Player>(response.data.message)
+
+    try {
+      const response = await http.get<ApiResponse<Player>>(
+        `/api/v1/players/profile/${playerNameOrUuid}`,
+        {
+          signal: options?.signal,
+        },
+      )
+
+      if (response.data.success) {
+        // 缓存结果
+        cacheService.set(PlayerService.CACHE_MODULE, cacheKey, response.data.data)
+        return Result.success<Player>(response.data.data)
+      }
+      return Result.failure<Player>(response.data.message)
+    } catch (error) {
+      return Result.failure<Player>(
+        error instanceof Error ? error.message : '获取玩家资料失败'
+      )
+    }
   }
 
   /* ---------------- 昨日在线玩家 ---------------- */
   public async getPlayerYesterdayOnline(options?: RequestOptions): Promise<Result<PlayerNameList>> {
-    const response = await http.get<ApiResponse<PlayerNameList>>('/api/v1/players/yesterday', {
-      signal: options?.signal,
-    })
-    if (response.data.success) {
-      return Result.success<PlayerNameList>(response.data.data)
+    const cacheKey = 'yesterday_online'
+
+    // 尝试从缓存获取
+    const cached = cacheService.get<PlayerNameList>(PlayerService.CACHE_MODULE, cacheKey)
+    if (cached) {
+      return Result.success<PlayerNameList>(cached)
     }
-    return Result.failure<PlayerNameList>(response.data.message)
+
+    try {
+      const response = await http.get<ApiResponse<PlayerNameList>>('/api/v1/players/yesterday', {
+        signal: options?.signal,
+      })
+
+      if (response.data.success) {
+        // 缓存结果
+        cacheService.set(PlayerService.CACHE_MODULE, cacheKey, response.data.data)
+        return Result.success<PlayerNameList>(response.data.data)
+      }
+      return Result.failure<PlayerNameList>(response.data.message)
+    } catch (error) {
+      return Result.failure<PlayerNameList>(
+        error instanceof Error ? error.message : '获取昨日在线玩家失败'
+      )
+    }
   }
-
-
 
   /* ---------------- 获取玩家皮肤 ---------------- */
   public async getPlayerSkin(
     playerUuid: PlayerUuid,
     options?: RequestOptions,
   ): Promise<Result<PlayerSkin>> {
-    const response = await http.get<ApiResponse<PlayerSkin>>(
-      `/api/v1/players/skins/${playerUuid}`,
-      {
-        signal: options?.signal,
-      },
-    )
-    if (response.data.success) {
-      return Result.success<PlayerSkin>(response.data.data)
+    const cacheKey = `skin_${playerUuid}`
+
+    // 尝试从缓存获取
+    const cached = cacheService.get<PlayerSkin>(PlayerService.CACHE_MODULE, cacheKey)
+    if (cached) {
+      return Result.success<PlayerSkin>(cached)
     }
-    return Result.failure<PlayerSkin>(response.data.message)
+
+    try {
+      const response = await http.get<ApiResponse<PlayerSkin>>(
+        `/api/v1/players/skins/${playerUuid}`,
+        {
+          signal: options?.signal,
+        },
+      )
+
+      if (response.data.success) {
+        // 缓存结果
+        cacheService.set(PlayerService.CACHE_MODULE, cacheKey, response.data.data)
+        return Result.success<PlayerSkin>(response.data.data)
+      }
+      return Result.failure<PlayerSkin>(response.data.message)
+    } catch (error) {
+      return Result.failure<PlayerSkin>(
+        error instanceof Error ? error.message : '获取玩家皮肤失败'
+      )
+    }
+  }
+
+  public renderAvatar(skinBase64: string, size: number): Promise<string> {
+    return renderAvatar(skinBase64, size)
   }
 }

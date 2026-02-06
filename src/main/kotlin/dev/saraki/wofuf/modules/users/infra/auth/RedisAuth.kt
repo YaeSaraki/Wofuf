@@ -9,6 +9,7 @@ package dev.saraki.wofuf.modules.users.infra.auth
 
 import dev.saraki.wofuf.modules.users.domain.AuthSession
 import dev.saraki.wofuf.modules.users.domain.JwtClaims
+import dev.saraki.wofuf.modules.users.domain.JwtClaimsProps
 import dev.saraki.wofuf.modules.users.domain.JwtToken
 import dev.saraki.wofuf.modules.users.domain.RefreshToken
 import dev.saraki.wofuf.modules.users.domain.User
@@ -43,8 +44,8 @@ class RedisAuth(
     /* ---------------- 登录 ---------------- */
 
     override fun login(user: User): AuthSession {
-        val userId = user.id.value.id
-        val username = user.userProps.username.value
+        val userId = user.userId.stringValue
+        val username = user.username.value
 
         val jti = UUID.randomUUID().toString()
         val refreshToken = UUID.randomUUID().toString()
@@ -53,12 +54,14 @@ class RedisAuth(
         val tokenVersion =
             redis.opsForValue().get(versionKey) as? Long ?: 0L
 
-        val claims = JwtClaims(
-            userId = userId,
-            username = username,
-            jti = jti,
-            tokenVersion = tokenVersion
-        )
+        val claims = JwtClaims.create(
+            JwtClaimsProps(
+                userId = userId,
+                username = username,
+                jti = jti,
+                tokenVersion = tokenVersion
+            )
+        ).getOrThrow()
 
         val jwt = signJWT(claims)
 
@@ -84,11 +87,11 @@ class RedisAuth(
 
         log.info("用户登录成功 userId={}, jti={}", userId, jti)
 
-        return AuthSession(
+        return AuthSession.create(
             accessToken = jwt,
             refreshToken = refreshToken,
             expiresIn = props.accessExpiryMs
-        )
+        ).getOrThrow()
     }
 
     /* ---------------- 鉴权 ---------------- */
@@ -128,12 +131,14 @@ class RedisAuth(
         val tokenVersion =
             redis.opsForValue().get(versionKey) as? Long ?: 0L
 
-        val claims = JwtClaims(
-            userId = userId,
-            username = "", // username 不作为安全依据，可选
-            jti = newJti,
-            tokenVersion = tokenVersion
-        )
+        val claims = JwtClaims.create(
+            JwtClaimsProps(
+                userId = userId,
+                username = "", // username 不作为安全依据，可选
+                jti = newJti,
+                tokenVersion = tokenVersion
+            )
+        ).getOrThrow()
 
         val jwt = signJWT(claims)
 
@@ -153,7 +158,11 @@ class RedisAuth(
 
         log.info("刷新会话成功 userId={}, newJti={}", userId, newJti)
 
-        return AuthSession(jwt, newRefresh, props.accessExpiryMs)
+        return AuthSession.create(
+            accessToken = jwt,
+            refreshToken = newRefresh,
+            expiresIn = props.accessExpiryMs
+        ).getOrThrow()
     }
 
     /* ---------------- 注销 ---------------- */
@@ -200,12 +209,14 @@ class RedisAuth(
                 .parseSignedClaims(clean)
                 .payload
 
-            JwtClaims(
-                userId = payload["uid"] as String,
-                username = payload.subject ?: "",
-                jti = payload["jti"] as String,
-                tokenVersion = (payload["ver"] as Number).toLong()
-            )
+            JwtClaims.create(
+                JwtClaimsProps(
+                    userId = payload["uid"] as String,
+                    username = payload.subject ?: "",
+                    jti = payload["jti"] as String,
+                    tokenVersion = (payload["ver"] as Number).toLong()
+                )
+            ).getOrNull()
         } catch (e: Exception) {
             null
         }

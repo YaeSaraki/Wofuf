@@ -17,14 +17,14 @@ abstract class UserMap {
     companion object {
         fun from(user: User): UserDto {
             return UserDto(
-                id = user.id.value.id,
-                email = user.userProps.email.value,
-                userName = user.userProps.username.value,
-                isEmailVerified = user.userProps.isEmailVerified ?: false,
-                isAdminUser = user.userProps.isAdminUser ?: false,
-                isDeleted = user.userProps.isDeleted ?: false,
-                password = user.userProps.password.getHashedValue(),
-                lastLogin = user.userProps.lastLogin,
+                id = user.userId.stringValue,
+                email = user.email.value,
+                userName = user.username.value,
+                isEmailVerified = user.isEmailVerified,
+                isAdminUser = user.isAdminUser,
+                isDeleted = user.isDeleted,
+                password = user.password.getHashedValue(),
+                lastLogin = user.lastLogin,
             )
         }
 

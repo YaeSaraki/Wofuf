@@ -43,12 +43,12 @@ data class UserDto(
             isEmailVerified = userDto.isEmailVerified,
             isAdminUser = userDto.isAdminUser,
             isDeleted = userDto.isDeleted,
-            password = UserPassword(userDto.password).getHashedValue(),
+            password = UserPassword.create(userDto.password).getOrThrow().value,
             lastLogin = userDto.lastLogin,
         )
     }
     fun toDomain(userDto: UserDto): User {
-        return User(
+        val userOrError = User.create(
             props = UserProps(
                 email = UserEmail.create(userDto.email).getOrThrow(),
                 username = UserName.create(userDto.userName).getOrThrow(),
@@ -58,8 +58,12 @@ data class UserDto(
                 password = UserPassword.create(userDto.password).getOrThrow(),
                 lastLogin = userDto.lastLogin,
             ),
-            id = UserId(UniqueEntityId(userDto.id)),
+            id = UniqueEntityId(userDto.id)
         )
+        if (userOrError.isFailure) {
+            throw userOrError.exceptionOrThrow()
+        }
+        return userOrError.getOrThrow()
     }
 
 }

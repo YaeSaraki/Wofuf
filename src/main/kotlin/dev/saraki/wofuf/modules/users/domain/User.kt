@@ -1,13 +1,5 @@
 package dev.saraki.wofuf.modules.users.domain
 
-/**
- *   @author YaeSaraki
- *   @email ikaraswork@iCloud.com
- *   @date 2026/1/14 16:15
- *   @description:
- */
-
-
 import dev.saraki.wofuf.modules.users.domain.events.UserCreated
 import dev.saraki.wofuf.modules.users.domain.events.UserDeleted
 import dev.saraki.wofuf.modules.users.domain.events.UserLoggedIn
@@ -15,54 +7,107 @@ import dev.saraki.wofuf.modules.users.useCases.deleteUser.DeleteUserErrors
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.AggregateRoot
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import java.time.LocalDateTime
 import kotlin.Boolean
 
-class User: AggregateRoot<User> {
-    val id: UserId
-    val userProps: UserProps
+/**
+ *   @author YaeSaraki
+ *   @email ikaraswork@iCloud.com
+ *   @date 2026/1/14 16:15
+ *   @description:
+ */
+data class UserProps(
+    val email: UserEmail,
+    val username: UserName,
+    val password: UserPassword,
+    val isEmailVerified: Boolean? = false,
+    val isAdminUser: Boolean? = false,
+    var accessToken: JwtToken? = null,
+    var refreshToken: JwtToken? = null,
+    var isDeleted: Boolean? = false,
+    val lastLogin: LocalDateTime? = null,
+)
 
-    constructor(id: UserId, props: UserProps) {
-        this.id = id
-        this.userProps = props
-    }
+class User private constructor(
+        props: UserProps,
+        id: UniqueEntityId? = null
+): AggregateRoot<UserProps>(props, id) {
+
+    val userId: UserId
+        get() = UserId.create(_id).getOrThrow()
+
+    val email: UserEmail
+        get() = props.email
+
+    val username: UserName
+        get() = props.username
+
+    val password: UserPassword
+        get() = props.password
+
+    val accessToken: JwtToken?
+        get() = props.accessToken
+
+    val refreshToken: JwtToken?
+        get() = props.refreshToken
+
+    val isDeleted: Boolean
+        get() = props.isDeleted ?: false
+
+    val isAdminUser: Boolean
+        get() = props.isAdminUser ?: false
+
+    val lastLogin: LocalDateTime?
+        get() = props.lastLogin
+
+    val isEmailVerified: Boolean
+        get() = props.isEmailVerified ?: false
 
     fun delete(): Result<Unit> {
-        userProps.isDeleted?.let {
+        this.isDeleted.let {
             if (!it) {
                 addDomainEvent(UserDeleted(this, LocalDateTime.now()))
-                userProps.isDeleted = true
+                this.props.isDeleted = true
                 return Result.success(Unit)
             }
         }
-        return DeleteUserErrors.UserDeleteError(this.id.value.id)
+        return DeleteUserErrors.UserDeleteError(this.userId.stringValue)
     }
 
     fun setAccessToken(accessToken: String, refreshToken: String) {
         addDomainEvent(UserLoggedIn(this, LocalDateTime.now()))
-        userProps.accessToken = accessToken
-        userProps.refreshToken = refreshToken
+        this.props.accessToken = accessToken
+        this.props.refreshToken = refreshToken
     }
 
     companion object {
-        fun create(props: UserProps, id: UserId?): Result<User> {
+        fun create(props: UserProps, id: UniqueEntityId? = null): Result<User> {
             val guardResult = Guard.againstNullOrUndefinedBulk(
                 listOf(
-                    Guard.GuardArgument(props.username, "props"),
-                    Guard.GuardArgument(id, "id")
+                    Guard.GuardArgument(props.username, "username"),
+                    Guard.GuardArgument(props.email, "email")
                 )
             )
-            if (guardResult.isFailure) return Result.failure(guardResult.exceptionOrNull()!!)
 
-            val user = User(
-                props = props,
-                id = id ?: UserId.create().getOrThrow()
+            // 校验失败，返回失败Result
+            if (guardResult.isFailure) {
+                return Result.failure(guardResult.exceptionOrThrow())
+            }
+
+            // 判断是否为新用户：id为空则为新创建
+            val isNewUser = id == null
+
+            val defaultProps = props.copy(
+                isDeleted = props.isDeleted ?: false,
+                isEmailVerified = props.isEmailVerified ?: false,
+                isAdminUser = props.isAdminUser ?: false
             )
 
-            if (id != null) {
-                // 发布用户创建事件
-                user.addDomainEvent(UserCreated(user, LocalDateTime.now()))
-                return Result.success(user)
+            val user = User(defaultProps, id)
+
+            if (isNewUser) {
+                user.addDomainEvent(UserCreated(user))
             }
 
             return Result.success(user)

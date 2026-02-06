@@ -54,8 +54,8 @@ class CollectPlayerDataScheduler(
             val playerAdvancements = pluginApiClient.fetchPlayerAdvancements(player.uuid)
             val playerSkin = pluginApiClient.fetchPlayerSkin(player.uuid)
 
-            if (playerStatistics == null || playerAdvancements == null || playerSkin == null) {
-                log.warn("玩家 {} 数据采集失败，统计数据或进度数据为空", player.name)
+            if (playerStatistics == null || playerAdvancements == null) {
+                log.warn("玩家 {} 数据采集失败", player.name)
                 return@forEach
             }
             val result = collectPlayerDataUseCase.execute(
@@ -67,11 +67,11 @@ class CollectPlayerDataScheduler(
                     totalPlaytimeSeconds = player.totalPlaytimeSeconds,
                     statistics = playerStatistics.statistics,
                     advancements = (playerAdvancements.advancements.associateBy { it.key }),
-                    playerSkin = PlayerSkin(
-                        type = playerSkin.type,
-                        skin = playerSkin.skin,
-                        cape = playerSkin.cape
-                    )
+                    playerSkin = PlayerSkin.create(
+                        type = playerSkin?.type ?: "",
+                        skin = playerSkin?.skin ?: "",
+                        cape = playerSkin?.cape ?: ""
+                    ).getOrThrow()
                 )
             )
             if (result.isSuccess) {

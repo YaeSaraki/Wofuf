@@ -11,7 +11,11 @@ import dev.saraki.wofuf.modules.users.useCases.createUser.CreateUserErrors
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.ValueObject
 
-class UserEmail(val value: String) : ValueObject<UserEmail>() {
+data class UserEmailProps(val value: String)
+
+class UserEmail private constructor(props: UserEmailProps) : ValueObject<UserEmailProps>(props) {
+    val value: String get() = props.value
+
     companion object {
         private val emailRegex = Regex("^[A-Za-z0-9+_.-]+@(.+)$")
 
@@ -21,7 +25,7 @@ class UserEmail(val value: String) : ValueObject<UserEmail>() {
                 return CreateUserErrors.EmailFormatError(trimmedEmail)
 
             }
-            return Result.success(UserEmail(trimmedEmail))
+            return Result.success(UserEmail(UserEmailProps(trimmedEmail)))
         }
 
         fun isValidEmail(email: String): Boolean {
@@ -32,14 +36,4 @@ class UserEmail(val value: String) : ValueObject<UserEmail>() {
             return email.trim().lowercase()
         }
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as UserEmail
-        return value == other.value
-    }
-
-    override fun hashCode(): Int = value.hashCode()
-    override fun toString(): String = value
 }

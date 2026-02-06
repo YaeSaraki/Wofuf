@@ -38,7 +38,7 @@ class LoginUseCase(val userRepo: IUserRepo, val authService: IAuth): UseCase<Log
         val user = UserMap.from(userEntity).toDomain()
 
         // 检查密码是否匹配
-        val passwordValid = user.userProps.password.matches(password.getHashedValue())
+        val passwordValid = user.password.matches(password.getHashedValue())
         if (!passwordValid) {
             return LoginErrors.PasswordNotMatchError(username.value)
         }

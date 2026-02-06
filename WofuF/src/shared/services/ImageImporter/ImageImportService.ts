@@ -55,8 +55,6 @@ export class ImageImportService implements IImageImportService {
 
     console.time('扫描图片资源')
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
     const imageModules = import.meta.glob('/src/**/*.{jpg,jpeg,png,gif,webp,svg}', {
       eager: true,
       query: { url: true },
@@ -73,8 +71,6 @@ export class ImageImportService implements IImageImportService {
     this.lastInitTime = Date.now()
 
     console.timeEnd('扫描图片资源')
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
     if (import.meta.env.DEV) {
       const totalImages = cacheService.getModuleSize(ImageImportService.MODULE_NAME)
       console.log('图片资源初始化完成，共找到', totalImages, '张图片')
@@ -99,8 +95,6 @@ export class ImageImportService implements IImageImportService {
     }
 
     const url = cacheService.get<string>(ImageImportService.MODULE_NAME, path) || null
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
     if (import.meta.env.DEV && !url) {
       console.warn(`图片未找到：${path}`)
       const availableImages = this.getAllImagePaths()

@@ -19,9 +19,7 @@ class GetPlayerSkinUseCase(private val playerRepository: PlayerRepository) : Use
     override fun execute(request: GetPlayerSkinCommand): Result<GetPlayerSkinView> {
         val player = playerRepository.findByUuid(request.playerUuid)
             ?: return GetPlayerSkinErrors.GetPlayerSkinError()
-        if (player.playerSkin.skin == null || player.playerSkin.type == null || player.playerSkin.cape == null) {
-            return GetPlayerSkinErrors.GetPlayerSkinError()
-        }
+
         return Result.success(GetPlayerSkinView(
             type = player.playerSkin.type,
             skin = player.playerSkin.skin,

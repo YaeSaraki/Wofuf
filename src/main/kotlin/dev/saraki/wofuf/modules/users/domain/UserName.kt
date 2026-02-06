@@ -12,7 +12,10 @@ import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.ValueObject
 
-class UserName(val value: String) : ValueObject<UserName>() {
+data class UserNameProps(val value: String)
+
+class UserName private constructor(props: UserNameProps) : ValueObject<UserNameProps>(props) {
+    val value: String get() = props.value
     companion object {
         fun create(userName: String): Result<UserName> {
             val trimmedUserName = userName.trim()
@@ -32,17 +35,7 @@ class UserName(val value: String) : ValueObject<UserName>() {
                 return CreateUserErrors.UsernameFormatError(trimmedUserName)
             }
 
-            return Result.success(UserName(trimmedUserName))
+            return Result.success(UserName(UserNameProps(trimmedUserName)))
         }
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as UserName
-        return value == other.value
-    }
-
-    override fun hashCode(): Int = value.hashCode()
-    override fun toString(): String = value
 }

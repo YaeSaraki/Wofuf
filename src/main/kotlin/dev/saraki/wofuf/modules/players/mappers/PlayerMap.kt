@@ -16,12 +16,12 @@ abstract class PlayerMap {
     companion object {
         fun from(player: Player): PlayerDto =
             PlayerDto(
-                uuid = player.id.value.id,
-                name = player.props.name,
-                firstLogin = player.props.firstLogin,
-                lastLogin = player.props.lastLogin,
-                totalPlaytimeSeconds = player.props.totalPlaytimeSeconds,
-                updateTime = player.props.updateTime,
+                uuid = player.playerId.stringValue,
+                name = player.playerName,
+                firstLogin = player.firstLogin,
+                lastLogin = player.lastLogin,
+                totalPlaytimeSeconds = player.totalPlaytimeSeconds,
+                updateTime = player.updateTime,
                 statistics = player.statistics.mapValues {
                     PlayerStatisticDto(
                         category = it.value.category,

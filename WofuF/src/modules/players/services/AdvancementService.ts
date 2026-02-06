@@ -1,13 +1,16 @@
-import type { PlayerAdvancement, PlayerAdvancementList } from '@M/players/dtos/PlayerAdvancement.ts'
-import type { PlayerUuid } from '@M/players/dtos/PlayerUuid.ts'
-import type { RequestOptions } from '@SU/async/RequestOptions.ts'
-import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
-import { advancementsGroups } from '@M/players/config/AdvancementGroups.ts'
 import { imageImportService } from '@S/services/ImageImporter'
+import type { PlayerUuid } from '@M/players/dtos/PlayerUuid.ts'
 import { challenge, goal } from '@M/players/config/AdvancementSpecial.ts'
+import { advancementsGroups } from '@M/players/config/AdvancementGroups.ts'
+import type { PlayerAdvancement, PlayerAdvancementList } from '@M/players/dtos/PlayerAdvancement.ts'
+
+import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
+import { cacheService } from '@S/infra/cache'
 import { translate } from '@S/services/i18n'
-import { Result } from '@S/core/Result.ts'
 import { http } from '@S/infra/api/http.ts'
+import { Result } from '@S/core/Result.ts'
+
+import type { RequestOptions } from '@SU/async/RequestOptions.ts'
 
 export interface AdvancementGroupTotal {
   total: number
@@ -47,8 +50,8 @@ export interface IAdvancementService {
 
 export class AdvancementService implements IAdvancementService {
   private readonly ALL_GROUPED_ADVANCEMENT_KEYS: Set<string>
-  private readonly _cachedAdvancementsMap = new Map<PlayerUuid, PlayerAdvancementList>()
   private readonly _advancementImages: Record<string, string>
+  private static readonly CACHE_MODULE = 'advancement_service'
 
   private static readonly DEFAULT_EXTENSIONS = ['png', 'webp', 'jpg', 'jpeg', 'gif'] as const
   private static readonly BASE_ADVANCEMENT_PATH = '/src/modules/players/assets/image/advancement/'
@@ -59,8 +62,6 @@ export class AdvancementService implements IAdvancementService {
       advancementsGroups.flatMap((group) => group.advancements),
     )
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
     this._advancementImages = import.meta.glob(
       [
         '/src/modules/players/assets/image/advancement/**/*.png',
@@ -83,8 +84,13 @@ export class AdvancementService implements IAdvancementService {
     playerUuid: PlayerUuid,
     options?: RequestOptions,
   ): Promise<Result<PlayerAdvancementList>> {
-    // 尝试从缓存获取
-    const cached = this._cachedAdvancementsMap.get(playerUuid)
+    // 尝试从CacheService获取
+    const cacheKey = `advancements_${playerUuid}`
+    const cached = cacheService.get<PlayerAdvancementList>(
+      AdvancementService.CACHE_MODULE,
+      cacheKey,
+    )
+
     if (cached) {
       return Result.success<PlayerAdvancementList>(cached)
     }
@@ -98,7 +104,8 @@ export class AdvancementService implements IAdvancementService {
       )
 
       if (response.data.success) {
-        this._cachedAdvancementsMap.set(playerUuid, response.data.data)
+        // 保存到CacheService
+        cacheService.set(AdvancementService.CACHE_MODULE, cacheKey, response.data.data)
         return Result.success<PlayerAdvancementList>(response.data.data)
       }
 
@@ -132,7 +139,6 @@ export class AdvancementService implements IAdvancementService {
       : []
   }
 
-  // 计算某分类下的成就总数、已完成数和完成百分比
   public calculateAdvancementGroupTotals = (advancements: PlayerAdvancement[]) => {
     const nonRecipeAdvancements = this.filterNonRecipeAdvancements(advancements)
 
@@ -144,7 +150,6 @@ export class AdvancementService implements IAdvancementService {
         nonRecipeAdvancements.filter((adv) => adv.done).map((adv) => adv.key),
       )
 
-      // 统计完成数量
       const completed = groupAdvKeys.filter((key) => completedAdvKeys.has(key)).length
       return {
         ...group,
@@ -201,7 +206,6 @@ export class AdvancementService implements IAdvancementService {
     const { category, name } = this.parseAdvancementKey(advancement.key)
     const baseName = `${AdvancementService.BASE_ADVANCEMENT_PATH}${category}/${name}`
 
-    // 按优先级查找文件
     for (const ext of AdvancementService.DEFAULT_EXTENSIONS) {
       const fullPath = `${baseName}.${ext}`
       const found = this._advancementImages[fullPath]
@@ -218,7 +222,6 @@ export class AdvancementService implements IAdvancementService {
     const { key, done } = advancement
     let imageName: string
 
-    // 根据成就类型和完成状态选择边框图片
     if (challenge.includes(key)) {
       imageName = done ? 'Advancement-challenge-completed.png' : 'Advancement-challenge.webp'
     } else if (goal.includes(key)) {

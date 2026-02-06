@@ -1,5 +1,5 @@
 // 确保 base64 字符串格式正确
-export function base64Util(base64: string): string {
+export function addImagePrefixToBase64(base64: string): string {
   // 如果已经是 data:image 格式，直接返回
   if (base64.startsWith('data:image')) {
     return base64

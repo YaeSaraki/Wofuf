@@ -26,8 +26,8 @@ class GetPlayerYesterdayOnlineUseCase(private val playerRepository: PlayerReposi
         val players = playerRepository.findYesterdayOnline(yesterdayInstant, todayInstant)
 
         // cache players
-        cache.put( GetPlayerYesterdayOnlineDto(players.map { it.props.name }) )
+        cache.put( GetPlayerYesterdayOnlineDto(players.map { it.playerName }) )
 
-        return Result.success( GetPlayerYesterdayOnlineDto(players.map { it.props.name }) )
+        return Result.success( GetPlayerYesterdayOnlineDto(players.map { it.playerName }) )
     }
 }

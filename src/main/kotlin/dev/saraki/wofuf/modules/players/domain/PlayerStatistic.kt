@@ -1,24 +1,51 @@
 package dev.saraki.wofuf.modules.players.domain
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
+import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.domain.ValueObject
 
-class PlayerStatistic(
-    val category: String,
+data class PlayerStatisticProps(
     val key: String,
+    val category: String,
     val value: Long
-): ValueObject<PlayerStatistic>() {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as PlayerStatistic
-        return category == other.category && key == other.key && value == other.value
+)
+
+class PlayerStatistic private constructor(
+    props: PlayerStatisticProps
+): ValueObject<PlayerStatisticProps>(props) {
+
+    val key: String
+        get() = props.key
+
+    val category: String
+        get() = props.category
+
+    val value: Long
+        get() = props.value
+
+    @JsonValue
+    fun asProps(): PlayerStatisticProps {
+        return props
     }
 
-    override fun hashCode(): Int {
-        return category.hashCode() * 31 + key.hashCode() * 31 + value.hashCode() * 31
-    }
+    companion object {
+        fun create(props: PlayerStatisticProps): Result<PlayerStatistic> {
+            val guardResult = Guard.againstNullOrUndefined(props.key, "PlayerStatistic.key")
+            if (guardResult.isFailure) {
+                return Result.failure(guardResult.exceptionOrThrow())
+            }
+            return Result.success(PlayerStatistic(props))
+        }
 
-    override fun toString(): String {
-        return "PlayerStatistic(category='$category', key='$key', value=$value)"
+        @JsonCreator
+        fun fromJson(
+            @JsonProperty("key") key: String,
+            @JsonProperty("category") category: String,
+            @JsonProperty("value") value: Long
+        ): PlayerStatistic {
+            return PlayerStatistic(PlayerStatisticProps(key, category, value))
+        }
     }
 }

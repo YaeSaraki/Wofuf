@@ -35,12 +35,12 @@ class PlayerRepositoryImpl(
 
     override fun save(player: Player): Player {
         val entity = PlayerEntity(
-            uuid = player.id.value.id,
-            name = player.props.name,
-            firstLogin = player.props.firstLogin,
-            lastLogin = player.props.lastLogin,
-            totalPlaytime = player.props.totalPlaytimeSeconds,
-            updateTime = player.props.updateTime,
+            uuid = player.playerId.stringValue,
+            name = player.playerName,
+            firstLogin = player.firstLogin,
+            lastLogin = player.lastLogin,
+            totalPlaytime = player.totalPlaytimeSeconds,
+            updateTime = player.updateTime,
             statisticsJson = PlayerJsonMapper.statisticsToJson(player.statistics),
             advancementsJson = PlayerJsonMapper.advancementsToJson(player.advancements),
             playerSkin = PlayerSkinMapper.toEntity(player.playerSkin)

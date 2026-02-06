@@ -8,38 +8,30 @@ package dev.saraki.wofuf.modules.users.useCases.createUser
  */
 
 import dev.saraki.wofuf.modules.users.domain.*
-import dev.saraki.wofuf.modules.users.dtos.UserDto
 import dev.saraki.wofuf.modules.users.mappers.UserMap
 import dev.saraki.wofuf.modules.users.infra.repos.IUserRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Service
 
 @Service
 class CreateUserUseCase(private val userRepo: IUserRepo) : UseCase<CreateUserDto, User> {
     override fun execute(request: CreateUserDto): Result<User> {
-        val idOrError = UserId.create()
         val emailOrError = UserEmail.create(request.email)
         val usernameOrError = UserName.create(request.username)
         val passwordOrError = UserPassword.create(request.password)
 
-        val dtoResult = Result.combine(idOrError, emailOrError, usernameOrError, passwordOrError)
+        val dtoResult = Result.combine(emailOrError, usernameOrError, passwordOrError)
 
         if (dtoResult.isFailure) {
             return Result.failure(dtoResult.exceptionOrThrow())
         }
 
         // 检查邮箱和用户名是否已存在
-        val id = idOrError.getOrThrow()
         val email = emailOrError.getOrThrow()
         val username = usernameOrError.getOrThrow()
         val password = passwordOrError.getOrThrow()
-
-        // 检查id是否已存在
-        val userById = userRepo.findById(id.value.id).isPresent
-        if (userById) {
-            return CreateUserErrors.IdAlreadyExistsError(id.value.id)
-        }
 
         // 检查邮箱是否已存在
         val userAlreadyExists = userRepo.findByEmail(email.value).isPresent
@@ -64,7 +56,7 @@ class CreateUserUseCase(private val userRepo: IUserRepo) : UseCase<CreateUserDto
                 isDeleted = false,
                 lastLogin = null,
             ),
-            id
+            id = UniqueEntityId()
         )
         if (userResult.isFailure) {
             return Result.failure(userResult.exceptionOrThrow())

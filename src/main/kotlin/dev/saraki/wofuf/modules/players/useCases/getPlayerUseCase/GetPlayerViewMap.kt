@@ -12,12 +12,12 @@ abstract class GetPlayerViewMap {
     companion object {
         fun from(player: Player): GetPlayerView =
             GetPlayerView(
-                id = player.id.value.id,
-                name = player.props.name,
-                firstLogin = player.props.firstLogin,
-                lastLogin = player.props.lastLogin,
-                totalPlaytimeSeconds = player.props.totalPlaytimeSeconds,
-                updateTime = player.props.updateTime,
+                id = player.playerId.stringValue,
+                name = player.playerName,
+                firstLogin = player.firstLogin,
+                lastLogin = player.lastLogin,
+                totalPlaytimeSeconds = player.totalPlaytimeSeconds,
+                updateTime = player.updateTime,
             )
     }
 }

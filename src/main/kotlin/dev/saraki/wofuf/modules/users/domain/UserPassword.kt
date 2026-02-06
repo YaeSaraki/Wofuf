@@ -15,7 +15,11 @@ import java.security.MessageDigest
 import java.util.Base64
 
 
-class UserPassword(private val value: String) : ValueObject<UserPassword>() {
+data class UserPasswordProps(val value: String)
+
+class UserPassword private constructor(props: UserPasswordProps) : ValueObject<UserPasswordProps>(props) {
+    val value: String get() = props.value
+
     companion object {
         private val digest = MessageDigest.getInstance("SHA-256")
 
@@ -31,7 +35,7 @@ class UserPassword(private val value: String) : ValueObject<UserPassword>() {
             }
 
             val hashedPassword = hashPassword(password)
-            return Result.success(UserPassword(hashedPassword))
+            return Result.success(UserPassword(UserPasswordProps(hashedPassword)))
         }
 
         private fun hashPassword(password: String): String {
@@ -45,15 +49,5 @@ class UserPassword(private val value: String) : ValueObject<UserPassword>() {
     }
 
     fun getHashedValue(): String = value
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as UserPassword
-        return value == other.value
-    }
-
-    override fun hashCode(): Int = value.hashCode()
-    override fun toString(): String = value
 }
 

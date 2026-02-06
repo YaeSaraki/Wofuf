@@ -14,7 +14,7 @@ import java.time.LocalDateTime
 
 class UserCreated(
     val user: User,
-    override val dataTimeOccurred: LocalDateTime,
+    override val dataTimeOccurred: LocalDateTime = LocalDateTime.now(),
     private val aggregateId: UniqueEntityId = UniqueEntityId(),
 ) : IDomainEvent {
     override fun getAggregateId(): UniqueEntityId {

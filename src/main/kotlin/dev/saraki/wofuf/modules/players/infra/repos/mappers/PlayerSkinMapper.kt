@@ -12,11 +12,11 @@ import dev.saraki.wofuf.modules.players.infra.repos.entities.PlayerSkinEntity
 class PlayerSkinMapper {
     companion object {
         fun toDomain(entity: PlayerSkinEntity?): PlayerSkin =
-            PlayerSkin(
+            PlayerSkin.create(
                 type = entity?.type ?: "",
                 skin = entity?.skin ?: "",
                 cape = entity?.cape ?: ""
-            )
+            ).getOrThrow()
         fun toEntity(skin: PlayerSkin?): PlayerSkinEntity {
             return PlayerSkinEntity(
                 type = skin?.type ?: "",

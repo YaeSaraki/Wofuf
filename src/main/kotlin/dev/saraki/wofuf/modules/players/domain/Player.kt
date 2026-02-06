@@ -2,6 +2,8 @@ package dev.saraki.wofuf.modules.players.domain
 
 import dev.saraki.wofuf.shared.domain.AggregateRoot
 import dev.saraki.wofuf.shared.core.Result
+import dev.saraki.wofuf.shared.core.Guard
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 
 /**
  *   @author YaeSaraki
@@ -9,48 +11,79 @@ import dev.saraki.wofuf.shared.core.Result
  *   @date 2026/1/19 15:42
  *   @description:
  */
-data class Player(
-    val id : PlayerId,
-    val props: PlayerProps,
+data class PlayerProps(
+    val name: String,
+    val firstLogin: Long,
+    val lastLogin: Long,
+    val totalPlaytimeSeconds: Long,
+    val updateTime: Long,
     val statistics: Map<String, PlayerStatistic>,
     val advancements: Map<String, PlayerAdvancement>,
     val playerSkin: PlayerSkin
-): AggregateRoot<Player>() {
-    companion object {
-        fun create(id: PlayerId, props: PlayerProps, statistics: Map<String, PlayerStatistic>, advancements: Map<String, PlayerAdvancement>, playerSkin: PlayerSkin) : Result<Player> = Result.success(
-            Player(
-                id = id,
-                props = props,
-                statistics = statistics,
-                advancements = advancements,
-                playerSkin = playerSkin
-            )
-        )
+)
+
+class Player private constructor(
+    props: PlayerProps,
+    id: UniqueEntityId? = null,
+): AggregateRoot<PlayerProps>(props, id) {
+    val playerId: PlayerId
+        get() = PlayerId.create(_id).getOrThrow()
+
+    val playerName: String
+        get() = props.name
+
+    val firstLogin: Long
+        get() = props.firstLogin
+
+    val lastLogin: Long
+        get() = props.lastLogin
+
+    val totalPlaytimeSeconds: Long
+        get() = props.totalPlaytimeSeconds
+
+    val updateTime: Long
+        get() = props.updateTime
+
+    val advancements: Map<String, PlayerAdvancement>
+        get() = props.advancements
+
+    val statistics: Map<String, PlayerStatistic>
+        get() = props.statistics
+
+    val playerSkin: PlayerSkin
+        get() = props.playerSkin
+
+    fun updateProps(props: PlayerProps) : Result<Player> {
+        return create(props, id)
     }
 
-    fun update(props: PlayerProps, statistics: Map<String, PlayerStatistic>, advancements: Map<String, PlayerAdvancement>, skin: PlayerSkin) : Result<Player> = Result.success(
-        copy(
-            props = props,
-            statistics = statistics,
-            advancements = advancements,
-            playerSkin = skin
-        )
-    )
+    companion object {
+        fun create(props: PlayerProps, id: UniqueEntityId? = null) : Result<Player> {
+            val guardResult = Guard.againstNullOrUndefinedBulk(
+                listOf(
+                    Guard.GuardArgument(props.name, "Player name cannot be null or blank")
+                )
+            )
+            if (guardResult.isFailure) {
+                return Result.failure(guardResult.exceptionOrThrow())
+            }
 
-    fun updateProps(props: PlayerProps) : Result<Player> = Result.success(
-        copy(props = props)
-    )
+            val defaultProps = props.copy(
+                firstLogin = props.firstLogin,
+                lastLogin = props.lastLogin,
+                totalPlaytimeSeconds = props.totalPlaytimeSeconds,
+                updateTime = props.updateTime,
+                statistics = props.statistics,
+                advancements = props.advancements,
+                playerSkin = props.playerSkin,
+            )
 
-    fun updatePlayerSkin(skin: PlayerSkin) : Result<Player> = Result.success(
-        copy(playerSkin = skin)
-    )
+            val player = Player(defaultProps, id)
 
-    fun updateStatistics(statistics: Map<String, PlayerStatistic>) : Result<Player> = Result.success(
-        copy(statistics = statistics)
-    )
+            return Result.success(player)
+        }
 
-    fun updateAdvancements(advancements: Map<String, PlayerAdvancement>) : Result<Player> = Result.success(
-        copy(advancements = advancements)
-    )
+    }
+
 
 }

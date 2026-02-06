@@ -6,6 +6,7 @@ import dev.saraki.wofuf.modules.players.domain.PlayerProps
 import dev.saraki.wofuf.modules.players.domain.repos.PlayerRepository
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -21,17 +22,17 @@ class CollectPlayerDataUseCase(
         // 如果玩家不存在，则创建新玩家
         if (player == null) {
             val newPlayerOrError = Player.create(
-                id = PlayerId.create(request.uuid).getOrThrow(),
                 props = PlayerProps(
                     name = request.name,
                     firstLogin = request.firstLogin,
                     lastLogin = request.lastLogin,
                     totalPlaytimeSeconds = request.totalPlaytimeSeconds,
-                    updateTime = System.currentTimeMillis()
+                    updateTime = System.currentTimeMillis(),
+                    statistics = request.statistics,
+                    advancements = request.advancements,
+                    playerSkin = request.playerSkin
                 ),
-                statistics = request.statistics,
-                advancements = request.advancements,
-                playerSkin = request.playerSkin
+                id = UniqueEntityId(request.uuid)
             )
             if (newPlayerOrError.isFailure) {
                 return CollectPlayerErrors.CreatePlayerError(request.uuid)
@@ -41,32 +42,24 @@ class CollectPlayerDataUseCase(
             return Result.success(newPlayer)
         }
 
-        // 更新玩家统计数据和进度数据
-        val updatedPlayerPropsOrError = PlayerProps.create(
+        val playerProps = PlayerProps(
             request.name,
             request.firstLogin,
             request.lastLogin,
             request.totalPlaytimeSeconds,
-            System.currentTimeMillis()
-        )
-        if (updatedPlayerPropsOrError.isFailure) {
-            return CollectPlayerErrors.CreatePlayerPropsError(request.uuid)
-        }
-        val updatedPlayerProps = updatedPlayerPropsOrError.getOrThrow()
-
-        // 更新玩家数据
-        val updatePlayerOrError = player.update(
-            updatedPlayerProps,
+            System.currentTimeMillis(),
             request.statistics,
             request.advancements,
             request.playerSkin
         )
+
+        // 更新玩家数据
+        val updatePlayerOrError = player.updateProps(playerProps)
+
         if (updatePlayerOrError.isFailure) {
             return CollectPlayerErrors.UpdatePlayerError(request.uuid)
         }
         val updatedPlayer = updatePlayerOrError.getOrThrow()
-
-        // 保存
         playerRepo.save(updatedPlayer)
         return Result.success(updatedPlayer)
     }

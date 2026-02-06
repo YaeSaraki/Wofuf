@@ -34,7 +34,7 @@ data class PlayerEntity(
     var advancementsJson: String? = null,
 
     @Column(name = "statistics_json", columnDefinition = "LONGTEXT")
-    val statisticsJson: String? = null,
+    var statisticsJson: String? = null,
 
     @Embedded
     var playerSkin: PlayerSkinEntity? = null,

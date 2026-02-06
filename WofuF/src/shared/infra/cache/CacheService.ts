@@ -1,5 +1,3 @@
-// src/infra/cache/CacheService.ts
-
 export type CacheKey = string
 
 /**
@@ -11,6 +9,89 @@ export class CacheService {
 
   // 按模块存储Map：Map<模块名, Map<key, value>>
   private moduleCaches = new Map<string, Map<CacheKey, unknown>>()
+
+  // 模块缓存上限（key: 模块名, value: 最大缓存数量）
+  private moduleMaxSizes = new Map<string, number>()
+
+  // 全局默认缓存上限（未配置单独上限的模块，使用此值）
+  private globalDefaultMaxSize = 300
+
+  // 存储结构：Map<模块名, Map<缓存key, 最后访问时间戳>>
+  private moduleAccessTime = new Map<string, Map<CacheKey, number>>()
+
+  /**
+   * 设置单个模块的缓存上限（不强制业务调用，使用全局默认也可）
+   * @param module 功能模块名称
+   * @param maxSize 最大缓存数量
+   */
+  setModuleMaxSize(module: string, maxSize: number): void {
+    if (maxSize > 0) {
+      this.moduleMaxSizes.set(module, maxSize)
+      // 设置上限后，立即触发一次清理（防止当前模块已超限）
+      this.cleanModuleIfOverLimit(module)
+    }
+  }
+
+  /**
+   * 设置全局默认缓存上限
+   * @param defaultMaxSize 全局默认最大缓存数量
+   */
+  setGlobalDefaultMaxSize(defaultMaxSize: number): void {
+    if (defaultMaxSize > 0) {
+      this.globalDefaultMaxSize = defaultMaxSize
+      // 全局上限变更后，清理所有超限模块（可选，根据业务需求决定）
+      this.getAllModules().forEach(module => this.cleanModuleIfOverLimit(module))
+    }
+  }
+
+  /**
+   * 获取模块的缓存上
+   */
+  private getModuleMaxSize(module: string): number {
+    return this.moduleMaxSizes.get(module) || this.globalDefaultMaxSize
+  }
+
+  /**
+   * 更新缓存的最后访问时间（所有读取/写入操作都要更新）
+   */
+  private updateAccessTime(module: string, key: CacheKey): void {
+    let accessTimeMap = this.moduleAccessTime.get(module)
+    if (!accessTimeMap) {
+      accessTimeMap = new Map<CacheKey, number>()
+      this.moduleAccessTime.set(module, accessTimeMap)
+    }
+    accessTimeMap.set(key, Date.now())
+  }
+
+  /**
+   * 模块缓存超限清理（LRU 策略）
+   */
+  private cleanModuleIfOverLimit(module: string): void {
+    const moduleCache = this.moduleCaches.get(module)
+    const accessTimeMap = this.moduleAccessTime.get(module)
+    if (!moduleCache || moduleCache.size === 0) return
+
+    const maxSize = this.getModuleMaxSize(module)
+    const currentSize = moduleCache.size
+
+    if (currentSize <= maxSize) return
+
+    const needDeleteCount = currentSize - maxSize
+    if (needDeleteCount <= 0) return
+
+    const sortedKeys = Array.from(moduleCache.keys())
+      .map(key => ({
+        key,
+        time: accessTimeMap?.get(key) || 0 // 无访问时间的视为最旧
+      }))
+      .sort((a, b) => a.time - b.time) // 旧的在前，新的在后
+
+    sortedKeys.slice(0, needDeleteCount).forEach(item => {
+      moduleCache.delete(item.key)
+      accessTimeMap?.delete(item.key)
+    })
+  }
+
 
   /**
    * 设置缓存值
@@ -25,6 +106,8 @@ export class CacheService {
       this.moduleCaches.set(module, moduleCache)
     }
     moduleCache.set(key, value)
+    this.updateAccessTime(module, key)
+    this.cleanModuleIfOverLimit(module)
   }
 
   /**
@@ -36,6 +119,9 @@ export class CacheService {
   get<V>(module: string, key: CacheKey): V | undefined {
     const moduleCache = this.moduleCaches.get(module)
     if (!moduleCache) return undefined
+    // 步骤1：更新访问时间（新增，读取也算访问）
+    this.updateAccessTime(module, key)
+    // 步骤2：返回缓存值（原有逻辑不变）
     return moduleCache.get(key) as V | undefined
   }
 
@@ -46,6 +132,7 @@ export class CacheService {
    */
   has(module: string, key: CacheKey): boolean {
     const moduleCache = this.moduleCaches.get(module)
+    // 可选：检查存在性是否算「访问」，根据业务需求决定（这里不更新，避免无意义的访问记录）
     return moduleCache ? moduleCache.has(key) : false
   }
 
@@ -56,17 +143,19 @@ export class CacheService {
    */
   delete(module: string, key: CacheKey): boolean {
     const moduleCache = this.moduleCaches.get(module)
+    const accessTimeMap = this.moduleAccessTime.get(module)
+    // 步骤1：删除访问时间记录（新增）
+    accessTimeMap?.delete(key)
+    // 步骤2：删除缓存（原有逻辑不变）
     return moduleCache ? moduleCache.delete(key) : false
   }
 
-  // ============ 模块级别操作 ============
 
   /**
    * 获取整个模块的Map
    */
   getModule<V>(module: string): Map<CacheKey, V> | undefined {
-    const moduleCache = this.moduleCaches.get(module)
-    return moduleCache as Map<CacheKey, V> | undefined
+    return this.moduleCaches.get(module) as Map<CacheKey, V> | undefined
   }
 
   /**
@@ -86,6 +175,10 @@ export class CacheService {
    */
   clearModule(module: string): boolean {
     const moduleCache = this.moduleCaches.get(module)
+    const accessTimeMap = this.moduleAccessTime.get(module)
+    // 步骤1：清空访问时间记录（新增）
+    accessTimeMap?.clear()
+    // 步骤2：清空缓存（原有逻辑不变）
     if (moduleCache) {
       moduleCache.clear()
       return true
@@ -97,19 +190,27 @@ export class CacheService {
    * 删除整个模块
    */
   deleteModule(module: string): boolean {
+    // 步骤1：删除访问时间记录（新增）
+    this.moduleAccessTime.delete(module)
+    this.moduleMaxSizes.delete(module) // 同时删除模块单独上限配置
+    // 步骤2：删除缓存（原有逻辑不变）
     return this.clearModule(module) && this.moduleCaches.delete(module)
   }
 
-  // ============ 批量操作 ============
 
   /**
    * 批量设置缓存
    */
   setBatch<V>(module: string, items: Array<[CacheKey, V]>): void {
     const moduleCache = this.getOrCreateModule<V>(module)
+    // 步骤1：批量设置缓存（原有逻辑不变）
     items.forEach(([key, value]) => {
       moduleCache.set(key, value)
+      // 步骤2：更新每条数据的访问时间（新增）
+      this.updateAccessTime(module, key)
     })
+    // 步骤3：检查并清理超限数据（新增，对外无感知）
+    this.cleanModuleIfOverLimit(module)
   }
 
   /**
@@ -121,6 +222,9 @@ export class CacheService {
 
     if (moduleCache) {
       keys.forEach(key => {
+        // 步骤1：更新访问时间（新增）
+        this.updateAccessTime(module, key)
+        // 步骤2：设置返回结果（原有逻辑不变）
         result.set(key, moduleCache.get(key) as V | undefined)
       })
     } else {
@@ -132,12 +236,14 @@ export class CacheService {
     return result
   }
 
-  // ============ 全局操作 ============
 
   /**
    * 清空所有模块的所有缓存
    */
   clearAll(): void {
+    // 步骤1：清空所有访问时间记录（新增）
+    this.moduleAccessTime.clear()
+    // 步骤2：清空所有缓存（原有逻辑不变）
     this.moduleCaches.forEach(moduleCache => {
       moduleCache.clear()
     })
@@ -147,11 +253,15 @@ export class CacheService {
    * 删除所有模块
    */
   deleteAll(): void {
+    // 步骤1：清空所有辅助数据（新增）
+    this.moduleAccessTime.clear()
+    this.moduleMaxSizes.clear()
+    // 步骤2：删除所有缓存（原有逻辑不变）
     this.clearAll()
     this.moduleCaches.clear()
   }
 
-  // ============ 查询和统计 ============
+  // ============ 查询和统计（原有逻辑不变，无需改动） ============
 
   /**
    * 获取所有模块名称
@@ -221,7 +331,7 @@ export class CacheService {
     return Array.from(moduleCache.entries()) as Array<[CacheKey, V]>
   }
 
-  // ============ 搜索功能 ============
+  // ============ 搜索功能（原有逻辑不变，无需改动） ============
 
   /**
    * 搜索模块中符合条件的缓存
