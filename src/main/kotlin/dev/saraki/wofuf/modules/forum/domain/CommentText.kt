@@ -16,7 +16,7 @@ data class CommentTextProps(
 
 class CommentText private constructor(
     props: CommentTextProps
-): ValueObject<CommentTextProps>(props) {
+) : ValueObject<CommentTextProps>(props) {
 
     val value: String
         get() = props.value

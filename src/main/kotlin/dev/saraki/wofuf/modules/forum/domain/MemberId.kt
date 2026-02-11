@@ -17,9 +17,13 @@ data class MemberIdProps(
 
 class MemberId private constructor(
     props: MemberIdProps
-): ValueObject<MemberIdProps>(props) {
+) : ValueObject<MemberIdProps>(props) {
     val value: UniqueEntityId
         get() = props.value
+
+    val stringValue: String
+        get() = value.uuid.toString()
+
     companion object {
         fun create(value: UniqueEntityId): Result<MemberId> {
             val guardResult = Guard.againstNullOrUndefined(value, "MemberId")

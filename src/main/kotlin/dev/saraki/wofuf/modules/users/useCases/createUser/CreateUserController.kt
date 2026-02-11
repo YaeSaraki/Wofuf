@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/users/create")
-class CreateUserController: BaseController() {
+class CreateUserController : BaseController() {
     @Autowired
     private lateinit var createUserUseCase: CreateUserUseCase
 
@@ -26,7 +26,7 @@ class CreateUserController: BaseController() {
     fun createUser(@RequestBody request: CreateUserDto): ApiResponse<String> {
         val result = createUserUseCase.execute(request)
         if (result.isFailure) {
-            return ApiResponse.error(result.map{ UserMap.from(it) }.exceptionOrThrow())
+            return ApiResponse.error(result.map { UserMap.from(it) }.exceptionOrThrow())
         }
         return ApiResponse.success("User created")
     }

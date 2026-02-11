@@ -1,6 +1,6 @@
 package dev.saraki.wofuf.shared.domain
 
-import java.util.UUID
+import java.util.*
 
 /**
  *   @author YaeSaraki

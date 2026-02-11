@@ -1,9 +1,11 @@
 package dev.saraki.wofuf.modules.players.useCases.getPlayerStatisticsUseCase
 
 import dev.saraki.wofuf.modules.players.domain.Player
-import dev.saraki.wofuf.modules.players.domain.repos.PlayerRepository
+import dev.saraki.wofuf.modules.players.domain.PlayerId
+import dev.saraki.wofuf.modules.players.infra.repos.PlayerRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Service
 
 /**
@@ -13,9 +15,17 @@ import org.springframework.stereotype.Service
  *   @description:
  */
 @Service
-class GetPlayerStatisticsUseCase(private val playerRepository: PlayerRepository) : UseCase<GetPlayerStatisticsCommand, Player> {
+class GetPlayerStatisticsUseCase(private val playerRepository: PlayerRepo) :
+    UseCase<GetPlayerStatisticsCommand, Player> {
     override fun execute(request: GetPlayerStatisticsCommand): Result<Player> {
-        val player = playerRepository.findByUuid(request.playerUuid)
+
+        val playerIdOrError = PlayerId.create(UniqueEntityId(request.playerUuid))
+        if (playerIdOrError.isFailure) {
+            return Result.failure(playerIdOrError.exceptionOrThrow())
+        }
+        val playerId = playerIdOrError.getOrThrow()
+
+        val player = playerRepository.findByPlayerId(playerId)
             ?: return GetPlayerStatisticsErrors.GetPlayerError()
         return Result.success(player)
     }

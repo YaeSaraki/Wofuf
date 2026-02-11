@@ -1,8 +1,6 @@
 package dev.saraki.wofuf.modules.players.domain
 
-import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.domain.ValueObject
-import kotlin.io.encoding.Base64
 
 /**
  *   @author YaeSaraki
@@ -15,9 +13,10 @@ data class PlayerSkinProps(
     val skin: String,
     val cape: String,
 )
+
 class PlayerSkin private constructor(
     props: PlayerSkinProps
-): ValueObject<PlayerSkinProps>(props) {
+) : ValueObject<PlayerSkinProps>(props) {
 
     val type: String
         get() = props.type
@@ -34,13 +33,15 @@ class PlayerSkin private constructor(
             skin: String,
             cape: String,
         ): Result<PlayerSkin> {
-            return Result.success(PlayerSkin(
-                PlayerSkinProps(
-                    type = type,
-                    skin = skin,
-                    cape = cape,
+            return Result.success(
+                PlayerSkin(
+                    PlayerSkinProps(
+                        type = type,
+                        skin = skin,
+                        cape = cape,
+                    )
                 )
-            ))
+            )
         }
     }
 }

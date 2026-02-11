@@ -15,30 +15,30 @@ data class CommentProps(
     val memberId: MemberId,
     val text: CommentText,
     val postId: PostId,
-    val parentCommentId: CommentId? = null,
-    var points: Int? = null, // 可变：需支持updateScore更新
-    var votes: CommentVotes  // 可变：需支持add/removeVote，非空（create时填充默认值）
+    val parentCommentId: CommentId?,
+    var points: Int?,
+    var votes: CommentVotes
 )
 
 class Comment private constructor(
     props: CommentProps,
-    id: UniqueEntityId? = null
+    id: UniqueEntityId?
 ) : Entity<CommentProps>(props, id) {
 
     val commentId: CommentId
         get() = CommentId.create(_id).getOrThrow()
-
-    val postId: PostId
-        get() = props.postId
-
-    val parentCommentId: CommentId?
-        get() = props.parentCommentId
 
     val memberId: MemberId
         get() = props.memberId
 
     val text: CommentText
         get() = props.text
+
+    val postId: PostId
+        get() = props.postId
+
+    val parentCommentId: CommentId?
+        get() = props.parentCommentId
 
     val points: Int
         get() {
@@ -85,9 +85,6 @@ class Comment private constructor(
         props.points = totalNumUpvotes - totalNumDownvotes
     }
 
-    /**
-     * 私有构造+工厂方法，保证实体创建的合法性校验
-     */
     companion object {
         fun create(props: CommentProps, id: UniqueEntityId? = null): Result<Comment> {
             val nullGuard = Guard.againstNullOrUndefinedBulk(
@@ -115,7 +112,7 @@ class Comment private constructor(
             val comment = Comment(defaultProps, id)
 
             if (isNewComment) {
-                val upvote = CommentVote.createUpvote( comment.commentId, props.memberId).getOrThrow()
+                val upvote = CommentVote.createUpvote(comment.commentId, props.memberId).getOrThrow()
                 comment.addVote(upvote)
             }
 

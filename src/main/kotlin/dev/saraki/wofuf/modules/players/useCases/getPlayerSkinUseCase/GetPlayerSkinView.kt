@@ -9,18 +9,18 @@ import dev.saraki.wofuf.modules.players.domain.PlayerSkin
  *   @date 2026/2/2 17:39
  *   @description:
  */
-data class GetPlayerSkinView (
+data class GetPlayerSkinView(
     val type: String,
     val skin: String,
     val cape: String,
 ) {
-        companion object {
-            fun from(playerSkin: PlayerSkin): GetPlayerSkinView {
-                return GetPlayerSkinView(
-                    type = playerSkin.type,
-                    skin = playerSkin.skin,
-                    cape = playerSkin.cape
-                )
-            }
+    companion object {
+        fun from(playerSkin: PlayerSkin): GetPlayerSkinView {
+            return GetPlayerSkinView(
+                type = playerSkin.type,
+                skin = playerSkin.skin,
+                cape = playerSkin.cape
+            )
         }
+    }
 }

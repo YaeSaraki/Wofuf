@@ -1,10 +1,9 @@
 package dev.saraki.wofuf.modules.players.domain
 
 import dev.saraki.wofuf.shared.core.Guard
+import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import dev.saraki.wofuf.shared.domain.ValueObject
-import dev.saraki.wofuf.shared.core.Result
-import java.util.UUID
 
 /**
  *   @author YaeSaraki

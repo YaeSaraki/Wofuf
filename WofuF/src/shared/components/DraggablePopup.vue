@@ -250,7 +250,7 @@ defineExpose({
   <!-- 通用可拖拽弹窗容器 -->
   <div
     ref="popupRef"
-    class="floating-menu fixed z-50 shadow-xl rounded-2xl border border-zinc-400 dark:border-zinc-600 overflow-hidden flex flex-col select-none"
+    class="floating-menu fixed z-50 shadow-xl rounded-2xl border border-zinc-400 dark:border-zinc-600 overflow-y-auto no-scrollbar flex flex-col"
     :style="popupStyle"
     @click.stop
   >
@@ -258,5 +258,4 @@ defineExpose({
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

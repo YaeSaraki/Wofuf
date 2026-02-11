@@ -11,6 +11,15 @@ import dev.saraki.wofuf.shared.core.UseCaseError
  *   @description:
  */
 class GetPlayerErrors {
+
+    // UserNameOrUuid empty
+    class UserNameOrUuidEmptyError() : Result.Failure<Player>(
+        exception = UseCaseError(
+            code = " UserName_Or_Uuid_Empty_Error",
+            message = "Failed to get player, username or uuid is empty"
+        )
+    )
+
     // Failed to get player
     class GetPlayerError() : Result.Failure<Player>(
         exception = UseCaseError(

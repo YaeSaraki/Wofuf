@@ -1,7 +1,6 @@
 package dev.saraki.wofuf.shared.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonUnwrapped
 
 /**
  *   @author YaeSaraki

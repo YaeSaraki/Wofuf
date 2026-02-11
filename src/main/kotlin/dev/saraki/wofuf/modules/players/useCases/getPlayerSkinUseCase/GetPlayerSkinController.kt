@@ -1,16 +1,10 @@
 package dev.saraki.wofuf.modules.players.useCases.getPlayerSkinUseCase
 
-import dev.saraki.wofuf.modules.players.useCases.getPlayerRandomUseCase.GetPlayerRandomUseCase
-import dev.saraki.wofuf.modules.players.useCases.getPlayerUseCase.GetPlayerView
-import dev.saraki.wofuf.modules.players.useCases.getPlayerUseCase.GetPlayerViewMap
-import dev.saraki.wofuf.modules.players.useCases.getPlayerUseCase.GetPlayerViewMap.Companion.from
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
-import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 /**
@@ -22,15 +16,15 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/players/skins")
 class GetPlayerSkinController {
-        @Autowired
-        private lateinit var getPlayerSkinUseCase: GetPlayerSkinUseCase
+    @Autowired
+    private lateinit var getPlayerSkinUseCase: GetPlayerSkinUseCase
 
-        @GetMapping("/{playerUuid}")
-        fun getPlayerSkin(@PathVariable playerUuid: String): ApiResponse<GetPlayerSkinView> {
-            val result = getPlayerSkinUseCase.execute(GetPlayerSkinCommand(playerUuid))
-            if (result.isFailure) {
-                return ApiResponse.error(result.exceptionOrThrow())
-            }
-            return ApiResponse.success(result.getOrThrow())
+    @GetMapping("/{playerUuid}")
+    fun getPlayerSkin(@PathVariable playerUuid: String): ApiResponse<GetPlayerSkinView> {
+        val result = getPlayerSkinUseCase.execute(GetPlayerSkinCommand(playerUuid))
+        if (result.isFailure) {
+            return ApiResponse.error(result.exceptionOrThrow())
         }
+        return ApiResponse.success(result.getOrThrow())
+    }
 }

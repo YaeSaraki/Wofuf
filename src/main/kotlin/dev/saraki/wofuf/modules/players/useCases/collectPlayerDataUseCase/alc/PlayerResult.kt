@@ -1,6 +1,6 @@
 package dev.saraki.wofuf.modules.players.useCases.collectPlayerDataUseCase.alc
 
-import java.util.UUID
+import java.util.*
 
 data class PlayerResult(
     val uuid: UUID,

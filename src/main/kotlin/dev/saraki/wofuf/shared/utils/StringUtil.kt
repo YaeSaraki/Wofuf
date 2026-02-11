@@ -8,7 +8,7 @@ package dev.saraki.wofuf.shared.utils
  */
 object StringUtil {
     // 工具方法：提取为顶层函数，复用性更高
-   fun String.toListFromString(separator: String = ","): List<String> {
+    fun String.toListFromString(separator: String = ","): List<String> {
         return if (this.isBlank()) {
             emptyList()
         } else {
@@ -19,7 +19,7 @@ object StringUtil {
         }
     }
 
-   fun List<String>.toStringForStore(separator: String = ","): String {
+    fun List<String>.toStringForStore(separator: String = ","): String {
         return this.joinToString(separator)
     }
 }

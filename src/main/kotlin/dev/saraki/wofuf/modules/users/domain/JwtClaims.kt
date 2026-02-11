@@ -18,11 +18,12 @@ data class JwtClaimsProps(
 
 class JwtClaims private constructor(
     props: JwtClaimsProps
-): ValueObject<JwtClaimsProps>(props) {
+) : ValueObject<JwtClaimsProps>(props) {
     val userId: String get() = props.userId
     val username: String get() = props.username
     val jti: String get() = props.jti
     val tokenVersion: Long get() = props.tokenVersion
+
     companion object {
         fun create(props: JwtClaimsProps): Result<JwtClaims> {
             return Result.success(JwtClaims(props))

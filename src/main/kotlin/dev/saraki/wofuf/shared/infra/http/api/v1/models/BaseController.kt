@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 @RequestMapping("/api/v1")
-public class BaseController {
+class BaseController {
 
     @GetMapping("/")
-    public fun root(): ApiResponse<String> {
-        return ApiResponse.success("Yo! QWQ");
+    fun root(): ApiResponse<String> {
+        return ApiResponse.success("Yo! QWQ")
     }
 }

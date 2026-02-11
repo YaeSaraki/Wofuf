@@ -8,6 +8,7 @@ package dev.saraki.wofuf.shared.domain
  */
 abstract class WatchedList<T> {
     var currentItems: MutableList<T>
+
     // 原TS的私有属性，保持名称+访问修饰符不变
     private val initial: List<T>
     private val new: MutableList<T>

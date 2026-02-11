@@ -42,7 +42,7 @@ object Guard {
     }
 
     fun againstNullOrUndefined(argument: Any?, argumentName: String): Result<String> {
-        return if (argument != null) {
+        return if (argument != null && !(argument is String && argument as String == "undefined")) {
             Result.success("")
         } else {
             Result.failure(AppError("$argumentName is null or undefined", "ARGUMENT_IS_NULL"))
@@ -63,7 +63,12 @@ object Guard {
         return if (isValid) {
             Result.success("")
         } else {
-            Result.failure(AppError("$argumentName isn't oneOf the correct types in ${validValues}. Got \"$value\".", "INVALID_ARGUMENT_VALUE"))
+            Result.failure(
+                AppError(
+                    "$argumentName isn't oneOf the correct types in ${validValues}. Got \"$value\".",
+                    "INVALID_ARGUMENT_VALUE"
+                )
+            )
         }
     }
 

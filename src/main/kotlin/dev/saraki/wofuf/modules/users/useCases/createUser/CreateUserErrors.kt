@@ -4,8 +4,8 @@ import dev.saraki.wofuf.modules.users.domain.User
 import dev.saraki.wofuf.modules.users.domain.UserEmail
 import dev.saraki.wofuf.modules.users.domain.UserName
 import dev.saraki.wofuf.modules.users.domain.UserPassword
-import dev.saraki.wofuf.shared.core.UseCaseError
 import dev.saraki.wofuf.shared.core.Result
+import dev.saraki.wofuf.shared.core.UseCaseError
 
 /**
  *   @author YaeSaraki

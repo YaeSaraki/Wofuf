@@ -8,6 +8,6 @@ import dev.saraki.wofuf.modules.players.dtos.PlayerAdvancementDto
  *   @date 2026/1/21 22:17
  *   @description:
  */
-data class GetPlayerAdvancementsView (
+data class GetPlayerAdvancementsView(
     val advancements: List<PlayerAdvancementDto>
 )

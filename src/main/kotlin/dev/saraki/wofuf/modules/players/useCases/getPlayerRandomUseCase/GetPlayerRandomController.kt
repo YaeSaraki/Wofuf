@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 @RequestMapping("/api/v1/players/random-profile")
-class GetPlayerRandomController: BaseController() {
+class GetPlayerRandomController : BaseController() {
     @Autowired
     private lateinit var getRandomPlayerUseCase: GetPlayerRandomUseCase
 

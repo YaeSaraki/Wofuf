@@ -7,15 +7,19 @@ package dev.saraki.wofuf.modules.users.useCases.logout
  *   @description:
  */
 
-import dev.saraki.wofuf.modules.users.mappers.UserMap
-import dev.saraki.wofuf.modules.users.infra.repos.IUserRepo
+import dev.saraki.wofuf.modules.users.domain.UserId
+import dev.saraki.wofuf.modules.users.infra.repos.UserRepo
 import dev.saraki.wofuf.modules.users.services.auth.IAuth
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Service
 
 @Service
-class LogoutUseCase(val userRepo: IUserRepo, val authService: IAuth) : UseCase<LogoutDto.LogoutRequest, LogoutDto.LogoutResponse> {
+class LogoutUseCase(
+    val userRepo: UserRepo,
+    val authService: IAuth
+) : UseCase<LogoutDto.LogoutRequest, LogoutDto.LogoutResponse> {
     override fun execute(request: LogoutDto.LogoutRequest): Result<LogoutDto.LogoutResponse> {
 
         // 验证访问令牌
@@ -24,13 +28,18 @@ class LogoutUseCase(val userRepo: IUserRepo, val authService: IAuth) : UseCase<L
             return LogoutErrors.InvalidTokenError()
         }
 
+        // 检测UserId是否有效
+        val userIdOrError = UserId.create(UniqueEntityId(request.id))
+        if (userIdOrError.isFailure) {
+            return Result.failure(userIdOrError.exceptionOrThrow())
+        }
+        val userId = userIdOrError.getOrThrow()
+
         // 查找用户实体
-        val userEntityOrNull = userRepo.findUserById(request.id).orElse(null)
-        if (userEntityOrNull == null) {
+        val user = userRepo.findUserByUserId(userId)
+        if (user == null) {
             return LogoutErrors.UserNotFoundError(request.id)
         }
-        val userEntity = userEntityOrNull
-        val user = UserMap.from(userEntity).toDomain()
 
         // 注销用户
         authService.logout(request.accessToken)

@@ -16,15 +16,21 @@ data class UserNameProps(val value: String)
 
 class UserName private constructor(props: UserNameProps) : ValueObject<UserNameProps>(props) {
     val value: String get() = props.value
+
     companion object {
+        val UNKNOWN: UserName
+            get() = UserName(UserNameProps("UNKNOWN"))
+
         fun create(userName: String): Result<UserName> {
             val trimmedUserName = userName.trim()
 
-            val validation = Guard.combine(listOf(
-                Guard.againstNullOrUndefined(trimmedUserName, "userName"),
-                Guard.againstAtLeast(3, trimmedUserName),
-                Guard.againstAtMost(50, trimmedUserName)
-            ))
+            val validation = Guard.combine(
+                listOf(
+                    Guard.againstNullOrUndefined(trimmedUserName, "userName"),
+                    Guard.againstAtLeast(3, trimmedUserName),
+                    Guard.againstAtMost(50, trimmedUserName)
+                )
+            )
 
             if (validation.isFailure) {
                 return Result.failure(validation.exceptionOrThrow())

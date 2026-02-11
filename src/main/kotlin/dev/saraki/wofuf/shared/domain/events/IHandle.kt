@@ -7,5 +7,5 @@ package dev.saraki.wofuf.shared.domain.events
  *   @description:
  */
 interface IHandle<T : IDomainEvent> {
-    fun setupSubscription(): Unit
+    fun setupSubscription()
 }

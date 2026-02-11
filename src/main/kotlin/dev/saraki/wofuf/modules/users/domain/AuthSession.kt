@@ -16,7 +16,7 @@ data class AuthSessionProps(
 
 class AuthSession private constructor(
     props: AuthSessionProps
-): ValueObject<AuthSessionProps>(props) {
+) : ValueObject<AuthSessionProps>(props) {
 
     val accessToken: JwtToken
         get() = props.accessToken

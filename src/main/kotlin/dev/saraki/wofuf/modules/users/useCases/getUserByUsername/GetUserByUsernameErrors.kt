@@ -7,8 +7,8 @@ package dev.saraki.wofuf.modules.users.useCases.getUserByUsername
  *   @description:
  */
 
-import dev.saraki.wofuf.shared.core.UseCaseError
 import dev.saraki.wofuf.shared.core.Result
+import dev.saraki.wofuf.shared.core.UseCaseError
 
 class GetUserByUsernameErrors {
     // 用户不存在错误

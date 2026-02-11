@@ -16,17 +16,17 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 @RequestMapping("/api/v1/players/profile")
-class GetPlayerController: BaseController() {
+class GetPlayerController : BaseController() {
     @Autowired
     private lateinit var getPlayerUseCase: GetPlayerUseCase
 
-    @GetMapping("/{playerName}")
+    @GetMapping("/{playerNameOrUuid}")
     fun getPlayerData(
-        @PathVariable playerName: String
+        @PathVariable playerNameOrUuid: String
     ): ApiResponse<GetPlayerView> {
         val result = getPlayerUseCase.execute(
             GetPlayerCommand(
-                playerName,
+                playerNameOrUuid,
             )
         ).getOrThrow()
         return ApiResponse.success(

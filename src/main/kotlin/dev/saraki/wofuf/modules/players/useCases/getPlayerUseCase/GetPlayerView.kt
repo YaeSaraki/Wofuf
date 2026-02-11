@@ -1,14 +1,12 @@
 package dev.saraki.wofuf.modules.players.useCases.getPlayerUseCase
 
-import dev.saraki.wofuf.modules.players.domain.Player
-
 /**
  *   @author YaeSaraki
  *   @email ikaraswork@iCloud.com
  *   @date 2026/1/21 22:22
  *   @description:
  */
-data class GetPlayerView (
+data class GetPlayerView(
     val id: String,
     val name: String,
     val firstLogin: Long,

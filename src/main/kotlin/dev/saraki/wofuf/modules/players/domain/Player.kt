@@ -1,8 +1,8 @@
 package dev.saraki.wofuf.modules.players.domain
 
-import dev.saraki.wofuf.shared.domain.AggregateRoot
-import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.Guard
+import dev.saraki.wofuf.shared.core.Result
+import dev.saraki.wofuf.shared.domain.AggregateRoot
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 
 /**
@@ -12,7 +12,7 @@ import dev.saraki.wofuf.shared.domain.UniqueEntityId
  *   @description:
  */
 data class PlayerProps(
-    val name: String,
+    val playerName: PlayerName,
     val firstLogin: Long,
     val lastLogin: Long,
     val totalPlaytimeSeconds: Long,
@@ -24,13 +24,13 @@ data class PlayerProps(
 
 class Player private constructor(
     props: PlayerProps,
-    id: UniqueEntityId? = null,
-): AggregateRoot<PlayerProps>(props, id) {
+    id: UniqueEntityId?,
+) : AggregateRoot<PlayerProps>(props, id) {
     val playerId: PlayerId
         get() = PlayerId.create(_id).getOrThrow()
 
-    val playerName: String
-        get() = props.name
+    val playerName: PlayerName
+        get() = props.playerName
 
     val firstLogin: Long
         get() = props.firstLogin
@@ -53,15 +53,19 @@ class Player private constructor(
     val playerSkin: PlayerSkin
         get() = props.playerSkin
 
-    fun updateProps(props: PlayerProps) : Result<Player> {
+    fun updateProps(props: PlayerProps): Result<Player> {
         return create(props, id)
     }
 
     companion object {
-        fun create(props: PlayerProps, id: UniqueEntityId? = null) : Result<Player> {
+        fun create(
+            props: PlayerProps,
+            id: UniqueEntityId?
+        ):
+                Result<Player> {
             val guardResult = Guard.againstNullOrUndefinedBulk(
                 listOf(
-                    Guard.GuardArgument(props.name, "Player name cannot be null or blank")
+                    Guard.GuardArgument(props.playerName, "Player name cannot be null or blank")
                 )
             )
             if (guardResult.isFailure) {
@@ -77,13 +81,8 @@ class Player private constructor(
                 advancements = props.advancements,
                 playerSkin = props.playerSkin,
             )
-
             val player = Player(defaultProps, id)
-
             return Result.success(player)
         }
-
     }
-
-
 }

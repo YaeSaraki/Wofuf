@@ -13,6 +13,7 @@ class GetUserByUsernameDto {
     data class GetUserRequest(
         val username: String,
     )
+
     data class GetUserResponse(
         val username: String,
         val email: String,

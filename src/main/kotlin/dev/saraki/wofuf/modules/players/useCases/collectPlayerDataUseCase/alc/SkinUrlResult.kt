@@ -1,6 +1,6 @@
 package dev.saraki.wofuf.modules.players.useCases.collectPlayerDataUseCase.alc
 
-import java.util.UUID
+import java.util.*
 
 /**
  *   @author YaeSaraki
@@ -8,7 +8,7 @@ import java.util.UUID
  *   @date 2026/2/2 16:13
  *   @description:
  */
-data class SkinUrlResult (
+data class SkinUrlResult(
     val name: String,
     val uuid: UUID,
     val type: String,

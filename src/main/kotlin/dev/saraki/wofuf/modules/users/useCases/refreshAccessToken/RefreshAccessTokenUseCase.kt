@@ -7,15 +7,19 @@ package dev.saraki.wofuf.modules.users.useCases.refreshAccessToken
  *   @description:
  */
 
-import dev.saraki.wofuf.modules.users.mappers.UserMap
-import dev.saraki.wofuf.modules.users.infra.repos.IUserRepo
+import dev.saraki.wofuf.modules.users.domain.UserId
+import dev.saraki.wofuf.modules.users.infra.repos.UserRepo
 import dev.saraki.wofuf.modules.users.services.auth.IAuth
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Service
 
 @Service
-class RefreshAccessTokenUseCase(val userRepo: IUserRepo, val authService: IAuth) : UseCase<RefreshAccessTokenDto.RefreshAccessTokenRequest, RefreshAccessTokenDto.RefreshAccessTokenResponse> {
+class RefreshAccessTokenUseCase(
+    val userRepo: UserRepo,
+    val authService: IAuth
+) : UseCase<RefreshAccessTokenDto.RefreshAccessTokenRequest, RefreshAccessTokenDto.RefreshAccessTokenResponse> {
     override fun execute(request: RefreshAccessTokenDto.RefreshAccessTokenRequest): Result<RefreshAccessTokenDto.RefreshAccessTokenResponse> {
 
         // 验证访问令牌
@@ -24,13 +28,19 @@ class RefreshAccessTokenUseCase(val userRepo: IUserRepo, val authService: IAuth)
             return RefreshAccessTokenErrors.InvalidTokenError()
         }
 
+        // 检测UserId是否有效
+        val userIdOrError = UserId.create(UniqueEntityId(request.id))
+        if (userIdOrError.isFailure) {
+            return Result.failure(userIdOrError.exceptionOrThrow())
+        }
+        val userId = userIdOrError.getOrThrow()
+
+
         // 查找用户实体
-        val userEntityOrNull = userRepo.findUserById(request.id).orElse(null)
-        if (userEntityOrNull == null) {
+        val user = userRepo.findUserByUserId(userId)
+        if (user == null) {
             return RefreshAccessTokenErrors.UserNotFoundError(request.id)
         }
-        val userEntity = userEntityOrNull
-        val user = UserMap.from(userEntity).toDomain()
 
         // service 生成新的访问令牌和刷新令牌
         val refreshAuthSession = authService.refresh(request.refreshToken)

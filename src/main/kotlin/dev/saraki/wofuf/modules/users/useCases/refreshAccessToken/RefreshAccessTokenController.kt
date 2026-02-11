@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/users/token/refresh")
-class RefreshAccessTokenController(@Autowired val refreshAccessTokenUseCase: RefreshAccessTokenUseCase) : BaseController() {
+class RefreshAccessTokenController(@Autowired val refreshAccessTokenUseCase: RefreshAccessTokenUseCase) :
+    BaseController() {
 
     @PostMapping("")
     fun refreshAccessToken(@RequestBody request: RefreshAccessTokenDto.RefreshAccessTokenRequest): ApiResponse<RefreshAccessTokenDto.RefreshAccessTokenResponse> {

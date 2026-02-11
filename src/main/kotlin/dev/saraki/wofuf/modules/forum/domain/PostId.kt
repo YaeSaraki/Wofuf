@@ -17,9 +17,12 @@ data class PostIdProps(
 
 class PostId private constructor(
     props: PostIdProps
-): ValueObject<PostIdProps>(props) {
+) : ValueObject<PostIdProps>(props) {
     val value: UniqueEntityId
         get() = props.value
+
+    val stringValue: String
+        get() = props.value.toString()
 
     companion object {
         fun create(value: UniqueEntityId): Result<PostId> {

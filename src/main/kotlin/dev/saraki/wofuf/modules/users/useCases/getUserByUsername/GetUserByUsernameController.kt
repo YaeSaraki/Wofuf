@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/users/{username}")
-class GetUserByUsernameController: BaseController() {
+class GetUserByUsernameController : BaseController() {
     @Autowired
     private lateinit var getUserByUsernameUseCase: GetUserByUsernameUseCase
 

@@ -14,7 +14,7 @@ data class PlayerStatisticProps(
 
 class PlayerStatistic private constructor(
     props: PlayerStatisticProps
-): ValueObject<PlayerStatisticProps>(props) {
+) : ValueObject<PlayerStatisticProps>(props) {
 
     val key: String
         get() = props.key

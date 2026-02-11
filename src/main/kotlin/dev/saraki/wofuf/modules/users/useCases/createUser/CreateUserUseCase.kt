@@ -8,15 +8,16 @@ package dev.saraki.wofuf.modules.users.useCases.createUser
  */
 
 import dev.saraki.wofuf.modules.users.domain.*
-import dev.saraki.wofuf.modules.users.mappers.UserMap
-import dev.saraki.wofuf.modules.users.infra.repos.IUserRepo
+import dev.saraki.wofuf.modules.users.infra.repos.UserRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Service
 
 @Service
-class CreateUserUseCase(private val userRepo: IUserRepo) : UseCase<CreateUserDto, User> {
+class CreateUserUseCase(
+    private val userRepo: UserRepo
+) : UseCase<CreateUserDto, User> {
     override fun execute(request: CreateUserDto): Result<User> {
         val emailOrError = UserEmail.create(request.email)
         val usernameOrError = UserName.create(request.username)
@@ -34,13 +35,13 @@ class CreateUserUseCase(private val userRepo: IUserRepo) : UseCase<CreateUserDto
         val password = passwordOrError.getOrThrow()
 
         // 检查邮箱是否已存在
-        val userAlreadyExists = userRepo.findByEmail(email.value).isPresent
-        if (userAlreadyExists) {
+        val userAlreadyExists = userRepo.findByUserEmail(email)
+        if (userAlreadyExists != null) {
             return CreateUserErrors.EmailAlreadyExistsError(email.value)
         }
 
         // 检查用户名是否已存在
-        val userByName = userRepo.existsByUsername(username.value)
+        val userByName = userRepo.existsByUserName(username)
         if (userByName) {
             return CreateUserErrors.UsernameAlreadyExistsError(username.value)
         }
@@ -48,7 +49,7 @@ class CreateUserUseCase(private val userRepo: IUserRepo) : UseCase<CreateUserDto
         val userResult = User.create(
             props = UserProps(
                 email = email,
-                username = username,
+                name = username,
                 password = password,
                 isEmailVerified = false,
                 isAdminUser = false,
@@ -62,10 +63,9 @@ class CreateUserUseCase(private val userRepo: IUserRepo) : UseCase<CreateUserDto
             return Result.failure(userResult.exceptionOrThrow())
         }
 
-        // 保存用户
-        val userEntity = UserMap.from(userResult.getOrThrow()).toEntity()
-        userRepo.save(userEntity)
+        val user = userResult.getOrThrow()
 
-        return Result.success(userResult.getOrThrow())
+        userRepo.save(user)
+        return Result.success(user)
     }
 }

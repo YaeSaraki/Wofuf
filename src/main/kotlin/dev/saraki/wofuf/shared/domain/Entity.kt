@@ -1,5 +1,7 @@
 package dev.saraki.wofuf.shared.domain
 
+import java.time.LocalDateTime
+
 /**
  *   @author YaeSaraki
  *   @email ikaraswork@iCloud.com
@@ -12,4 +14,8 @@ abstract class Entity<T>(
 ) {
     val _id: UniqueEntityId
         get() = id ?: UniqueEntityId()
+
+    var _createdAt: LocalDateTime? = null
+
+    var _updatedAt: LocalDateTime? = null
 }

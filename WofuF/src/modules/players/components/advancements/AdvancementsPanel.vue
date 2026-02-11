@@ -145,7 +145,6 @@ const ungroupedIncompleteAdvancements = computed(() => {
 const toggleShowIncomplete = () => {
   showIncomplete.value = !showIncomplete.value
 }
-
 </script>
 
 <template>
@@ -568,7 +567,7 @@ const toggleShowIncomplete = () => {
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto no-scrollbar p-0" v-if="popupState.currentAdvancement">
+        <div class="flex-1 overflow-y-scroll no-scrollbar p-0" v-if="popupState.currentAdvancement">
           <div
             v-if="
               popupState.currentAdvancement.remaining.length > 0 &&

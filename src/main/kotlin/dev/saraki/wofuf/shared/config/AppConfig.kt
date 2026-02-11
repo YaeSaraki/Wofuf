@@ -17,8 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableConfigurationProperties(AuthProperties::class)
 class AppConfig(
     @Value("\${app.is-production}")
-    val isProduction: Boolean
-    ,
+    val isProduction: Boolean,
     @Value("\${app.approved-domain-list}")
     val approvedDomainList: List<String>
 )

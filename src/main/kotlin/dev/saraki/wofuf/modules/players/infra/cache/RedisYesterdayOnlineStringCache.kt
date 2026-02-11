@@ -23,7 +23,7 @@ class RedisYesterdayOnlineStringCache(
         )
     }
 
-    override fun put(data:GetPlayerYesterdayOnlineDto) {
+    override fun put(data: GetPlayerYesterdayOnlineDto) {
         cache.put(
             key,
             objectMapper.writeValueAsString(data),

@@ -5,7 +5,7 @@ import dev.saraki.wofuf.modules.players.useCases.collectPlayerDataUseCase.alc.Pl
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 @Component

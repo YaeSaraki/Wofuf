@@ -12,5 +12,5 @@ data class PlayerDto(
     val statistics: Map<String, PlayerStatisticDto>,
     val advancements: List<PlayerAdvancementDto>,
 
-    val playerSkin: PlayerSkinDto ? = null
+    val playerSkin: PlayerSkinDto? = null,
 )

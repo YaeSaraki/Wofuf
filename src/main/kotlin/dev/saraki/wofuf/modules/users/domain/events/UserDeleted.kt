@@ -16,7 +16,7 @@ class UserDeleted(
     val user: User,
     override val dataTimeOccurred: LocalDateTime,
     private val aggregateId: UniqueEntityId = UniqueEntityId(),
-): IDomainEvent {
+) : IDomainEvent {
     // 可以在这里添加事件处理逻辑
     override fun getAggregateId(): UniqueEntityId {
         return aggregateId

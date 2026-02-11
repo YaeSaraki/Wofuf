@@ -11,8 +11,10 @@ import dev.saraki.wofuf.shared.domain.WatchedList
 data class CommentVotesProps(
     val value: List<CommentVote>
 )
-class CommentVotes private constructor(props: CommentVotesProps) :
-    WatchedList<CommentVote>(props.value) {
+
+class CommentVotes private constructor(
+    props: CommentVotesProps
+) : WatchedList<CommentVote>(props.value) {
 
     override fun compareItems(a: CommentVote, b: CommentVote): Boolean {
         return a == b

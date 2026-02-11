@@ -13,7 +13,7 @@ abstract class GetPlayerViewMap {
         fun from(player: Player): GetPlayerView =
             GetPlayerView(
                 id = player.playerId.stringValue,
-                name = player.playerName,
+                name = player.playerName.stringValue,
                 firstLogin = player.firstLogin,
                 lastLogin = player.lastLogin,
                 totalPlaytimeSeconds = player.totalPlaytimeSeconds,

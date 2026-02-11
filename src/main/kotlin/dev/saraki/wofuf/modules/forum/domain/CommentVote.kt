@@ -14,42 +14,47 @@ import dev.saraki.wofuf.shared.domain.UniqueEntityId
 data class CommentVoteProps(
     val commentId: CommentId,
     val memberId: MemberId,
-    val type: VoteType,
+    val voteType: VoteType,
 )
 
 class CommentVote private constructor(
     props: CommentVoteProps,
-    id: UniqueEntityId? = null
+    id: UniqueEntityId?
 ) : Entity<CommentVoteProps>(props, id) {
     val commentId: CommentId get() = props.commentId
     val memberId: MemberId get() = props.memberId
-    val type: VoteType get() = props.type
+    val voteType: VoteType get() = props.voteType
+
+    fun asProps(): CommentVoteProps {
+        return props
+    }
 
     fun isUpVote(): Boolean {
-        return type == VoteType.UPVOTE
+        return voteType == VoteType.UPVOTE
     }
 
     fun isDownVote(): Boolean {
-        return type == VoteType.DOWNVOTE
+        return voteType == VoteType.DOWNVOTE
     }
 
     companion object {
         fun create(
             commentId: CommentId,
             memberId: MemberId,
-            type: VoteType
+            voteType: VoteType,
+            id: UniqueEntityId?
         ): Result<CommentVote> {
             val guardResult = Guard.againstNullOrUndefinedBulk(
                 listOf(
                     Guard.GuardArgument(commentId, "commentId"),
                     Guard.GuardArgument(memberId, "memberId"),
-                    Guard.GuardArgument(type, "type")
+                    Guard.GuardArgument(voteType, "voteType")
                 )
             )
             if (guardResult.isFailure) {
                 return Result.failure(guardResult.getOrThrow())
             }
-            return Result.success(CommentVote(CommentVoteProps(commentId, memberId, type)))
+            return Result.success(CommentVote(CommentVoteProps(commentId, memberId, voteType), id))
         }
 
         fun createUpvote(
@@ -62,7 +67,7 @@ class CommentVote private constructor(
             if (memberGuard.isFailure || commentGuard.isFailure) {
                 return Result.failure(memberGuard.exceptionOrNull() ?: commentGuard.exceptionOrNull()!!)
             }
-            return create(commentId, memberId, VoteType.UPVOTE)
+            return create(commentId, memberId, VoteType.UPVOTE, null)
         }
 
         fun createDownvote(
@@ -75,7 +80,7 @@ class CommentVote private constructor(
             if (memberGuard.isFailure || commentGuard.isFailure) {
                 return Result.failure(memberGuard.exceptionOrNull() ?: commentGuard.exceptionOrNull()!!)
             }
-            return create(commentId, memberId, VoteType.DOWNVOTE)
+            return create(commentId, memberId, VoteType.DOWNVOTE, null)
         }
     }
 }

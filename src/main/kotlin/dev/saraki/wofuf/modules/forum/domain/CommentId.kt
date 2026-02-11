@@ -18,9 +18,12 @@ data class CommentIdProps(
 
 class CommentId private constructor(
     props: CommentIdProps
-): ValueObject<CommentIdProps>(props) {
+) : ValueObject<CommentIdProps>(props) {
     val value: UniqueEntityId
         get() = props.value
+
+    val stringValue: String
+        get() = value.uuid.toString()
 
     companion object {
         fun create(value: UniqueEntityId): Result<CommentId> {

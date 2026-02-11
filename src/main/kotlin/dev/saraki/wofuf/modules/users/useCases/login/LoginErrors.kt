@@ -13,14 +13,15 @@ import dev.saraki.wofuf.shared.core.UseCaseError
 
 class LoginErrors {
     // 登录用户不存在
-    class UserNotFoundError(username: String): Result.Failure<LoginResponse>(
-        exception =  UseCaseError(
+    class UserNotFoundError(username: String) : Result.Failure<LoginResponse>(
+        exception = UseCaseError(
             code = "user_not_found",
             message = "User with username $username not found"
         )
     )
+
     // 密码错误
-    class PasswordNotMatchError(username: String): Result.Failure<LoginResponse>(
+    class PasswordNotMatchError(username: String) : Result.Failure<LoginResponse>(
         exception = UseCaseError(
             code = "password_not_match",
             message = "Password not match for user $username"

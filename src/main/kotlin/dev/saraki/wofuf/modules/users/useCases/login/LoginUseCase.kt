@@ -9,38 +9,39 @@ package dev.saraki.wofuf.modules.users.useCases.login
 
 import dev.saraki.wofuf.modules.users.domain.UserName
 import dev.saraki.wofuf.modules.users.domain.UserPassword
-import dev.saraki.wofuf.modules.users.mappers.UserMap
-import dev.saraki.wofuf.modules.users.infra.repos.IUserRepo
+import dev.saraki.wofuf.modules.users.infra.repos.UserRepo
 import dev.saraki.wofuf.modules.users.services.auth.IAuth
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import org.springframework.stereotype.Service
 
 @Service
-class LoginUseCase(val userRepo: IUserRepo, val authService: IAuth): UseCase<LoginDto.LoginRequest, LoginDto.LoginResponse> {
+class LoginUseCase(
+    val userRepo: UserRepo,
+    val authService: IAuth
+) : UseCase<LoginDto.LoginRequest, LoginDto.LoginResponse> {
     override fun execute(request: LoginDto.LoginRequest): Result<LoginDto.LoginResponse> {
         // 验证用户名和密码
-        val usernameOrError = UserName.create(request.username)
+        val userNameOrError = UserName.create(request.username)
         val passwordOrError = UserPassword.create(request.password)
-        val payloadResult = Result.combine(usernameOrError, passwordOrError)
+        val payloadResult = Result.combine(userNameOrError, passwordOrError)
         if (payloadResult.isFailure) {
             return Result.failure(payloadResult.exceptionOrThrow())
         }
-        val username = usernameOrError.getOrThrow()
+
+        val userName = userNameOrError.getOrThrow()
         val password = passwordOrError.getOrThrow()
 
         // 查找用户实体
-        val userEntityOrNull = userRepo.findUserByUsername(username.value).orElse(null)
-        if (userEntityOrNull == null) {
-            return LoginErrors.UserNotFoundError(username.value)
+        val user = userRepo.findUserByUserName(userName)
+        if (user == null) {
+            return LoginErrors.UserNotFoundError(userName.value)
         }
-        val userEntity = userEntityOrNull
-        val user = UserMap.from(userEntity).toDomain()
 
         // 检查密码是否匹配
         val passwordValid = user.password.matches(password.getHashedValue())
         if (!passwordValid) {
-            return LoginErrors.PasswordNotMatchError(username.value)
+            return LoginErrors.PasswordNotMatchError(userName.value)
         }
 
         val authSession = authService.login(user)

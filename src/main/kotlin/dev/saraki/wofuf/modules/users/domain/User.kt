@@ -9,7 +9,6 @@ import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.AggregateRoot
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import java.time.LocalDateTime
-import kotlin.Boolean
 
 /**
  *   @author YaeSaraki
@@ -19,7 +18,7 @@ import kotlin.Boolean
  */
 data class UserProps(
     val email: UserEmail,
-    val username: UserName,
+    val name: UserName,
     val password: UserPassword,
     val isEmailVerified: Boolean? = false,
     val isAdminUser: Boolean? = false,
@@ -30,9 +29,9 @@ data class UserProps(
 )
 
 class User private constructor(
-        props: UserProps,
-        id: UniqueEntityId? = null
-): AggregateRoot<UserProps>(props, id) {
+    props: UserProps,
+    id: UniqueEntityId?
+) : AggregateRoot<UserProps>(props, id) {
 
     val userId: UserId
         get() = UserId.create(_id).getOrThrow()
@@ -41,7 +40,7 @@ class User private constructor(
         get() = props.email
 
     val username: UserName
-        get() = props.username
+        get() = props.name
 
     val password: UserPassword
         get() = props.password
@@ -85,7 +84,7 @@ class User private constructor(
         fun create(props: UserProps, id: UniqueEntityId? = null): Result<User> {
             val guardResult = Guard.againstNullOrUndefinedBulk(
                 listOf(
-                    Guard.GuardArgument(props.username, "username"),
+                    Guard.GuardArgument(props.name, "username"),
                     Guard.GuardArgument(props.email, "email")
                 )
             )

@@ -4,7 +4,6 @@ import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import dev.saraki.wofuf.shared.domain.ValueObject
-import java.util.UUID
 
 /**
  *   @author YaeSaraki
@@ -20,6 +19,7 @@ class UserId private constructor(
     val value: UniqueEntityId get() = props.value
     val stringValue: String
         get() = value.uuid.toString()
+
     companion object {
         fun create(value: UniqueEntityId): Result<UserId> {
             val guardResult = Guard.againstNullOrUndefined(value, "UserId")

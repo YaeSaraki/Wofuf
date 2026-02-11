@@ -84,8 +84,6 @@ sealed class Result<out T> {
         fun <T> failure(message: String, code: String): Result<T> = failure(AppError(message, code))
 
 
-
-
         /**
          * 合并多个Result（通用版）
          * 全部成功返回值列表，失败返回第一个异常
@@ -154,6 +152,7 @@ fun <L, A> Either<L, A>.toResult(): Result<A> = when (this) {
         val exception = if (value is AppError) value else AppError(value.toString())
         Result.failure(exception)
     }
+
     is Either.Right -> Result.success(value)
 }
 

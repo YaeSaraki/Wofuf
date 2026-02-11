@@ -8,7 +8,6 @@ import dev.saraki.wofuf.modules.players.dtos.PlayerStatisticDto
  *   @date 2026/1/21 22:19
  *   @description:
  */
-class GetPlayerStatisticsView (
+class GetPlayerStatisticsView(
     val statistics: Map<String, PlayerStatisticDto>
-) {
-}
+)

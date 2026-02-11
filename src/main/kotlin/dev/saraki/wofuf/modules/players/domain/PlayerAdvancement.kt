@@ -35,7 +35,6 @@ class PlayerAdvancement private constructor(
     }
 
     companion object {
-
         fun create(props: PlayerAdvancementProps): Result<PlayerAdvancement> {
             val guardResult = Guard.againstNullOrUndefinedBulk(
                 listOf(

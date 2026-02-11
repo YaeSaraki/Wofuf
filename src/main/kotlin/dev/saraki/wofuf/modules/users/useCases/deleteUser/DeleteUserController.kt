@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 @RequestMapping("/api/v1/users/delete")
-class DeleteUserController: BaseController() {
+class DeleteUserController : BaseController() {
     @Autowired
     private lateinit var deleteUserUseCase: DeleteUserUseCase
 

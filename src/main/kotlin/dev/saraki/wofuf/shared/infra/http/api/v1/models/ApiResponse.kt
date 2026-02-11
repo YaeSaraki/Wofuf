@@ -8,7 +8,7 @@ import dev.saraki.wofuf.shared.core.AppError
  *   @date 2026/1/14 22:34
  *   @description:
  */
-data class ApiResponse<T> constructor(
+data class ApiResponse<T>(
     val success: Boolean,
     val code: String?,
     val data: T?,
@@ -16,14 +16,14 @@ data class ApiResponse<T> constructor(
 ) {
     companion object {
         fun <T> success(data: T): ApiResponse<T> {
-            return ApiResponse(true, "Success" , data, "Operation successful")
+            return ApiResponse(true, "Success", data, "Operation successful")
         }
 
         fun <T> success(message: String, data: T): ApiResponse<T> {
             return ApiResponse(true, "Success", data, message)
         }
 
-        fun <T> error(message: String): ApiResponse<T>  {
+        fun <T> error(message: String): ApiResponse<T> {
             return ApiResponse(false, "Error", null, message)
         }
 

@@ -4,11 +4,7 @@ import dev.saraki.wofuf.modules.players.mappers.PlayerMap
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 /**
  *   @author YaeSaraki
@@ -18,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 @RequestMapping("/api/v1/players/advancements")
-class GetPlayerAdvancementsController: BaseController() {
+class GetPlayerAdvancementsController : BaseController() {
     @Autowired
     private lateinit var getPlayerAdvancementsUseCase: GetPlayerAdvancementsUseCase
 

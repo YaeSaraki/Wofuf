@@ -1,6 +1,6 @@
 package dev.saraki.wofuf.modules.players.useCases.getPlayerYesterdayOnlineUseCase
 
-import dev.saraki.wofuf.modules.players.domain.repos.PlayerRepository
+import dev.saraki.wofuf.modules.players.infra.repos.PlayerRepo
 import dev.saraki.wofuf.modules.players.services.cache.YesterdayOnlineCache
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
@@ -15,19 +15,23 @@ import java.time.ZoneId
  *   @description:
  */
 @Service
-class GetPlayerYesterdayOnlineUseCase(private val playerRepository: PlayerRepository, private val cache: YesterdayOnlineCache) : UseCase<Unit, GetPlayerYesterdayOnlineDto> {
+class GetPlayerYesterdayOnlineUseCase(
+    private val playerRepository: PlayerRepo,
+    private val cache: YesterdayOnlineCache
+) : UseCase<Unit, GetPlayerYesterdayOnlineDto> {
     override fun execute(request: Unit): Result<GetPlayerYesterdayOnlineDto> {
         // redis cache
         val cached = cache.get()
         if (cached != null) return Result.success(cached)
 
         val todayInstant = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val yesterdayInstant = LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val yesterdayInstant =
+            LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val players = playerRepository.findYesterdayOnline(yesterdayInstant, todayInstant)
 
         // cache players
-        cache.put( GetPlayerYesterdayOnlineDto(players.map { it.playerName }) )
+        cache.put(GetPlayerYesterdayOnlineDto(players.map { it.playerName.stringValue }))
 
-        return Result.success( GetPlayerYesterdayOnlineDto(players.map { it.playerName }) )
+        return Result.success(GetPlayerYesterdayOnlineDto(players.map { it.playerName.stringValue }))
     }
 }

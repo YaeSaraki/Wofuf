@@ -16,9 +16,10 @@ import org.springframework.web.bind.annotation.RestController
  */
 @RestController
 @RequestMapping("/api/v1/users/login")
-class LoginController: BaseController() {
+class LoginController : BaseController() {
     @Autowired
     private lateinit var loginUseCase: LoginUseCase
+
     @PostMapping("")
     fun login(@RequestBody request: LoginDto.LoginRequest): ApiResponse<LoginDto.LoginResponse> {
         val result = loginUseCase.execute(request)

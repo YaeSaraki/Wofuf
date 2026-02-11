@@ -1,11 +1,10 @@
 package dev.saraki.wofuf.modules.players.useCases.getPlayerSkinUseCase
 
-import dev.saraki.wofuf.modules.players.domain.Player
-import dev.saraki.wofuf.modules.players.domain.repos.PlayerRepository
-import dev.saraki.wofuf.modules.players.useCases.getPlayerUseCase.GetPlayerCommand
-import dev.saraki.wofuf.modules.players.useCases.getPlayerUseCase.GetPlayerErrors
+import dev.saraki.wofuf.modules.players.domain.PlayerId
+import dev.saraki.wofuf.modules.players.infra.repos.PlayerRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Service
 
 /**
@@ -15,15 +14,25 @@ import org.springframework.stereotype.Service
  *   @description:
  */
 @Service
-class GetPlayerSkinUseCase(private val playerRepository: PlayerRepository) : UseCase<GetPlayerSkinCommand, GetPlayerSkinView> {
+class GetPlayerSkinUseCase(private val playerRepository: PlayerRepo) :
+    UseCase<GetPlayerSkinCommand, GetPlayerSkinView> {
     override fun execute(request: GetPlayerSkinCommand): Result<GetPlayerSkinView> {
-        val player = playerRepository.findByUuid(request.playerUuid)
+
+        val playerIdOrError = PlayerId.create(UniqueEntityId(request.playerUuid))
+        if (playerIdOrError.isFailure) {
+            return Result.failure(playerIdOrError.exceptionOrThrow())
+        }
+        val playerId = playerIdOrError.getOrThrow()
+
+        val player = playerRepository.findByPlayerId(playerId)
             ?: return GetPlayerSkinErrors.GetPlayerSkinError()
 
-        return Result.success(GetPlayerSkinView(
-            type = player.playerSkin.type,
-            skin = player.playerSkin.skin,
-            cape = player.playerSkin.cape,
-        ))
+        return Result.success(
+            GetPlayerSkinView(
+                type = player.playerSkin.type,
+                skin = player.playerSkin.skin,
+                cape = player.playerSkin.cape,
+            )
+        )
     }
 }

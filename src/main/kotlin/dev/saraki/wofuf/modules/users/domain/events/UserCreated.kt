@@ -8,7 +8,6 @@ package dev.saraki.wofuf.modules.users.domain.events
  */
 import dev.saraki.wofuf.modules.users.domain.User
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
-import dev.saraki.wofuf.shared.domain.events.DomainEvents
 import dev.saraki.wofuf.shared.domain.events.IDomainEvent
 import java.time.LocalDateTime
 

@@ -6,6 +6,6 @@ package dev.saraki.wofuf.modules.players.useCases.getPlayerAdvancementsUseCase
  *   @date 2026/1/21 13:45
  *   @description:
  */
-data class GetPlayerAdvancementsCommand (
+data class GetPlayerAdvancementsCommand(
     val playerUuid: String,
 )

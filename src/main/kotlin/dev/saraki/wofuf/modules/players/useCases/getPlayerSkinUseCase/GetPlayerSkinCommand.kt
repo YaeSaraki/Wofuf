@@ -6,6 +6,6 @@ package dev.saraki.wofuf.modules.players.useCases.getPlayerSkinUseCase
  *   @date 2026/2/2 17:40
  *   @description:
  */
-data class GetPlayerSkinCommand (
+data class GetPlayerSkinCommand(
     val playerUuid: String
 )

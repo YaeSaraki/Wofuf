@@ -9,7 +9,7 @@ package dev.saraki.wofuf.shared.core
 open class UseCaseError(
     code: String,
     message: String,
-) : AppError(message,  code) {
+) : AppError(message, code) {
     override fun toString(): String = "UseCaseError(code=$code, message=${message})"
     fun getMessageOrDefault(default: String = "Unknown error"): String = message ?: default
 }

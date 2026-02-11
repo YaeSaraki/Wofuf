@@ -1,10 +1,11 @@
 package dev.saraki.wofuf.modules.users.useCases.deleteUser
 
-import dev.saraki.wofuf.modules.users.mappers.UserMap
-import dev.saraki.wofuf.modules.users.infra.repos.IUserRepo
+import dev.saraki.wofuf.modules.users.domain.UserId
+import dev.saraki.wofuf.modules.users.infra.repos.UserRepo
 import dev.saraki.wofuf.modules.users.services.auth.IAuth
-import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.core.Result
+import dev.saraki.wofuf.shared.core.UseCase
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Service
 
 /**
@@ -14,14 +15,23 @@ import org.springframework.stereotype.Service
  *   @description:
  */
 @Service
-open class DeleteUserUseCase(
-    private val userRepo: IUserRepo,
+class DeleteUserUseCase(
+    private val userRepo: UserRepo,
     private val authService: IAuth
-): UseCase<DeleteUserDto, Unit> {
+) : UseCase<DeleteUserDto, Unit> {
     override fun execute(request: DeleteUserDto): Result<Unit> {
+
+        // 检测UserId是否有效
+        val userIdOrError = UserId.create(UniqueEntityId(request.userId))
+        if (userIdOrError.isFailure) {
+            return Result.failure(userIdOrError.exceptionOrThrow())
+        }
+        val userId = userIdOrError.getOrThrow()
+
         // 查找用户实体
-        val userEntity = userRepo.findUserById(request.userId)
-        if (!userEntity.isPresent) {
+        val user = userRepo.findUserByUserId(userId)
+
+        if (user == null) {
             return DeleteUserErrors.UserNotFoundError(request.userId)
         }
 
@@ -31,10 +41,9 @@ open class DeleteUserUseCase(
             return DeleteUserErrors.UnauthorizedError()
         }
 
-        val user = UserMap.from(userEntity.get()).toDomain()
         user.delete()
-        val userEntityChanged = UserMap.from(user).toEntity()
-        userRepo.save(userEntityChanged)
+
+        userRepo.save(user)
         return Result.success(Unit)
     }
 }

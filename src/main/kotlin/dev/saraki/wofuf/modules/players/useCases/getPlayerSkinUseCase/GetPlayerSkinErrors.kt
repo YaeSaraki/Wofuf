@@ -1,7 +1,7 @@
 package dev.saraki.wofuf.modules.players.useCases.getPlayerSkinUseCase
 
-import dev.saraki.wofuf.shared.core.UseCaseError
 import dev.saraki.wofuf.shared.core.Result
+import dev.saraki.wofuf.shared.core.UseCaseError
 
 /**
  *   @author YaeSaraki

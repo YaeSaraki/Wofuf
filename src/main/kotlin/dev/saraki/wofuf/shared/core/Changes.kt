@@ -8,10 +8,11 @@ package dev.saraki.wofuf.shared.core
  */
 class Changes {
     private val _changes: MutableList<Result<Any?>> = mutableListOf()
-    public fun addChange(field: String, value: Any?) {
+    fun addChange(field: String, value: Any?) {
         _changes.add(Result.success(value))
     }
-    public fun getChanges(): MutableList<Result<Any?>> {
+
+    fun getChanges(): MutableList<Result<Any?>> {
         return _changes
     }
 }

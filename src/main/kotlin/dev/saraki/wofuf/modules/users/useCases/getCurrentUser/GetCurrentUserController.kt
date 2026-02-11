@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/users/me")
-class GetCurrentUserController: BaseController() {
+class GetCurrentUserController : BaseController() {
     @Autowired
     private lateinit var getUserByUsernameUseCase: GetUserByUsernameUseCase
 

@@ -11,10 +11,11 @@ import java.time.LocalDateTime
  *   @date 2026/1/14 23:16
  *   @description:
  */
-class UserLoggedIn(user: User,
-                   override val dataTimeOccurred: LocalDateTime,
-                   private val aggregateId: UniqueEntityId = UniqueEntityId(),
-): IDomainEvent {
+class UserLoggedIn(
+    user: User,
+    override val dataTimeOccurred: LocalDateTime,
+    private val aggregateId: UniqueEntityId = UniqueEntityId(),
+) : IDomainEvent {
     override fun getAggregateId(): UniqueEntityId {
         return aggregateId
     }

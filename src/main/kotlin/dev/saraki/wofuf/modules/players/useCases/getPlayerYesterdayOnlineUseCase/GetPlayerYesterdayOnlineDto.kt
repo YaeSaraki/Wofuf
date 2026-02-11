@@ -6,6 +6,6 @@ package dev.saraki.wofuf.modules.players.useCases.getPlayerYesterdayOnlineUseCas
  *   @date 2026/1/22 18:28
  *   @description:
  */
-data class GetPlayerYesterdayOnlineDto (
-     val playerNames: List<String>
+data class GetPlayerYesterdayOnlineDto(
+    val playerNames: List<String>
 )

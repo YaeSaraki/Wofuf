@@ -2,28 +2,41 @@ package dev.saraki.wofuf.modules.players.useCases.collectPlayerDataUseCase
 
 import dev.saraki.wofuf.modules.players.domain.Player
 import dev.saraki.wofuf.modules.players.domain.PlayerId
+import dev.saraki.wofuf.modules.players.domain.PlayerName
 import dev.saraki.wofuf.modules.players.domain.PlayerProps
-import dev.saraki.wofuf.modules.players.domain.repos.PlayerRepository
+import dev.saraki.wofuf.modules.players.infra.repos.PlayerRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
 class CollectPlayerDataUseCase(
-    private val playerRepo: PlayerRepository
+    private val playerRepo: PlayerRepo
 ) : UseCase<CollectPlayerDataCommand, Player> {
     override fun execute(request: CollectPlayerDataCommand): Result<Player> {
-        val player = playerRepo.findByUuid(request.uuid)
 
-        val logger = LoggerFactory.getLogger(javaClass)
+        val playerIdOrError = PlayerId.create(UniqueEntityId(request.uuid))
+        val playerNameOrError = PlayerName.create(request.name)
+
+        if (playerIdOrError.isFailure) {
+            return Result.failure(playerIdOrError.exceptionOrThrow())
+        }
+
+        if (playerNameOrError.isFailure) {
+            return Result.failure(playerNameOrError.exceptionOrThrow())
+        }
+
+        val playerId = playerIdOrError.getOrThrow()
+        val playerName = playerNameOrError.getOrThrow()
+
+        val player = playerRepo.findByPlayerId(playerId)
 
         // 如果玩家不存在，则创建新玩家
         if (player == null) {
             val newPlayerOrError = Player.create(
                 props = PlayerProps(
-                    name = request.name,
+                    playerName = playerName,
                     firstLogin = request.firstLogin,
                     lastLogin = request.lastLogin,
                     totalPlaytimeSeconds = request.totalPlaytimeSeconds,
@@ -43,7 +56,7 @@ class CollectPlayerDataUseCase(
         }
 
         val playerProps = PlayerProps(
-            request.name,
+            playerName = playerName,
             request.firstLogin,
             request.lastLogin,
             request.totalPlaytimeSeconds,

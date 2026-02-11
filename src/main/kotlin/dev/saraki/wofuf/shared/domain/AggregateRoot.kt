@@ -1,7 +1,5 @@
 package dev.saraki.wofuf.shared.domain
 
-import dev.saraki.wofuf.modules.users.domain.UserId
-import dev.saraki.wofuf.modules.users.domain.UserProps
 import dev.saraki.wofuf.shared.domain.events.DomainEvents
 import dev.saraki.wofuf.shared.domain.events.IDomainEvent
 
@@ -14,7 +12,7 @@ import dev.saraki.wofuf.shared.domain.events.IDomainEvent
 abstract class AggregateRoot<T>(
     props: T,
     id: UniqueEntityId? = null
-): Entity<T>(props, id) {
+) : Entity<T>(props, id) {
     private val _domainEvents: MutableList<IDomainEvent> = mutableListOf()
 
     val domainEvents: List<IDomainEvent>
