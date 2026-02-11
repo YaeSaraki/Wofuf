@@ -55,6 +55,7 @@ class CommentRepoImpl(
         return CommentDetailsMapper.toDomain(commentEntity)
     }
 
+    @Transactional
     override fun save(comment: Comment): Comment {
         val entity = CommentEntityMapper.toEntity(comment)
 
@@ -67,6 +68,7 @@ class CommentRepoImpl(
         return savedComment
     }
 
+    @Transactional
     override fun saveBulk(comments: List<Comment>) {
         val entities = comments.map { comment ->
             val entity = CommentEntityMapper.toEntity(comment)
@@ -82,6 +84,7 @@ class CommentRepoImpl(
         }
     }
 
+    @Transactional
     override fun deleteComment(commentId: CommentId) {
         commentJpaRepo.deleteById(commentId.stringValue)
     }

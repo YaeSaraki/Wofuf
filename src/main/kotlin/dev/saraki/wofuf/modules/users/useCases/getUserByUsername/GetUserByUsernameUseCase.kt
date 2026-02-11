@@ -17,8 +17,8 @@ import java.time.LocalDateTime
 @Service
 class GetUserByUsernameUseCase(
     private val userRepo: UserRepo
-) : UseCase<GetUserByUsernameDto.GetUserRequest, GetUserByUsernameDto.GetUserResponse> {
-    override fun execute(request: GetUserByUsernameDto.GetUserRequest): Result<GetUserByUsernameDto.GetUserResponse> {
+) : UseCase<GetUserByUsernameDto.Request, GetUserByUsernameDto.Response> {
+    override fun execute(request: GetUserByUsernameDto.Request): Result<GetUserByUsernameDto.Response> {
         // 检测用户名是否有效
         val userNameOrError = UserName.create(request.username)
         if (userNameOrError.isFailure) {
@@ -32,7 +32,7 @@ class GetUserByUsernameUseCase(
             return GetUserByUsernameErrors.UserNotFoundError(request.username)
         }
 
-        val userByUsernameDto = GetUserByUsernameDto.GetUserResponse(
+        val userByUsernameDto = GetUserByUsernameDto.Response(
             username = user.username.value,
             email = user.email.value,
             isEmailVerified = user.isEmailVerified,

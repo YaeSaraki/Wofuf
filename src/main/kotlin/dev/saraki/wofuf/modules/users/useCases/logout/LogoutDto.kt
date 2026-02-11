@@ -10,12 +10,12 @@ package dev.saraki.wofuf.modules.users.useCases.logout
 import dev.saraki.wofuf.modules.users.domain.JwtToken
 
 class LogoutDto {
-    data class LogoutRequest(
+    data class Request(
         val id: String,
         val accessToken: JwtToken,
     )
 
-    data class LogoutResponse(
+    data class Response(
         val message: String,
     )
 }

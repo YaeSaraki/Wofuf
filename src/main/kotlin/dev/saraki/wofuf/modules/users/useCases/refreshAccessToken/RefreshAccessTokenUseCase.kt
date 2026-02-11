@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service
 class RefreshAccessTokenUseCase(
     val userRepo: UserRepo,
     val authService: IAuth
-) : UseCase<RefreshAccessTokenDto.RefreshAccessTokenRequest, RefreshAccessTokenDto.RefreshAccessTokenResponse> {
-    override fun execute(request: RefreshAccessTokenDto.RefreshAccessTokenRequest): Result<RefreshAccessTokenDto.RefreshAccessTokenResponse> {
+) : UseCase<RefreshAccessTokenDto.Request, RefreshAccessTokenDto.Response> {
+    override fun execute(request: RefreshAccessTokenDto.Request): Result<RefreshAccessTokenDto.Response> {
 
         // 验证访问令牌
         val authSession = authService.authenticate(request.accessToken)
@@ -49,7 +49,7 @@ class RefreshAccessTokenUseCase(
         }
 
         // 返回刷新令牌响应
-        val refreshAccessTokenResponseDto = RefreshAccessTokenDto.RefreshAccessTokenResponse(
+        val refreshAccessTokenResponseDto = RefreshAccessTokenDto.Response(
             accessToken = refreshAuthSession.accessToken,
             refreshToken = refreshAuthSession.refreshToken,
         )

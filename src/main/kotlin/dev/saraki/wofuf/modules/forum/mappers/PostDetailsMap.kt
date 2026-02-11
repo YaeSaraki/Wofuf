@@ -1,7 +1,7 @@
 package dev.saraki.wofuf.modules.forum.mappers
 
 import dev.saraki.wofuf.modules.forum.domain.PostDetails
-import dev.saraki.wofuf.modules.forum.dtos.PostDetailsDto
+import dev.saraki.wofuf.modules.forum.dtos.PostDto
 
 /**
  *   @author YaeSaraki
@@ -10,8 +10,8 @@ import dev.saraki.wofuf.modules.forum.dtos.PostDetailsDto
  *   @description:
  */
 object PostDetailsMap {
-    fun from(postDetails: PostDetails): PostDetailsDto {
-        return PostDetailsDto(
+    fun from(postDetails: PostDetails): PostDto {
+        return PostDto(
             slug = postDetails.slug.value,
             title = postDetails.title.value,
             createdAt = postDetails.dateTimePosted,

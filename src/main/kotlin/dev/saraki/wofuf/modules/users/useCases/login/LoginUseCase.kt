@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service
 class LoginUseCase(
     val userRepo: UserRepo,
     val authService: IAuth
-) : UseCase<LoginDto.LoginRequest, LoginDto.LoginResponse> {
-    override fun execute(request: LoginDto.LoginRequest): Result<LoginDto.LoginResponse> {
+) : UseCase<LoginDto.Request, LoginDto.Response> {
+    override fun execute(request: LoginDto.Request): Result<LoginDto.Response> {
         // 验证用户名和密码
         val userNameOrError = UserName.create(request.username)
         val passwordOrError = UserPassword.create(request.password)
@@ -48,10 +48,11 @@ class LoginUseCase(
         user.setAccessToken(authSession.accessToken, authSession.refreshToken)
 
         // 返回登录响应
-        val loginResponseDto = LoginDto.LoginResponse(
+        val loginResponseDto = LoginDto.Response(
             accessToken = authSession.accessToken,
             refreshToken = authSession.refreshToken,
         )
+
         return Result.success(loginResponseDto)
     }
 }

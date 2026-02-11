@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service
 @Service
 class CreateUserUseCase(
     private val userRepo: UserRepo
-) : UseCase<CreateUserDto, User> {
-    override fun execute(request: CreateUserDto): Result<User> {
+) : UseCase<CreateUserDto.Request, User> {
+    override fun execute(request: CreateUserDto.Request): Result<User> {
         val emailOrError = UserEmail.create(request.email)
         val usernameOrError = UserName.create(request.username)
         val passwordOrError = UserPassword.create(request.password)

@@ -11,7 +11,7 @@ import dev.saraki.wofuf.shared.core.UseCaseError
  */
 class LogoutErrors {
     // 用户未找到错误
-    class UserNotFoundError(username: String) : Result.Failure<LogoutDto.LogoutResponse>(
+    class UserNotFoundError(username: String) : Result.Failure<LogoutDto.Response>(
         exception = UseCaseError(
             code = "user_not_found",
             message = "User with username $username not found"
@@ -19,7 +19,7 @@ class LogoutErrors {
     )
 
     // 令牌无效错误
-    class InvalidTokenError : Result.Failure<LogoutDto.LogoutResponse>(
+    class InvalidTokenError : Result.Failure<LogoutDto.Response>(
         exception = UseCaseError(
             code = "invalid_token",
             message = "Invalid or expired token"

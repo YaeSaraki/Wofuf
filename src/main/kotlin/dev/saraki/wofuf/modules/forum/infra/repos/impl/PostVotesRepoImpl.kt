@@ -5,6 +5,7 @@ import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.PostVotesJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.PostVoteEntityMapper
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 /**
  *   @author YaeSaraki
@@ -42,6 +43,7 @@ class PostVotesRepoImpl(
             VoteType.DOWNVOTE.toString()
         )
 
+    @Transactional
     override fun saveBulk(postVotes: PostVotes) {
         val newVoteEntities = postVotes.getNewItems().map(PostVoteEntityMapper::toEntity)
         val removedVoteEntities = postVotes.getRemovedItems().map(PostVoteEntityMapper::toEntity)
@@ -49,11 +51,13 @@ class PostVotesRepoImpl(
         postVotesJpaRepo.deleteAll(removedVoteEntities)
     }
 
+    @Transactional
     override fun save(postVote: PostVote): PostVote {
         val entity = PostVoteEntityMapper.toEntity(postVote)
         return PostVoteEntityMapper.toDomain(postVotesJpaRepo.save(entity))
     }
 
+    @Transactional
     override fun delete(postVote: PostVote) {
         val entity = PostVoteEntityMapper.toEntity(postVote)
         postVotesJpaRepo.deleteById(entity.voteId)

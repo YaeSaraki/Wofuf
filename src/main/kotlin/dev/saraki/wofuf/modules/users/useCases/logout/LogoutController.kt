@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 class LogoutController(@Autowired val logoutUseCase: LogoutUseCase) : BaseController() {
 
     @PostMapping("")
-    fun logout(@RequestBody request: LogoutDto.LogoutRequest): ApiResponse<LogoutDto.LogoutResponse> {
+    fun logout(@RequestBody request: LogoutDto.Request): ApiResponse<LogoutDto.Response> {
         val result = logoutUseCase.execute(request)
         if (result.isFailure) {
             return ApiResponse.error(result.exceptionOrThrow())

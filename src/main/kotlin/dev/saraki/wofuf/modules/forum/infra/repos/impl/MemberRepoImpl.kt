@@ -10,6 +10,7 @@ import dev.saraki.wofuf.modules.users.domain.UserId
 import dev.saraki.wofuf.modules.users.infra.repos.jpa.UserJpaRepo
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 /**
  *   @author YaeSaraki
@@ -82,6 +83,7 @@ class MemberRepoImpl(
         return MemberDetailsMapper.toDomain(memberEntity)
     }
 
+    @Transactional
     override fun save(member: Member): Member? {
         val memberEntity = MemberEntityMapper.toEntity(member)
         val savedEntity = memberJpaRepo.save(memberEntity)

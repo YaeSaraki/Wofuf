@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service
 class DeleteUserUseCase(
     private val userRepo: UserRepo,
     private val authService: IAuth
-) : UseCase<DeleteUserDto, Unit> {
-    override fun execute(request: DeleteUserDto): Result<Unit> {
+) : UseCase<DeleteUserDto.Request, Unit> {
+    override fun execute(request: DeleteUserDto.Request): Result<Unit> {
 
         // 检测UserId是否有效
         val userIdOrError = UserId.create(UniqueEntityId(request.userId))

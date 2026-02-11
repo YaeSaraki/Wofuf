@@ -2,7 +2,7 @@ package dev.saraki.wofuf.modules.players.infra.cache
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import dev.saraki.wofuf.modules.players.services.cache.YesterdayOnlineCache
-import dev.saraki.wofuf.modules.players.useCases.getPlayerYesterdayOnlineUseCase.GetPlayerYesterdayOnlineDto
+import dev.saraki.wofuf.modules.players.useCases.getPlayerYesterdayOnline.GetPlayerYesterdayOnlineDto
 import dev.saraki.wofuf.shared.services.cache.StringCache
 import org.springframework.stereotype.Component
 import java.time.Duration
@@ -15,15 +15,15 @@ class RedisYesterdayOnlineStringCache(
 
     private val key = "players:yesterday:online"
 
-    override fun get(): GetPlayerYesterdayOnlineDto? {
+    override fun get(): GetPlayerYesterdayOnlineDto.Response? {
         val json = cache.get(key) ?: return null
         return objectMapper.readValue(
             json,
-            GetPlayerYesterdayOnlineDto::class.java
+            GetPlayerYesterdayOnlineDto.Response::class.java
         )
     }
 
-    override fun put(data: GetPlayerYesterdayOnlineDto) {
+    override fun put(data: GetPlayerYesterdayOnlineDto.Response) {
         cache.put(
             key,
             objectMapper.writeValueAsString(data),

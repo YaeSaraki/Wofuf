@@ -11,13 +11,13 @@ import dev.saraki.wofuf.modules.users.domain.JwtToken
 import dev.saraki.wofuf.modules.users.domain.RefreshToken
 
 class RefreshAccessTokenDto {
-    data class RefreshAccessTokenRequest(
+    data class Request(
         val id: String,
         val accessToken: JwtToken,
         val refreshToken: RefreshToken,
     )
 
-    data class RefreshAccessTokenResponse(
+    data class Response(
         val accessToken: JwtToken,
         val refreshToken: RefreshToken,
     )

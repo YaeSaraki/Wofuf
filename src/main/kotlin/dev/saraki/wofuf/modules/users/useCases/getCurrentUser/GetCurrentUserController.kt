@@ -24,7 +24,7 @@ class GetCurrentUserController : BaseController() {
     private lateinit var getUserByUsernameUseCase: GetUserByUsernameUseCase
 
     @GetMapping("")
-    fun getUserByUsername(@RequestBody request: GetUserByUsernameDto.GetUserRequest): ApiResponse<GetUserByUsernameDto.GetUserResponse> {
+    fun getUserByUsername(@RequestBody request: GetUserByUsernameDto.Request): ApiResponse<GetUserByUsernameDto.Response> {
         val resultOrError = getUserByUsernameUseCase.execute(request)
         if (resultOrError.isFailure) {
             return ApiResponse.error(resultOrError.exceptionOrThrow())

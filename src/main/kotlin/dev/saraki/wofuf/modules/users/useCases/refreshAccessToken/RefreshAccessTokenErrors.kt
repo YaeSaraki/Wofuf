@@ -13,7 +13,7 @@ import dev.saraki.wofuf.shared.core.UseCaseError
 
 class RefreshAccessTokenErrors {
     // 用户未找到错误
-    class UserNotFoundError(username: String) : Result.Failure<RefreshAccessTokenDto.RefreshAccessTokenResponse>(
+    class UserNotFoundError(username: String) : Result.Failure<RefreshAccessTokenDto.Response>(
         exception = UseCaseError(
             code = "user_not_found",
             message = "User with username $username not found"
@@ -21,7 +21,7 @@ class RefreshAccessTokenErrors {
     )
 
     // 令牌无效错误
-    class InvalidTokenError : Result.Failure<RefreshAccessTokenDto.RefreshAccessTokenResponse>(
+    class InvalidTokenError : Result.Failure<RefreshAccessTokenDto.Response>(
         exception = UseCaseError(
             code = "invalid_token",
             message = "Invalid or expired token"
@@ -29,7 +29,7 @@ class RefreshAccessTokenErrors {
     )
 
     // 刷新令牌不存在错误
-    class RefreshTokenNotFoundError : Result.Failure<RefreshAccessTokenDto.RefreshAccessTokenResponse>(
+    class RefreshTokenNotFoundError : Result.Failure<RefreshAccessTokenDto.Response>(
         exception = UseCaseError(
             code = "refresh_token_not_found",
             message = "Refresh token not found"

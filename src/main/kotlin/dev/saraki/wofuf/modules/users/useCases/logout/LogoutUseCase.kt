@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service
 class LogoutUseCase(
     val userRepo: UserRepo,
     val authService: IAuth
-) : UseCase<LogoutDto.LogoutRequest, LogoutDto.LogoutResponse> {
-    override fun execute(request: LogoutDto.LogoutRequest): Result<LogoutDto.LogoutResponse> {
+) : UseCase<LogoutDto.Request, LogoutDto.Response> {
+    override fun execute(request: LogoutDto.Request): Result<LogoutDto.Response> {
 
         // 验证访问令牌
         val authSession = authService.authenticate(request.accessToken)
@@ -48,7 +48,7 @@ class LogoutUseCase(
         user.setAccessToken("", "")
 
         // 返回注销响应
-        val logoutResponseDto = LogoutDto.LogoutResponse(
+        val logoutResponseDto = LogoutDto.Response(
             message = "Successfully logged out",
         )
         return Result.success(logoutResponseDto)

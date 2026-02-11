@@ -10,11 +10,11 @@ import java.time.LocalDateTime
  */
 
 class GetUserByUsernameDto {
-    data class GetUserRequest(
+    data class Request(
         val username: String,
     )
 
-    data class GetUserResponse(
+    data class Response(
         val username: String,
         val email: String,
         val isEmailVerified: Boolean,

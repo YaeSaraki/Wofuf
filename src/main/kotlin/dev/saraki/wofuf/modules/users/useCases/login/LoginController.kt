@@ -21,7 +21,7 @@ class LoginController : BaseController() {
     private lateinit var loginUseCase: LoginUseCase
 
     @PostMapping("")
-    fun login(@RequestBody request: LoginDto.LoginRequest): ApiResponse<LoginDto.LoginResponse> {
+    fun login(@RequestBody request: LoginDto.Request): ApiResponse<LoginDto.Response> {
         val result = loginUseCase.execute(request)
         if (result.isFailure) {
             return ApiResponse.error(result.exceptionOrThrow())

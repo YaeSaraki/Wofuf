@@ -21,7 +21,7 @@ class DeleteUserController : BaseController() {
     private lateinit var deleteUserUseCase: DeleteUserUseCase
 
     @PostMapping("")
-    fun deleteUser(@RequestBody request: DeleteUserDto): ApiResponse<String> {
+    fun deleteUser(@RequestBody request: DeleteUserDto.Request): ApiResponse<String> {
         val result = deleteUserUseCase.execute(request)
         if (result.isFailure) {
             return ApiResponse.error(result.exceptionOrThrow())

@@ -5,6 +5,7 @@ import dev.saraki.wofuf.modules.forum.infra.repos.CommentVotesRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.CommentVotesJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.CommentVoteEntityMapper
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 /**
  *   @author YaeSaraki
@@ -32,17 +33,20 @@ class CommentVotesRepoImpl(
         )?.let(CommentVoteEntityMapper::toDomain)
     }
 
+    @Transactional
     override fun saveBulk(votes: CommentVotes) {
         commentVotesJpaRepo.saveAll(
             votes.getItems().map(CommentVoteEntityMapper::toEntity)
         )
     }
 
+    @Transactional
     override fun save(vote: CommentVote): CommentVote {
         val entity = CommentVoteEntityMapper.toEntity(vote)
         return CommentVoteEntityMapper.toDomain(commentVotesJpaRepo.save(entity))
     }
 
+    @Transactional
     override fun delete(vote: CommentVote) {
         commentVotesJpaRepo.deleteById(vote.commentId.stringValue)
     }

@@ -23,7 +23,7 @@ class CreateUserController : BaseController() {
     private lateinit var createUserUseCase: CreateUserUseCase
 
     @PostMapping("")
-    fun createUser(@RequestBody request: CreateUserDto): ApiResponse<String> {
+    fun createUser(@RequestBody request: CreateUserDto.Request): ApiResponse<String> {
         val result = createUserUseCase.execute(request)
         if (result.isFailure) {
             return ApiResponse.error(result.map { UserMap.from(it) }.exceptionOrThrow())

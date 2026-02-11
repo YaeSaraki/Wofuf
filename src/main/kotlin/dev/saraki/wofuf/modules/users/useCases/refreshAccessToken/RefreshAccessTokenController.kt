@@ -21,7 +21,7 @@ class RefreshAccessTokenController(@Autowired val refreshAccessTokenUseCase: Ref
     BaseController() {
 
     @PostMapping("")
-    fun refreshAccessToken(@RequestBody request: RefreshAccessTokenDto.RefreshAccessTokenRequest): ApiResponse<RefreshAccessTokenDto.RefreshAccessTokenResponse> {
+    fun refreshAccessToken(@RequestBody request: RefreshAccessTokenDto.Request): ApiResponse<RefreshAccessTokenDto.Response> {
         val result = refreshAccessTokenUseCase.execute(request)
         if (result.isFailure) {
             return ApiResponse.error(result.exceptionOrThrow())

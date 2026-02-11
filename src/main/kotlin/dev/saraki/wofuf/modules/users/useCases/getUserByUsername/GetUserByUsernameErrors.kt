@@ -12,7 +12,7 @@ import dev.saraki.wofuf.shared.core.UseCaseError
 
 class GetUserByUsernameErrors {
     // 用户不存在错误
-    class UserNotFoundError(val username: String) : Result.Failure<GetUserByUsernameDto.GetUserResponse>(
+    class UserNotFoundError(val username: String) : Result.Failure<GetUserByUsernameDto.Response>(
         exception = UseCaseError(
             code = "USER_NOT_FOUND",
             message = "The user cannot be found"
@@ -20,7 +20,7 @@ class GetUserByUsernameErrors {
     )
 
     // 用户名无效错误
-    class UserNameInvalidError(val username: String) : Result.Failure<GetUserByUsernameDto.GetUserResponse>(
+    class UserNameInvalidError(val username: String) : Result.Failure<GetUserByUsernameDto.Response>(
         exception = UseCaseError(
             code = "USER_NAME_INVALID",
             message = "The username is invalid"

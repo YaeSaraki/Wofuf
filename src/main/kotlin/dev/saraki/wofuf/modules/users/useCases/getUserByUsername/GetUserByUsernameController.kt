@@ -22,8 +22,8 @@ class GetUserByUsernameController : BaseController() {
     private lateinit var getUserByUsernameUseCase: GetUserByUsernameUseCase
 
     @GetMapping("")
-    fun getUserByUsername(@PathVariable username: String): ApiResponse<GetUserByUsernameDto.GetUserResponse> {
-        val resultOrError = getUserByUsernameUseCase.execute(GetUserByUsernameDto.GetUserRequest(username))
+    fun getUserByUsername(@PathVariable username: String): ApiResponse<GetUserByUsernameDto.Response> {
+        val resultOrError = getUserByUsernameUseCase.execute(GetUserByUsernameDto.Request(username))
         if (resultOrError.isFailure) {
             return ApiResponse.error(resultOrError.exceptionOrThrow())
 

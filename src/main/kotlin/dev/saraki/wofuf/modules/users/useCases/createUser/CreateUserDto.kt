@@ -7,8 +7,10 @@ package dev.saraki.wofuf.modules.users.useCases.createUser
  *   @description:
  */
 
-data class CreateUserDto(
-    val email: String,
-    val username: String,
-    val password: String
-)
+class CreateUserDto{
+    data class Request(
+        val email: String,
+        val username: String,
+        val password: String
+    )
+}

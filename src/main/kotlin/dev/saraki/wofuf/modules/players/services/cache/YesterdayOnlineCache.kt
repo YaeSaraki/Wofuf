@@ -1,8 +1,8 @@
 package dev.saraki.wofuf.modules.players.services.cache
 
-import dev.saraki.wofuf.modules.players.useCases.getPlayerYesterdayOnlineUseCase.GetPlayerYesterdayOnlineDto
+import dev.saraki.wofuf.modules.players.useCases.getPlayerYesterdayOnline.GetPlayerYesterdayOnlineDto
 
 interface YesterdayOnlineCache {
-    fun get(): GetPlayerYesterdayOnlineDto?
-    fun put(data: GetPlayerYesterdayOnlineDto)
+    fun get(): GetPlayerYesterdayOnlineDto.Response?
+    fun put(data: GetPlayerYesterdayOnlineDto.Response)
 }

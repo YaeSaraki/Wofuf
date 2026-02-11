@@ -19,5 +19,7 @@ class AppConfig(
     @Value("\${app.is-production}")
     val isProduction: Boolean,
     @Value("\${app.approved-domain-list}")
-    val approvedDomainList: List<String>
+    val approvedDomainList: List<String>,
+    @Value("\${secretKey}")
+    val secretKey: String
 )

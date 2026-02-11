@@ -1,7 +1,7 @@
 package dev.saraki.wofuf.modules.forum.mappers
 
 import dev.saraki.wofuf.modules.forum.domain.CommentDetails
-import dev.saraki.wofuf.modules.forum.dtos.CommentDetailsDto
+import dev.saraki.wofuf.modules.forum.dtos.CommentDto
 
 /**
  *   @author YaeSaraki
@@ -10,8 +10,8 @@ import dev.saraki.wofuf.modules.forum.dtos.CommentDetailsDto
  *   @description:
  */
 class CommentDetailsMap {
-    fun from(commentDetails: CommentDetails): CommentDetailsDto {
-        return CommentDetailsDto(
+    fun from(commentDetails: CommentDetails): CommentDto {
+        return CommentDto(
             postSlug = commentDetails.postSlug,
             postTitle = "", // 需要从Post中获取
             commentId = commentDetails.commentId.stringValue,
