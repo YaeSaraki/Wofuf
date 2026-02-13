@@ -1,12 +1,12 @@
-<script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+<script lang="ts" setup>
+import {onMounted, ref} from 'vue'
+import {useRoute} from 'vue-router'
 import PlayerProfileCard from '@M/players/components/playerProfile/PlayerProfilePanel.vue'
 import StatisticsPanel from '@M/players/components/statistics/StatisticsPanel.vue'
 import AdvancementsPanel from '@M/players/components/advancements/AdvancementsPanel.vue'
-import { PlayerService } from '@M/players/services/PlayerService.ts'
-import type { Player } from '@M/players/dtos/Player.ts'
-import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
+import {PlayerService} from '@M/players/services/PlayerService.ts'
+import type {Player} from '@M/players/dtos/Player.ts'
+import {useAsyncLoader} from '@SU/async/useAsyncLoader.ts'
 import router from '@S/infra/router'
 
 /* ---------------- 路由参数 ---------------- */
@@ -16,7 +16,7 @@ const playerService = new PlayerService()
 const player = ref<Player | null>(null)
 
 /* ---------------- 复用通用加载逻辑 ---------------- */
-const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
+const {isLoading, errorMsg, executeAsync} = useAsyncLoader()
 
 // 获取玩家信息
 async function fetchPlayerProfile() {
@@ -24,7 +24,7 @@ async function fetchPlayerProfile() {
 
   try {
     const playerData = await executeAsync(async (signal) => {
-      const apiResult = await playerService.getPlayerProfile(playerName.value, { signal })
+      const apiResult = await playerService.getPlayerProfile(playerName.value, {signal})
 
       if (apiResult.isSuccess) {
         const realPlayerData = apiResult.getValue()
@@ -45,6 +45,7 @@ async function fetchPlayerProfile() {
     console.error('获取玩家信息兜底异常：', error)
   }
 }
+
 onMounted(() => {
   fetchPlayerProfile()
 })
@@ -70,13 +71,13 @@ onMounted(() => {
           <div
             class="flex justify-center items-center p-4 rounded-xl w-auto flex-1 h-full bg-zinc-100 dark:bg-zinc-800"
           >
-            <PlayerProfileCard :player="player || null" />
+            <PlayerProfileCard :player="player || null"/>
           </div>
           <!-- 右侧栏 -->
           <div class="p-4 rounded-xl w-full md:w-full flex-4 h-full bg-zinc-100 dark:bg-zinc-800">
-            <AdvancementsPanel :player-uuid="player?.id || ''" />
-            <div class="h-4" />
-            <StatisticsPanel :player-uuid="player?.id || ''" />
+            <AdvancementsPanel :player-uuid="player?.id || ''"/>
+            <div class="h-4"/>
+            <StatisticsPanel :player-uuid="player?.id || ''"/>
             <!-- 空数据 -->
             <div v-if="!player?.name" class="flex justify-center items-center h-full">
               <p class="text-center text-zinc-400">暂无玩家数据</p>

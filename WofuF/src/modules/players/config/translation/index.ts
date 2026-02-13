@@ -1,10 +1,10 @@
 // 块翻译
-import { registerTranslations } from '@S/services/i18n'
+import {registerTranslations} from '@S/services/i18n'
 import {
   advancementsItemTranslation,
 } from '@M/players/config/translation/advancementsTranslation.ts'
-import { statisticsTranslation } from '@M/players/config/translation/statisticsTranslation.ts'
-import { advancementsTranslation } from '@M/players/config/translation/advancementsItemTranslation.ts'
+import {statisticsTranslation} from '@M/players/config/translation/statisticsTranslation.ts'
+import {advancementsTranslation} from '@M/players/config/translation/advancementsItemTranslation.ts'
 
 const index = {
   // 服务器统计

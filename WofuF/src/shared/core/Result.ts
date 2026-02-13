@@ -20,19 +20,6 @@ export class Result<T> {
     Object.freeze(this)
   }
 
-  public getValue(): T {
-    if (!this.isSuccess) {
-      console.log(this.error)
-      throw new Error("Can't get the value of an error result. Use 'errorValue' instead.")
-    }
-
-    return this._value
-  }
-
-  public errorValue(): T {
-    return this.error as T
-  }
-
   public static success<U>(value?: U): Result<U> {
     return new Result<U>(true, null, value)
   }
@@ -46,5 +33,18 @@ export class Result<T> {
       if (result.isFailure) return result
     }
     return Result.success()
+  }
+
+  public getValue(): T {
+    if (!this.isSuccess) {
+      console.log(this.error)
+      throw new Error("Can't get the value of an error result. Use 'errorValue' instead.")
+    }
+
+    return this._value
+  }
+
+  public errorValue(): T {
+    return this.error as T
   }
 }

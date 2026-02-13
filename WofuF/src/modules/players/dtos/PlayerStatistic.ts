@@ -3,6 +3,7 @@ export interface PlayerStatistic {
   key: string
   value: number
 }
+
 export interface PlayerStatisticList {
   statistics: Record<string, PlayerStatistic>
 }

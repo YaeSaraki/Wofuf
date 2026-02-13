@@ -1,0 +1,120 @@
+
+# ===================== users =====================
+# ===================== JWT =====================
+auth:
+  jwt:
+    secret: your-secret-key-must-be-at-least-32-bytes-long-and-secure!
+    expiration: 3600000  # 1小时
+    refresh-expiration: 604800000  # 7天
+    issuer: auth-service
+    clock-skew: 60  # 60秒时钟偏差
+    token-version: '0'
+
+  redis:
+    host: localhost
+    port: 6380
+    password: ""
+    database: 0
+
+# ===================== Spring Boot =====================
+debug: true
+server:
+  port: 8001
+
+spring:
+  application:
+    name: modules-users
+  # ===================== Spring Security =====================
+
+  security:
+    user:
+      name: saraki
+      password: saraki
+  # ===================== Database =====================
+  datasource:
+    url: jdbc:mysql://localhost:3307/Woffo_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: Woffo_db_user
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      pool-name: WofufHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  # ===================== JPA/Hibernate =====================
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+  # ===================== Redis =====================
+  data:
+    redis:
+      host: localhost
+      port: 6380
+      password: ""
+      database: 0
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+        shutdown-timeout: 100ms
+
+  # ===================== Kafka =====================
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                header: true
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+            use:
+              type:
+                headers: true
+
+  # ===================== Spring Cloud Stream =====================
+  cloud:
+    stream:
+      bindings:
+        orderEventProcessor-in-0:
+          destination: domain-events-topic
+          group: domain-events-group
+          content-type: application/json
+      kafka:
+        binder:
+          brokers: localhost:9092
+          auto-create-topics: true
+        bindings:
+          orderEventProcessor-in-0:
+            consumer:
+              enable-dlq: true
+              dlq-name: domain-events-dlq
+
+# ===================== Eureka =====================
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true

@@ -1,19 +1,19 @@
-<script setup lang="ts">
-import { onUnmounted, ref, watch, nextTick } from 'vue'
-import type { Player } from '@M/players/dtos/Player.ts'
-import { PlayerService } from '@M/players/services/PlayerService.ts'
-import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
-import { Render, WalkingAnimation } from 'skin3d'
-import type { PlayerSkin } from '@M/players/dtos/PlayerSkin.ts'
-import { translate } from '@S/services/i18n'
-import { addImagePrefixToBase64 } from '@SU/Base64Util.ts'
+<script lang="ts" setup>
+import {nextTick, onUnmounted, ref, watch} from 'vue'
+import type {Player} from '@M/players/dtos/Player.ts'
+import {PlayerService} from '@M/players/services/PlayerService.ts'
+import {useAsyncLoader} from '@SU/async/useAsyncLoader.ts'
+import {Render, WalkingAnimation} from 'skin3d'
+import type {PlayerSkin} from '@M/players/dtos/PlayerSkin.ts'
+import {translate} from '@S/services/i18n'
+import {addImagePrefixToBase64} from '@SU/Base64Util.ts'
 
 const props = defineProps<{ player: Player | null }>()
 const playerService = new PlayerService()
 const hasSkinViewerResizeListener = ref(false)
 
 /* ---------------- 复用通用加载逻辑 ---------------- */
-const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
+const {isLoading, errorMsg, executeAsync} = useAsyncLoader()
 /* ---------------- 获取玩家皮肤 ---------------- */
 
 const playerSkin = ref<PlayerSkin | null>(null)
@@ -33,7 +33,7 @@ watch(
       destroyViewer()
     }
   },
-  { immediate: true },
+  {immediate: true},
 )
 
 // 监听皮肤数据变化，初始化/更新查看器
@@ -54,7 +54,7 @@ async function fetchPlayerSkin() {
   }
   try {
     const playerSkinData = await executeAsync(async (signal) => {
-      const apiResult = await playerService.getPlayerSkin(props.player!.id, { signal })
+      const apiResult = await playerService.getPlayerSkin(props.player!.id, {signal})
       if (apiResult.isSuccess) {
         return apiResult.getValue()
       }
@@ -85,6 +85,7 @@ function getOptimalDimensions() {
 }
 
 const dims = getOptimalDimensions()
+
 function initOrUpdateViewer(skinData: PlayerSkin) {
   if (!canvas.value) {
     console.error('Canvas element not found')
@@ -199,10 +200,10 @@ onUnmounted(() => {
     <!--    </div>-->
 
     <canvas
-      class="rounded-lg border-purple-300 hover:hover:border-2 hover:scale-105"
       ref="canvas"
-      :width="dims.width"
       :height="dims.height"
+      :width="dims.width"
+      class="rounded-lg border-purple-300 hover:hover:border-2 hover:scale-105"
     />
 
     <!-- 信息面板 -->

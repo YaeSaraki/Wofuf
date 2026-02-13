@@ -45,55 +45,6 @@ export class CacheService {
   }
 
   /**
-   * 获取模块的缓存上
-   */
-  private getModuleMaxSize(module: string): number {
-    return this.moduleMaxSizes.get(module) || this.globalDefaultMaxSize
-  }
-
-  /**
-   * 更新缓存的最后访问时间（所有读取/写入操作都要更新）
-   */
-  private updateAccessTime(module: string, key: CacheKey): void {
-    let accessTimeMap = this.moduleAccessTime.get(module)
-    if (!accessTimeMap) {
-      accessTimeMap = new Map<CacheKey, number>()
-      this.moduleAccessTime.set(module, accessTimeMap)
-    }
-    accessTimeMap.set(key, Date.now())
-  }
-
-  /**
-   * 模块缓存超限清理（LRU 策略）
-   */
-  private cleanModuleIfOverLimit(module: string): void {
-    const moduleCache = this.moduleCaches.get(module)
-    const accessTimeMap = this.moduleAccessTime.get(module)
-    if (!moduleCache || moduleCache.size === 0) return
-
-    const maxSize = this.getModuleMaxSize(module)
-    const currentSize = moduleCache.size
-
-    if (currentSize <= maxSize) return
-
-    const needDeleteCount = currentSize - maxSize
-    if (needDeleteCount <= 0) return
-
-    const sortedKeys = Array.from(moduleCache.keys())
-      .map(key => ({
-        key,
-        time: accessTimeMap?.get(key) || 0 // 无访问时间的视为最旧
-      }))
-      .sort((a, b) => a.time - b.time) // 旧的在前，新的在后
-
-    sortedKeys.slice(0, needDeleteCount).forEach(item => {
-      moduleCache.delete(item.key)
-      accessTimeMap?.delete(item.key)
-    })
-  }
-
-
-  /**
    * 设置缓存值
    * @param module 功能模块名称
    * @param key 缓存键
@@ -150,7 +101,6 @@ export class CacheService {
     return moduleCache ? moduleCache.delete(key) : false
   }
 
-
   /**
    * 获取整个模块的Map
    */
@@ -197,7 +147,6 @@ export class CacheService {
     return this.clearModule(module) && this.moduleCaches.delete(module)
   }
 
-
   /**
    * 批量设置缓存
    */
@@ -236,7 +185,6 @@ export class CacheService {
     return result
   }
 
-
   /**
    * 清空所有模块的所有缓存
    */
@@ -260,8 +208,6 @@ export class CacheService {
     this.clearAll()
     this.moduleCaches.clear()
   }
-
-  // ============ 查询和统计（原有逻辑不变，无需改动） ============
 
   /**
    * 获取所有模块名称
@@ -303,6 +249,8 @@ export class CacheService {
     return stats
   }
 
+  // ============ 查询和统计（原有逻辑不变，无需改动） ============
+
   /**
    * 获取模块的所有键
    */
@@ -331,8 +279,6 @@ export class CacheService {
     return Array.from(moduleCache.entries()) as Array<[CacheKey, V]>
   }
 
-  // ============ 搜索功能（原有逻辑不变，无需改动） ============
-
   /**
    * 搜索模块中符合条件的缓存
    */
@@ -342,5 +288,55 @@ export class CacheService {
   ): Array<[CacheKey, V]> {
     const entries = this.getModuleEntries<V>(module)
     return entries.filter(([key, value]) => predicate(value, key))
+  }
+
+  /**
+   * 获取模块的缓存上
+   */
+  private getModuleMaxSize(module: string): number {
+    return this.moduleMaxSizes.get(module) || this.globalDefaultMaxSize
+  }
+
+  /**
+   * 更新缓存的最后访问时间（所有读取/写入操作都要更新）
+   */
+  private updateAccessTime(module: string, key: CacheKey): void {
+    let accessTimeMap = this.moduleAccessTime.get(module)
+    if (!accessTimeMap) {
+      accessTimeMap = new Map<CacheKey, number>()
+      this.moduleAccessTime.set(module, accessTimeMap)
+    }
+    accessTimeMap.set(key, Date.now())
+  }
+
+  // ============ 搜索功能（原有逻辑不变，无需改动） ============
+
+  /**
+   * 模块缓存超限清理（LRU 策略）
+   */
+  private cleanModuleIfOverLimit(module: string): void {
+    const moduleCache = this.moduleCaches.get(module)
+    const accessTimeMap = this.moduleAccessTime.get(module)
+    if (!moduleCache || moduleCache.size === 0) return
+
+    const maxSize = this.getModuleMaxSize(module)
+    const currentSize = moduleCache.size
+
+    if (currentSize <= maxSize) return
+
+    const needDeleteCount = currentSize - maxSize
+    if (needDeleteCount <= 0) return
+
+    const sortedKeys = Array.from(moduleCache.keys())
+      .map(key => ({
+        key,
+        time: accessTimeMap?.get(key) || 0 // 无访问时间的视为最旧
+      }))
+      .sort((a, b) => a.time - b.time) // 旧的在前，新的在后
+
+    sortedKeys.slice(0, needDeleteCount).forEach(item => {
+      moduleCache.delete(item.key)
+      accessTimeMap?.delete(item.key)
+    })
   }
 }

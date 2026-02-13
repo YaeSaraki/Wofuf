@@ -1,11 +1,13 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.2.21'
     id 'org.jetbrains.kotlin.plugin.spring' version '2.2.21'
-    id 'org.springframework.boot' version '4.0.1'
-    id 'io.spring.dependency-management' version '1.1.7'
-    id 'org.asciidoctor.jvm.convert' version '4.0.5'
     id "org.jetbrains.kotlin.plugin.noarg" version "2.1.21"
     id "org.jetbrains.kotlin.plugin.allopen" version "2.1.21"
+
+    id 'org.springframework.boot' version '4.0.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+
+    id 'org.asciidoctor.jvm.convert' version '4.0.5'
 }
 
 noArg {
@@ -19,7 +21,6 @@ allOpen {
     annotation("jakarta.persistence.MappedSuperclass")
     annotation("jakarta.persistence.Embeddable")
 }
-
 
 group = 'dev.saraki'
 version = '0.0.1-SNAPSHOT'
@@ -43,49 +44,67 @@ repositories {
 
 ext {
     set('snippetsDir', file("build/generated-snippets"))
+    set('springCloudVersion', "2025.1.0")
 }
 
-def jjwtVersion = '0.12.5'
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
 
 dependencies {
-    /*
-     * Spring Boot dependencies
-     */
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    implementation 'org.jetbrains.kotlin:kotlin-reflect'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1'
-    implementation 'tools.jackson.module:jackson-module-kotlin'
-    compileOnly 'org.projectlombok:lombok'
-//    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    runtimeOnly 'com.mysql:mysql-connector-j'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-restdocs'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:4.0.1'
-    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation(project(':shared'))
+    implementation(project(':shared-auth'))
+    implementation(project(':modules-users'))
+    implementation(project(':modules-players'))
+    implementation(project(':modules-forum'))
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-    // API dependency is required for all JJWT usage
-    implementation("uk.co.ticklethepanda:spring-jwt-authentication-filter:0.0.1")
-    implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+    // 基础依赖
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine')
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.apache.commons:commons-pool2")
+
+    // Spring Boot 核心依赖
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // 测试依赖
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
+
+    // MyBatis
+    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3")
+    testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3")
+
+    // Spring Cloud Stream + Kafka
+    implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
+    implementation("org.springframework.kafka:spring-kafka")
+
+    // 配置处理器
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+    // 数据库驱动
+    runtimeOnly("com.mysql:mysql-connector-j")
+
+    // Lombok
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
+    // jjwt
+    implementation("io.jsonwebtoken:jjwt-api:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
-    // 补充：JJWT JSON 序列化包（jackson，推荐，支持 JWT 载荷解析/生成）
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
 
-    // Jackson JSON 序列化包
-    implementation("com.fasterxml.jackson.core:jackson-core:2.15.2")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
+    implementation("com.google.code.gson:gson:2.11.0")
 
-    // Redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.apache.commons:commons-pool2'
-
-    // SpringDoc OpenAPI UI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+    // Swagger
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
 }
 
 kotlin {
@@ -94,12 +113,3 @@ kotlin {
     }
 }
 
-tasks.named('test') {
-    outputs.dir snippetsDir
-    useJUnitPlatform()
-}
-
-tasks.named('asciidoctor') {
-    inputs.dir snippetsDir
-    dependsOn test
-}

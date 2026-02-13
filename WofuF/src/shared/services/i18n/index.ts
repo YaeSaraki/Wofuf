@@ -1,6 +1,6 @@
 // i18n核心功能
-import type { Translations, ModuleTranslations } from './types.ts'
-import { getLocale, type Locale } from './useLocale.ts'
+import type {ModuleTranslations, Translations} from './types.ts'
+import {getLocale, type Locale} from './useLocale.ts'
 
 // 所有模块的翻译集合
 const moduleTranslations: ModuleTranslations = {}

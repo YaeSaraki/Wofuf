@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import {createApp} from 'vue'
 import router from '@S/infra/router'
 import App from '@M/app/App.vue'
 import PrimeVue from 'primevue/config'

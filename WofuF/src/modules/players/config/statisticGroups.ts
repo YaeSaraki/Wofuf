@@ -1,4 +1,4 @@
-import type { StatisticGroups } from '@M/players/dtos/StatisticGroup.ts'
+import type {StatisticGroups} from '@M/players/dtos/StatisticGroup.ts'
 
 export const statisticGroups: StatisticGroups = [
   {

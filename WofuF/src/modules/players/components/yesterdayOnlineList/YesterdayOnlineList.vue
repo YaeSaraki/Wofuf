@@ -1,15 +1,15 @@
-<script setup lang="ts">
-import { onMounted, ref, watch, reactive } from 'vue'
-import { PlayerService } from '@M/players/services/PlayerService.ts'
-import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
-import type { PlayerName, PlayerNameList } from '@M/players/dtos/PlayerName.ts'
-import { translate } from '@S/services/i18n'
+<script lang="ts" setup>
+import {onMounted, reactive, ref, watch} from 'vue'
+import {PlayerService} from '@M/players/services/PlayerService.ts'
+import {useAsyncLoader} from '@SU/async/useAsyncLoader.ts'
+import type {PlayerName, PlayerNameList} from '@M/players/dtos/PlayerName.ts'
+import {translate} from '@S/services/i18n'
 import router from '@S/infra/router'
-import { renderAvatar } from '@SU/renderUTil.ts'
-import { addImagePrefixToBase64 } from '@SU/Base64Util.ts'
+import {renderAvatar} from '@SU/renderUTil.ts'
+import {addImagePrefixToBase64} from '@SU/Base64Util.ts'
 
 /* ---------------- 复用通用加载逻辑 ---------------- */
-const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
+const {isLoading, errorMsg, executeAsync} = useAsyncLoader()
 
 /* ---------------- 业务状态 ---------------- */
 const playerService = new PlayerService()
@@ -74,7 +74,7 @@ watch(
       loadAllAvatars()
     }
   },
-  { immediate: true },
+  {immediate: true},
 )
 
 /* ---------------- 业务行为 ---------------- */
@@ -86,7 +86,7 @@ async function loadYesterdayOnlinePlayers() {
 
   const result = await executeAsync(
     async (signal) => {
-      const result = await playerService.getPlayerYesterdayOnline({ signal })
+      const result = await playerService.getPlayerYesterdayOnline({signal})
       if (result.isSuccess) {
         return result.getValue()
       }
@@ -147,12 +147,12 @@ onMounted(() => {
       >
         <div class="avatar-wrapper">
           <img
-            class="avatar"
+            :alt="`${item}'s avatar`"
             :class="{ 'opacity-50': isAvatarLoading(item) }"
             :src="getAvatarUrl(item)"
-            :alt="`${item}'s avatar`"
-            loading="lazy"
+            class="avatar"
             decoding="async"
+            loading="lazy"
           />
           <div v-if="isAvatarLoading(item)" class="loading-indicator">
             <div class="loading-spinner"></div>

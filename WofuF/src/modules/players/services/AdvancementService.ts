@@ -1,16 +1,16 @@
-import { imageImportService } from '@S/services/ImageImporter'
-import type { PlayerUuid } from '@M/players/dtos/PlayerUuid.ts'
-import { challenge, goal } from '@M/players/config/AdvancementSpecial.ts'
-import { advancementsGroups } from '@M/players/config/AdvancementGroups.ts'
-import type { PlayerAdvancement, PlayerAdvancementList } from '@M/players/dtos/PlayerAdvancement.ts'
+import {imageImportService} from '@S/services/ImageImporter'
+import type {PlayerUuid} from '@M/players/dtos/PlayerUuid.ts'
+import {challenge, goal} from '@M/players/config/AdvancementSpecial.ts'
+import {advancementsGroups} from '@M/players/config/AdvancementGroups.ts'
+import type {PlayerAdvancement, PlayerAdvancementList} from '@M/players/dtos/PlayerAdvancement.ts'
 
-import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
-import { cacheService } from '@S/infra/cache'
-import { translate } from '@S/services/i18n'
-import { http } from '@S/infra/api/http.ts'
-import { Result } from '@S/core/Result.ts'
+import type {ApiResponse} from '@S/infra/api/v1/models/ApiResponse.ts'
+import {cacheService} from '@S/infra/cache'
+import {translate} from '@S/services/i18n'
+import {http} from '@S/infra/api/http.ts'
+import {Result} from '@S/core/Result.ts'
 
-import type { RequestOptions } from '@SU/async/RequestOptions.ts'
+import type {RequestOptions} from '@SU/async/RequestOptions.ts'
 
 export interface AdvancementGroupTotal {
   total: number
@@ -49,13 +49,12 @@ export interface IAdvancementService {
 }
 
 export class AdvancementService implements IAdvancementService {
-  private readonly ALL_GROUPED_ADVANCEMENT_KEYS: Set<string>
-  private readonly _advancementImages: Record<string, string>
   private static readonly CACHE_MODULE = 'advancement_service'
-
   private static readonly DEFAULT_EXTENSIONS = ['png', 'webp', 'jpg', 'jpeg', 'gif'] as const
   private static readonly BASE_ADVANCEMENT_PATH = '/src/modules/players/assets/image/advancement/'
   private static readonly BASE_BG_PATH = 'modules/players/assets/image/advancement/bg/'
+  private readonly ALL_GROUPED_ADVANCEMENT_KEYS: Set<string>
+  private readonly _advancementImages: Record<string, string>
 
   constructor() {
     this.ALL_GROUPED_ADVANCEMENT_KEYS = new Set(
@@ -143,7 +142,7 @@ export class AdvancementService implements IAdvancementService {
     const nonRecipeAdvancements = this.filterNonRecipeAdvancements(advancements)
 
     return advancementsGroups.map((group) => {
-      const { advancements: groupAdvKeys } = group
+      const {advancements: groupAdvKeys} = group
       const total = groupAdvKeys.length
 
       const completedAdvKeys = new Set(
@@ -190,7 +189,7 @@ export class AdvancementService implements IAdvancementService {
       }
     }
 
-    return { category: 'other', name: key }
+    return {category: 'other', name: key}
   }
 
   // ==================== 图片处理 ====================
@@ -203,7 +202,7 @@ export class AdvancementService implements IAdvancementService {
   }
 
   public getAdvancementImagePath(advancement: PlayerAdvancement): string {
-    const { category, name } = this.parseAdvancementKey(advancement.key)
+    const {category, name} = this.parseAdvancementKey(advancement.key)
     const baseName = `${AdvancementService.BASE_ADVANCEMENT_PATH}${category}/${name}`
 
     for (const ext of AdvancementService.DEFAULT_EXTENSIONS) {
@@ -219,7 +218,7 @@ export class AdvancementService implements IAdvancementService {
   }
 
   public getAdvancementFramePath(advancement: PlayerAdvancement): string {
-    const { key, done } = advancement
+    const {key, done} = advancement
     let imageName: string
 
     if (challenge.includes(key)) {
@@ -236,13 +235,13 @@ export class AdvancementService implements IAdvancementService {
 
   // ==================== 翻译成就子项目 ====================
   public translateAdvancement = (advancement: PlayerAdvancement) => {
-    const { category, name } =
+    const {category, name} =
       advancement.key.split('/').length >= 2
         ? {
-            category: advancement.key.split('/')[0],
-            name: advancement.key.split('/').slice(1).join('_'),
-          }
-        : { category: '', name: advancement.key }
+          category: advancement.key.split('/')[0],
+          name: advancement.key.split('/').slice(1).join('_'),
+        }
+        : {category: '', name: advancement.key}
 
     return translate('players', `advancements.${category ? category + '.' : ''}${name}`)
   }

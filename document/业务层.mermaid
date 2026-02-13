@@ -1,27 +1,27 @@
 flowchart TD
     UseCases["用例层(LoginUseCase/GetPlayerUseCase等)"] -->|协调| DomainModel["领域模型"]
-    
+
     subgraph DomainModel["领域模型"]
         AggregateRoot["聚合根(Player/User/Post等)"] -->|包含| Entity["实体(UserId/PlayerId/PostId等)"]
         AggregateRoot -->|包含| ValueObject["值对象(PlayerProps/UserProps/PostContent等)"]
         AggregateRoot -->|发布| DomainEvent["领域事件(UserCreated/UserLoggedIn等)"]
     end
-    
+
     DomainModel -->|调用| Repository["存储库接口(PlayerRepository/UserRepository等)"]
     Repository -->|实现| Infrastructure["基础设施层"]
-    
+
     subgraph UseCases
         LoginUseCase["登录用例"]
         GetPlayerUseCase["获取玩家数据用例"]
         CreatePostUseCase["创建帖子用例"]
     end
-    
+
     subgraph AggregateRoot
         UserAggregate["User聚合根"]
         PlayerAggregate["Player聚合根"]
         PostAggregate["Post聚合根"]
     end
-    
+
     subgraph DomainEvent
         UserCreated["UserCreated事件"]
         UserLoggedIn["UserLoggedIn事件"]

@@ -1,9 +1,9 @@
-<script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
-import { useLocale } from '@S/services/i18n/useLocale.ts'
-import type { PlayerAdvancement, PlayerAdvancementList } from '@M/players/dtos/PlayerAdvancement.ts'
-import { advancementService } from '@M/players/services'
+<script lang="ts" setup>
+import {computed, ref, watch} from 'vue'
+import {useAsyncLoader} from '@SU/async/useAsyncLoader.ts'
+import {useLocale} from '@S/services/i18n/useLocale.ts'
+import type {PlayerAdvancement, PlayerAdvancementList} from '@M/players/dtos/PlayerAdvancement.ts'
+import {advancementService} from '@M/players/services'
 import DraggablePopup from '@S/components/DraggablePopup.vue'
 
 import './styles'
@@ -11,7 +11,7 @@ import './styles'
 const props = defineProps<{ playerUuid: string }>()
 
 /* ---------------- 复用通用加载逻辑 ---------------- */
-const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
+const {isLoading, errorMsg, executeAsync} = useAsyncLoader()
 
 /* ---------------- 弹窗相关逻辑 ---------------- */
 const popupState = ref({
@@ -51,14 +51,14 @@ const showUngrouped = ref(false)
 const showIncomplete = ref(false) // 默认隐藏未完成成就
 
 // 国际化
-const { translate } = useLocale()
+const {translate} = useLocale()
 
 // 获取玩家成就数据
 async function fetchPlayerAdvancements() {
   if (!props.playerUuid) return
   const result = await executeAsync(
     async (signal) => {
-      const result = await advancementService.getPlayerAdvancements(props.playerUuid, { signal })
+      const result = await advancementService.getPlayerAdvancements(props.playerUuid, {signal})
       if (result.isSuccess) {
         return result.getValue()
       }
@@ -87,14 +87,14 @@ const filteredAdvancements = computed(() => {
 
 // 成就统计
 const advancementStats = computed(() => {
-  if (!filteredAdvancements.value.length) return { total: 0, completed: 0, percentage: 0 }
+  if (!filteredAdvancements.value.length) return {total: 0, completed: 0, percentage: 0}
 
   // 以分组中的成就总数为基础计算
   const total = advancementService.getTotalAdvancementCount()
   const completed = filteredAdvancements.value.filter((adv) => adv.done).length
   const percentage = Math.round((completed / total) * 100)
 
-  return { total, completed, percentage }
+  return {total, completed, percentage}
 })
 
 // 按分类分组的成就
@@ -155,13 +155,13 @@ const toggleShowIncomplete = () => {
       </h3>
 
       <button
-        @click="toggleShowIncomplete"
-        class="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-300/50 dark:bg-zinc-600/50 hover:bg-zinc-300/70 dark:hover:bg-zinc-600/70 rounded-lg border border-zinc-200 dark:border-zinc-700 transition-colors"
         :title="
           showIncomplete
             ? translate('players', 'advancements.hide-incomplete')
             : translate('players', 'advancements.show-incomplete')
         "
+        class="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-300/50 dark:bg-zinc-600/50 hover:bg-zinc-300/70 dark:hover:bg-zinc-600/70 rounded-lg border border-zinc-200 dark:border-zinc-700 transition-colors"
+        @click="toggleShowIncomplete"
       >
         <svg
           v-if="!showIncomplete"
@@ -171,10 +171,10 @@ const toggleShowIncomplete = () => {
           viewBox="0 0 24 24"
         >
           <path
+            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.59 6.59m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.59 6.59m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
           />
         </svg>
         <svg
@@ -185,16 +185,16 @@ const toggleShowIncomplete = () => {
           viewBox="0 0 24 24"
         >
           <path
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
           />
           <path
+            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
           />
         </svg>
         <span class="text-xs text-zinc-700 dark:text-zinc-300">
@@ -265,8 +265,8 @@ const toggleShowIncomplete = () => {
         <!-- 进度条 -->
         <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2.5">
           <div
-            class="bg-linear-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full transition-all duration-500"
             :style="{ width: `${advancementStats.percentage}%` }"
+            class="bg-linear-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full transition-all duration-500"
           ></div>
         </div>
       </div>
@@ -302,14 +302,14 @@ const toggleShowIncomplete = () => {
                 <div class="absolute w-12 h-12 mr-2 translate-y-2">
                   <!-- 图标框 -->
                   <img
-                    :src="advancementService.getAdvancementFramePath(adv)"
                     :alt="`${advancementService.translateAdvancement(adv)} frame`"
+                    :src="advancementService.getAdvancementFramePath(adv)"
                     class="absolute -translate-x-2 -translate-y-2 inset-0 w-full h-full object-contain z-0"
                   />
                   <!-- 成就图标 -->
                   <img
-                    :src="advancementService.getAdvancementImagePath(adv)"
                     :alt="advancementService.translateAdvancement(adv)"
+                    :src="advancementService.getAdvancementImagePath(adv)"
                     class="absolute w-8 h-8 mr-2 object-contain rounded z-1"
                   />
                 </div>
@@ -343,14 +343,14 @@ const toggleShowIncomplete = () => {
                 <div class="absolute w-12 h-12 mr-2 translate-y-2">
                   <!-- 图标框 -->
                   <img
-                    :src="advancementService.getAdvancementFramePath(adv)"
                     :alt="`${advancementService.translateAdvancement(adv)} frame`"
+                    :src="advancementService.getAdvancementFramePath(adv)"
                     class="absolute -translate-x-2 -translate-y-2 inset-0 w-full h-full object-contain z-0"
                   />
                   <!-- 成就图标 -->
                   <img
-                    :src="advancementService.getAdvancementImagePath(adv)"
                     :alt="advancementService.translateAdvancement(adv)"
+                    :src="advancementService.getAdvancementImagePath(adv)"
                     class="absolute w-8 h-8 mr-2 object-contain rounded z-1"
                   />
                 </div>
@@ -370,15 +370,15 @@ const toggleShowIncomplete = () => {
             class="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700"
           >
             <button
-              @click="toggleShowIncomplete"
               class="w-full text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-center gap-1 py-1"
+              @click="toggleShowIncomplete"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
+                  d="M19 9l-7 7-7-7"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M19 9l-7 7-7-7"
                 />
               </svg>
               {{ getGroupIncompleteAdvancements(group.category).length }}
@@ -427,14 +427,14 @@ const toggleShowIncomplete = () => {
                 <div class="absolute w-12 h-12 mr-2 translate-y-2">
                   <!-- 图标框 -->
                   <img
-                    :src="advancementService.getAdvancementFramePath(adv)"
                     :alt="`${advancementService.translateAdvancement(adv)} frame`"
+                    :src="advancementService.getAdvancementFramePath(adv)"
                     class="absolute -translate-x-2 -translate-y-2 inset-0 w-full h-full object-contain z-0"
                   />
                   <!-- 成就图标 -->
                   <img
-                    :src="advancementService.getAdvancementImagePath(adv)"
                     :alt="advancementService.translateAdvancement(adv)"
+                    :src="advancementService.getAdvancementImagePath(adv)"
                     class="absolute w-8 h-8 mr-2 object-contain rounded z-1"
                   />
                 </div>
@@ -470,14 +470,14 @@ const toggleShowIncomplete = () => {
                 <div class="absolute w-12 h-12 mr-2 translate-y-2">
                   <!-- 图标框 -->
                   <img
-                    :src="advancementService.getAdvancementFramePath(adv)"
                     :alt="`${advancementService.translateAdvancement(adv)} frame`"
+                    :src="advancementService.getAdvancementFramePath(adv)"
                     class="absolute -translate-x-2 -translate-y-2 inset-0 w-full h-full object-contain z-0"
                   />
                   <!-- 成就图标 -->
                   <img
-                    :src="advancementService.getAdvancementImagePath(adv)"
                     :alt="advancementService.translateAdvancement(adv)"
+                    :src="advancementService.getAdvancementImagePath(adv)"
                     class="absolute w-8 h-8 mr-2 object-contain rounded z-1"
                   />
                 </div>
@@ -500,15 +500,15 @@ const toggleShowIncomplete = () => {
             class="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700"
           >
             <button
-              @click="toggleShowIncomplete"
               class="w-full text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-center gap-1 py-1"
+              @click="toggleShowIncomplete"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
+                  d="M19 9l-7 7-7-7"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M19 9l-7 7-7-7"
                 />
               </svg>
               {{ ungroupedIncompleteAdvancements.length }}
@@ -529,11 +529,11 @@ const toggleShowIncomplete = () => {
 
     <!-- 引入封装后的弹窗组件，填充业务内容 -->
     <DraggablePopup
-      :visible="popupState.visible"
       :init-x="popupState.initX"
       :init-y="popupState.initY"
-      width="320px"
+      :visible="popupState.visible"
       max-height="400px"
+      width="320px"
       @close="closePopup"
     >
       <template #content="{ handleDragStart }">
@@ -546,11 +546,11 @@ const toggleShowIncomplete = () => {
             <div class="flex items-center flex-1 min-w-0">
               <img
                 v-if="popupState.currentAdvancement"
-                :src="advancementService.getAdvancementImagePath(popupState.currentAdvancement)"
                 :alt="advancementService.translateAdvancement(popupState.currentAdvancement)"
+                :src="advancementService.getAdvancementImagePath(popupState.currentAdvancement)"
                 class="w-10 h-10 mr-2 rounded z-1"
               />
-              <div class="min-w-0 flex-1" v-if="popupState.currentAdvancement">
+              <div v-if="popupState.currentAdvancement" class="min-w-0 flex-1">
                 <h5 class="font-semibold text-sm text-zinc-800 dark:text-white truncate">
                   {{ advancementService.translateAdvancement(popupState.currentAdvancement) }}
                 </h5>
@@ -567,7 +567,7 @@ const toggleShowIncomplete = () => {
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-scroll no-scrollbar p-0" v-if="popupState.currentAdvancement">
+        <div v-if="popupState.currentAdvancement" class="flex-1 overflow-y-scroll no-scrollbar p-0">
           <div
             v-if="
               popupState.currentAdvancement.remaining.length > 0 &&

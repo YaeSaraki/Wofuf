@@ -1,13 +1,13 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import {
   computed,
-  ref,
+  defineEmits,
+  defineProps,
   nextTick,
   onUnmounted,
-  defineProps,
-  defineEmits,
-  withDefaults,
+  ref,
   watch,
+  withDefaults,
 } from 'vue'
 
 const props = withDefaults(
@@ -53,7 +53,7 @@ let cleanupExternalClick: (() => void) | null = null
 
 // 计算弹窗样式（核心：边界检测 + 拖拽位置计算）
 const popupStyle = computed(() => {
-  if (!props.visible) return { display: 'none' }
+  if (!props.visible) return {display: 'none'}
 
   // 获取弹窗实际尺寸（优先 DOM 渲染值，其次默认值/Props 值）
   const menuWidth = typeof props.width === 'number' ? props.width : parseInt(props.width) || 320
@@ -224,7 +224,7 @@ watch(
       }
     }
   },
-  { immediate: true },
+  {immediate: true},
 )
 
 // 组件卸载时清理所有监听
@@ -250,11 +250,11 @@ defineExpose({
   <!-- 通用可拖拽弹窗容器 -->
   <div
     ref="popupRef"
-    class="floating-menu fixed z-50 shadow-xl rounded-2xl border border-zinc-400 dark:border-zinc-600 overflow-y-auto no-scrollbar flex flex-col"
     :style="popupStyle"
+    class="floating-menu fixed z-50 shadow-xl rounded-2xl border border-zinc-400 dark:border-zinc-600 overflow-y-auto no-scrollbar flex flex-col"
     @click.stop
   >
-    <slot name="content" :handleDragStart="handleDragStart" :closePopup="closePopup" />
+    <slot :closePopup="closePopup" :handleDragStart="handleDragStart" name="content"/>
   </div>
 </template>
 

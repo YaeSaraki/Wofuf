@@ -1,21 +1,21 @@
-<script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
-import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
-import { statisticGroups } from '@M/players/config/statisticGroups.ts'
-import { useLocale } from '@S/services/i18n/useLocale.ts'
-import { statisticService } from '@M/players/services'
-import type { PlayerStatisticList } from '@M/players/dtos/PlayerStatistic.ts'
+<script lang="ts" setup>
+import {computed, onMounted, ref, watch} from 'vue'
+import {useAsyncLoader} from '@SU/async/useAsyncLoader.ts'
+import {statisticGroups} from '@M/players/config/statisticGroups.ts'
+import {useLocale} from '@S/services/i18n/useLocale.ts'
+import {statisticService} from '@M/players/services'
+import type {PlayerStatisticList} from '@M/players/dtos/PlayerStatistic.ts'
 
 const props = defineProps<{ playerUuid: string }>()
 
 /* ---------------- 复用通用加载逻辑 ---------------- */
-const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
+const {isLoading, errorMsg, executeAsync} = useAsyncLoader()
 
 /* ---------------- 业务状态 ---------------- */
 const playerStatisticList = ref<PlayerStatisticList | null>(null)
 
 // 国际化
-const { translate } = useLocale()
+const {translate} = useLocale()
 
 // 获取玩家统计数据
 async function fetchPlayerStatistics() {
@@ -31,7 +31,7 @@ async function fetchPlayerStatistics() {
     if (result.isSuccess) {
       return result.getValue()
     }
-  }, translate('players','error.loading-stats')) // 使用带模块前缀的翻译键
+  }, translate('players', 'error.loading-stats')) // 使用带模块前缀的翻译键
 
   if (result) {
     playerStatisticList.value = result
@@ -57,7 +57,7 @@ const allStats = computed(() => {
 
   return Object.values(playerStatisticList.value.statistics).map((stat) => ({
     ...stat,
-     translatedKey: translate('players', `stats.item.${stat.key}`), // 使用带模块前缀的翻译键
+    translatedKey: translate('players', `stats.item.${stat.key}`), // 使用带模块前缀的翻译键
   }))
 })
 
@@ -80,7 +80,7 @@ const getStatsByGroup = (groupId: string) => {
     .filter((stat) => stat !== undefined)
     .map((stat) => ({
       ...stat!,
-       translatedKey: translate('players', `stats.item.${stat!.key}`), // 使用带模块前缀的翻译键
+      translatedKey: translate('players', `stats.item.${stat!.key}`), // 使用带模块前缀的翻译键
     }))
 }
 </script>
@@ -148,8 +148,8 @@ const getStatsByGroup = (groupId: string) => {
             >
               <span class="text-sm text-zinc-600 dark:text-zinc-400">{{ stat.translatedKey }}</span>
               <span class="text-sm font-medium text-zinc-800 dark:text-white">{{
-                stat.value
-              }}</span>
+                  stat.value
+                }}</span>
             </div>
           </div>
 
@@ -227,6 +227,7 @@ const getStatsByGroup = (groupId: string) => {
   .stat-overview-card {
     width: 140px; /* 小屏缩小卡片宽度，保证每行2列 */
   }
+
   .stat-detail-item {
     width: 180px; /* 小屏缩小详情项宽度，保证每行2列 */
   }
@@ -238,6 +239,7 @@ const getStatsByGroup = (groupId: string) => {
     width: 100%; /* 超小屏占满一行，保证显示完整 */
     height: 80px;
   }
+
   .stat-detail-item {
     width: 100%; /* 超小屏占满一行，保证显示完整 */
     height: 40px;

@@ -1,6 +1,6 @@
-import { PlayerService } from './PlayerService'
-import { AdvancementService } from './AdvancementService'
-import { StatisticService } from './StatisticService'
+import {PlayerService} from './PlayerService'
+import {AdvancementService} from './AdvancementService'
+import {StatisticService} from './StatisticService'
 
 
 export const playerService = new PlayerService()

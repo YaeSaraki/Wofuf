@@ -1,6 +1,6 @@
 // 国际化组合式函数
-import { ref, computed } from 'vue'
-import { translate } from '@S/services/i18n/index.ts'
+import {computed, ref} from 'vue'
+import {translate} from '@S/services/i18n/index.ts'
 
 // 支持的语言
 export type Locale = 'zh' | 'en'
@@ -37,7 +37,7 @@ function getBrowserLocale(): Locale {
   const browserLang = navigator.language || defaultLocale
 
   // 简化语言代码（例如：zh-CN -> zh，en-US -> en）
-  const simplifiedLang  = browserLang.split('-')[0]
+  const simplifiedLang = browserLang.split('-')[0]
 
   // 映射到你的支持的语言
   return mapToSupportedLocale(simplifiedLang || defaultLocale)

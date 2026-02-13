@@ -1,5 +1,5 @@
-import type { PlayerName } from '@M/players/dtos/PlayerName.ts'
-import type { PlayerUuid } from '@M/players/dtos/PlayerUuid.ts'
+import type {PlayerName} from '@M/players/dtos/PlayerName.ts'
+import type {PlayerUuid} from '@M/players/dtos/PlayerUuid.ts'
 
 export interface Player {
   id: PlayerUuid

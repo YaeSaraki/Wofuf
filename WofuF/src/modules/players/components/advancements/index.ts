@@ -1,3 +1,3 @@
 import AdvancementsPanel from './AdvancementsPanel.vue'
 
-export { AdvancementsPanel }
+export {AdvancementsPanel}

@@ -1,4 +1,4 @@
-import { ref, onUnmounted } from 'vue'
+import {onUnmounted, ref} from 'vue'
 
 /**
  * 通用异步加载状态管理组合式函数

@@ -1,11 +1,11 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 /* ---------------- 复用通用加载逻辑 ---------------- */
-import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
-import { ref } from 'vue'
+import {useAsyncLoader} from '@SU/async/useAsyncLoader.ts'
+import {ref} from 'vue'
 import YesterdayOnlineList from '@M/players/components/yesterdayOnlineList/YesterdayOnlineList.vue'
-import { translate } from '@S/services/i18n'
+import {translate} from '@S/services/i18n'
 
-const { isLoading, errorMsg } = useAsyncLoader()
+const {isLoading, errorMsg} = useAsyncLoader()
 
 const data = ref({
   world_time: '233',
@@ -39,21 +39,25 @@ const data = ref({
       </div>
       <div class="flex justify-center items-center gap-8 mt-4">
         <div class="align-center text-center">
-          <span class="text-center text-lg text-zinc-600 dark:text-zinc-300"> {{ translate('players', 'world_time') }} </span>
-          <br />
+          <span class="text-center text-lg text-zinc-600 dark:text-zinc-300"> {{
+              translate('players', 'world_time')
+            }} </span>
+          <br/>
           <span class="text-center text-2xl font-bold text-zinc-800 dark:text-zinc-200">
             {{ data.world_time }}
           </span>
         </div>
         <div class="align-center text-center">
-          <span class="text-center text-lg text-zinc-600 dark:text-zinc-300"> {{ translate('players', 'players_online') }} </span>
-          <br />
+          <span class="text-center text-lg text-zinc-600 dark:text-zinc-300"> {{
+              translate('players', 'players_online')
+            }} </span>
+          <br/>
           <span class="text-center text-2xl font-bold text-zinc-800 dark:text-zinc-200">
             {{ data.players_online }}
           </span>
         </div>
       </div>
-      <YesterdayOnlineList />
+      <YesterdayOnlineList/>
     </div>
   </div>
 </template>

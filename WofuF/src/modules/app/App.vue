@@ -1,15 +1,15 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import AppNavbar from '@M/app/components/AppNavbar.vue'
 import AppFooter from '@M/app/components/AppFooter.vue'
-import { RouterView } from 'vue-router'
+import {RouterView} from 'vue-router'
 </script>
 
 <template>
-  <AppNavbar />
+  <AppNavbar/>
   <main>
-    <RouterView />
+    <RouterView/>
   </main>
-  <AppFooter />
+  <AppFooter/>
 </template>
 
 <style scoped>

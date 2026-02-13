@@ -1,17 +1,17 @@
 flowchart TB
-    %% ===== Client Layer =====
+%% ===== Client Layer =====
     subgraph CL["客户端层 (Client Layer)"]
         Browser["浏览器客户端"]
         MCPlugin["Minecraft 插件"]
         Admin["管理控制台"]
     end
 
-    %% ===== API Gateway =====
+%% ===== API Gateway =====
     subgraph GW["API 网关层 (API Gateway Layer)"]
         Gateway["Spring Cloud Gateway"]
     end
 
-    %% ===== Services =====
+%% ===== Services =====
     subgraph PS["玩家服务 (Players Service)"]
         PS_Domain["领域层"]
         PS_Infra["基础设施层"]
@@ -27,26 +27,21 @@ flowchart TB
         FS_Infra["基础设施层"]
     end
 
-    %% ===== Infrastructure =====
+%% ===== Infrastructure =====
     Redis["Redis 缓存"]
     MySQL_Player["MySQL 玩家库"]
     MySQL_Forum["MySQL 论坛库"]
-
-    %% ===== Connections =====
+%% ===== Connections =====
     Browser --> Gateway
     MCPlugin --> Gateway
     Admin --> Gateway
-
     Gateway --> PS
     Gateway --> US
     Gateway --> FS
-
     PS_Domain --> PS_Infra
     PS_Infra --> Redis
     PS_Infra --> MySQL_Player
-
     US_Domain --> US_Infra
     US_Infra --> MySQL_Player
-
     FS_Domain --> FS_Infra
     FS_Infra --> MySQL_Forum

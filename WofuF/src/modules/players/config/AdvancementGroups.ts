@@ -1,4 +1,4 @@
-import type { AdvancementGroups } from '@M/players/dtos/AdvancementGroup.ts'
+import type {AdvancementGroups} from '@M/players/dtos/AdvancementGroup.ts'
 
 // Minecraft 成就分组配置（不包含配方）
 export const advancementsGroups: AdvancementGroups = [

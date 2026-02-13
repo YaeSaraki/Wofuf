@@ -1,4 +1,4 @@
-import { cacheService } from '@S/infra/cache'
+import {cacheService} from '@S/infra/cache'
 
 export interface IImageImportService {
   /**
@@ -57,7 +57,7 @@ export class ImageImportService implements IImageImportService {
 
     const imageModules = import.meta.glob('/src/**/*.{jpg,jpeg,png,gif,webp,svg}', {
       eager: true,
-      query: { url: true },
+      query: {url: true},
       import: 'default',
     }) as Record<string, string>
 
@@ -77,7 +77,7 @@ export class ImageImportService implements IImageImportService {
 
       // 验证前几张图片
       const sampleKeys = Array.from(
-        { length: Math.min(3, totalImages) },
+        {length: Math.min(3, totalImages)},
         (_, i) => this.getAllImagePaths()[i],
       )
 

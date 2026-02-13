@@ -1,13 +1,16 @@
-import type { RequestOptions } from '@SU/async/RequestOptions.ts'
-import type { PlayerUuid } from '@M/players/dtos/PlayerUuid.ts'
-import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
-import type { StatisticGroup } from '@M/players/dtos/StatisticGroup.ts'
-import type { PlayerStatisticList } from '@M/players/dtos/PlayerStatistic.ts'
-import { statisticGroups } from '@M/players/config/statisticGroups.ts'
-import { Result } from '@S/core'
-import { http } from '@S/infra/api/http.ts'
+import type {RequestOptions} from '@SU/async/RequestOptions.ts'
+import type {PlayerUuid} from '@M/players/dtos/PlayerUuid.ts'
+import type {ApiResponse} from '@S/infra/api/v1/models/ApiResponse.ts'
+import type {StatisticGroup} from '@M/players/dtos/StatisticGroup.ts'
+import type {PlayerStatisticList} from '@M/players/dtos/PlayerStatistic.ts'
+import {statisticGroups} from '@M/players/config/statisticGroups.ts'
+import {Result} from '@S/core'
+import {http} from '@S/infra/api/http.ts'
 
 export interface IStatisticService {
+  /* ---------------- 分组统计 ---------------- */
+  calculateGroupTotals: (statistics: Record<string, { value: number }>) => StatisticGroup[]
+
   /* ---------------- 获得玩家统计 ---------------- */
   getPlayerStatistics(
     playerName: string,
@@ -18,8 +21,6 @@ export interface IStatisticService {
       keys?: string[]
     },
   ): Promise<Result<PlayerStatisticList>>
-  /* ---------------- 分组统计 ---------------- */
-  calculateGroupTotals: (statistics: Record<string, { value: number }>) => StatisticGroup[]
 }
 
 export class StatisticService implements StatisticService {

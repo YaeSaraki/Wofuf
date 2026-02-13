@@ -1,13 +1,13 @@
-import type { RequestOptions } from '@SU/async/RequestOptions.ts'
-import type { Player } from '@M/players/dtos/Player.ts'
-import type { PlayerSkin } from '@M/players/dtos/PlayerSkin.ts'
-import type { PlayerUuid } from '@M/players/dtos/PlayerUuid.ts'
-import type { PlayerNameList } from '@M/players/dtos/PlayerName.ts'
-import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
-import { Result } from '@S/core/Result.ts'
-import { http } from '@S/infra/api/http.ts'
-import { cacheService } from '@S/infra/cache'
-import { renderAvatar } from '@S/utils/renderUTil.ts'
+import type {RequestOptions} from '@SU/async/RequestOptions.ts'
+import type {Player} from '@M/players/dtos/Player.ts'
+import type {PlayerSkin} from '@M/players/dtos/PlayerSkin.ts'
+import type {PlayerUuid} from '@M/players/dtos/PlayerUuid.ts'
+import type {PlayerNameList} from '@M/players/dtos/PlayerName.ts'
+import type {ApiResponse} from '@S/infra/api/v1/models/ApiResponse.ts'
+import {Result} from '@S/core/Result.ts'
+import {http} from '@S/infra/api/http.ts'
+import {cacheService} from '@S/infra/cache'
+import {renderAvatar} from '@S/utils/renderUTil.ts'
 
 
 export interface IPlayerService {
@@ -16,10 +16,13 @@ export interface IPlayerService {
     params?: { limit?: number },
     options?: RequestOptions,
   ): Promise<Result<PlayerNameList>>
+
   /* ---------------- 获取玩家信息 ---------------- */
   getPlayerProfile(playerNameOrUuid: string, options?: RequestOptions): Promise<Result<Player>>
+
   /* ---------------- 昨日在线玩家 ---------------- */
   getPlayerYesterdayOnline(options?: RequestOptions): Promise<Result<PlayerNameList>>
+
   /* ---------------- 获取玩家皮肤 ---------------- */
   getPlayerSkin(playerUuid: PlayerUuid, options?: RequestOptions): Promise<Result<PlayerSkin>>
 }

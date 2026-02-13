@@ -1,12 +1,12 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import Menubar from 'primevue/menubar'
-import { useRouter } from 'vue-router'
-import { getLocale, setLocale, useLocale } from '@S/services/i18n/useLocale.ts'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import type { MenuItem } from 'primevue/menuitem'
+import {useRouter} from 'vue-router'
+import {getLocale, setLocale, useLocale} from '@S/services/i18n/useLocale.ts'
+import {computed, onMounted, onUnmounted, ref} from 'vue'
+import type {MenuItem} from 'primevue/menuitem'
 
 const router = useRouter()
-const { translate } = useLocale()
+const {translate} = useLocale()
 
 const items = computed<MenuItem[]>(() => [
   {
@@ -201,11 +201,11 @@ onUnmounted(() => {
   <!-- 菜单 -->
   <div
     ref="popupMenuRef"
-    class="floating-menu rounded-2xl border border-zinc-200 dark:border-zinc-600 select-none flex fixed z-9999"
     :style="menuStyle"
-    @click.stop="handleMenuClick"
-    @mouseleave="startHideTimer"
+    class="floating-menu rounded-2xl border border-zinc-200 dark:border-zinc-600 select-none flex fixed z-9999"
     @mouseenter="showButton"
+    @mouseleave="startHideTimer"
+    @click.stop="handleMenuClick"
   >
     <span
       class="p-3 ml-2 border-zinc-200 dark:border-zinc-700 cursor-move flex items-center"
@@ -218,10 +218,10 @@ onUnmounted(() => {
     <!-- 重置按钮 -->
     <button
       v-show="showCloseButton"
-      class="floating-menu absolute -top-2 -left-2 p-1.5 hover:scale-105 transition-opacity duration-200 shadow-2xl rounded-2xl border border-zinc-200 dark:border-zinc-600"
-      @click.stop="resetMenuPosition"
       aria-label="Reset position"
+      class="floating-menu absolute -top-2 -left-2 p-1.5 hover:scale-105 transition-opacity duration-200 shadow-2xl rounded-2xl border border-zinc-200 dark:border-zinc-600"
       title="Reset to center"
+      @click.stop="resetMenuPosition"
     >
       <svg
         class="w-4 h-4 text-zinc-500 dark:text-zinc-400"
@@ -230,10 +230,10 @@ onUnmounted(() => {
         viewBox="0 0 24 24"
       >
         <path
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="2"
-          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
         />
       </svg>
     </button>
@@ -276,27 +276,27 @@ onUnmounted(() => {
 :deep(.p-menubar-submenu) {
   margin: 0 4px !important;
 }
+
 :deep(.p-menubar-root-list) {
   min-width: 100px !important;
 }
+
 /* 子菜单列表 */
 :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
   background: transparent !important;
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
   border-radius: 12px !important;
   padding: 8px !important;
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15),
+  0 0 0 1px rgba(255, 255, 255, 0.2) !important;
   margin-top: 8px !important;
 }
 
 .dark :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
   background: transparent !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4),
+  0 0 0 1px rgba(255, 255, 255, 0.1) !important;
 }
 
 /* 子菜单项 */

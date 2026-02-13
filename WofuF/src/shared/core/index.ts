@@ -1,3 +1,3 @@
-import  { Result } from './Result.ts'
+import {Result} from './Result.ts'
 
-export { Result }
+export {Result}
