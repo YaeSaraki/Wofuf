@@ -4,7 +4,12 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-document/
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
 
 ### STS ###
 .apt_generated
@@ -40,4 +45,14 @@ out/
 ### Kotlin ###
 .kotlin
 
-/document
+### Frontend (Node.js) ###
+node_modules/
+dist/
+*.local
+.npm
+
+### Logs ###
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
