@@ -9,6 +9,7 @@ object ForumApiConstantV1 {
     // ===================== 路径参数 =====================
     object Param {
         const val POST_ID = "postId"
+        const val POST_SLUG = "postSlug"
         const val COMMENT_ID = "commentId"
         const val MEMBER_ID = "memberId"
     }
@@ -26,6 +27,12 @@ object ForumApiConstantV1 {
 
         /** /api/v1/forum/members/{memberId} */
         const val BY_ID = "$ROOT/{${Param.MEMBER_ID}}"
+
+        /** /api/v1/forum/members/current */
+        const val CURRENT = "$ROOT/current"
+
+        /** /api/v1/forum/members/username/{username} */
+        const val BY_USERNAME = "$ROOT/username/{username}"
     }
 
     // ===================== 帖子相关路径 =====================
@@ -36,11 +43,29 @@ object ForumApiConstantV1 {
         /** /api/v1/forum/posts/{postId} */
         const val BY_ID = "$ROOT/{${Param.POST_ID}}"
 
+        /** /api/v1/forum/posts/slug/{postSlug} */
+        const val BY_SLUG = "$ROOT/slug/{${Param.POST_SLUG}}"
+
         /** /api/v1/forum/posts/{postId}/likes */
         const val LIKES = "$BY_ID/likes"
 
+        /** /api/v1/forum/posts/{postId}/upvote */
+        const val UPVOTE = "$BY_ID/upvote"
+
+        /** /api/v1/forum/posts/{postId}/downvote */
+        const val DOWNVOTE = "$BY_ID/downvote"
+
         /** /api/v1/forum/posts/{postId}/comments */
         const val COMMENTS = "$BY_ID/comments"
+
+        /** /api/v1/forum/posts/{postId}/replies */
+        const val REPLIES = "$BY_ID/replies"
+
+        /** /api/v1/forum/posts/recent */
+        const val RECENT = "$ROOT/recent"
+
+        /** /api/v1/forum/posts/popular */
+        const val POPULAR = "$ROOT/popular"
     }
 
     // ===================== 评论相关路径 =====================
@@ -50,6 +75,18 @@ object ForumApiConstantV1 {
 
         /** /api/v1/forum/comments/{commentId} */
         const val BY_ID = "$ROOT/{${Param.COMMENT_ID}}"
+
+        /** /api/v1/forum/comments/{commentId}/replies */
+        const val REPLIES = "$BY_ID/replies"
+
+        /** /api/v1/forum/comments/{commentId}/stats */
+        const val STATS = "$BY_ID/stats"
+
+        /** /api/v1/forum/comments/{commentId}/upvote */
+        const val UPVOTE = "$BY_ID/upvote"
+
+        /** /api/v1/forum/posts/slug/{postSlug}/comments */
+        const val BY_POST_SLUG = "$BASE/posts/slug/{${Param.POST_SLUG}}/comments"
     }
 
     // ===================== 工具方法 =====================

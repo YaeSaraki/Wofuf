@@ -9,6 +9,7 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostText
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostTitle
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostType
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostVote
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.AggregateRoot
@@ -31,7 +32,7 @@ data class PostProps(
     val comments: Comments,
     val votes: PostVotes,
     val totalNumComments: Int?,
-    val points: Int,
+    var points: Int,
     val dateTimePosted: LocalDateTime
 )
 
@@ -70,10 +71,62 @@ class Post private constructor(
         get() = props.totalNumComments
 
     val points: Int
-        get() = props.points
+        get() {
+            val initialValue = props.points
+            return initialValue + computeVotePoints()
+        }
 
     val dateTimePosted: LocalDateTime
         get() = props.dateTimePosted
+
+    /**
+     * 新添加的投票：UPVOTE+1 / DOWNVOTE-1
+     * 被移除的投票：UPVOTE-1 / DOWNVOTE+1
+     */
+    private fun computeVotePoints(): Int {
+        var tally = 0
+        // 遍历新添加的投票，计算积分
+        props.votes.getNewItems().forEach { vote ->
+            if (vote.isUpVote()) tally++
+            if (vote.isDownVote()) tally--
+        }
+        // 遍历被移除的投票，回滚积分
+        props.votes.getRemovedItems().forEach { vote ->
+            if (vote.isUpVote()) tally--
+            if (vote.isDownVote()) tally++
+        }
+        return tally
+    }
+
+    fun addVote(vote: PostVote): Result<Unit> {
+        props.votes.add(vote)
+        return Result.success(Unit)
+    }
+
+    fun removeVote(vote: PostVote): Result<Unit> {
+        props.votes.remove(vote)
+        return Result.success(Unit)
+    }
+
+    /**
+     * 更新基础积分（总点赞-总点踩）
+     * 用于从持久化层加载最新基础积分，而非计算内存中的变更
+     */
+    fun updateScore(totalNumUpvotes: Int, totalNumDownvotes: Int) {
+        props.points = totalNumUpvotes - totalNumDownvotes
+    }
+
+    fun hasUpvotedBy(memberId: MemberId): Boolean {
+        return props.votes.getItems().any { it.memberId == memberId && it.isUpVote() }
+    }
+
+    fun hasDownvotedBy(memberId: MemberId): Boolean {
+        return props.votes.getItems().any { it.memberId == memberId && it.isDownVote() }
+    }
+
+    fun getVoteByMember(memberId: MemberId): PostVote? {
+        return props.votes.getItems().find { it.memberId == memberId }
+    }
 
     fun addComment(memberId: MemberId, postId: PostId, text: CommentText, parentCommentId: CommentId?): Result<Post> {
         val commentProps = CommentProps(
@@ -87,6 +140,27 @@ class Post private constructor(
         val comment = Comment.create(commentProps).getOrThrow()
         this.comments.add(comment)
         return Result.success(this)
+    }
+
+    fun edit(
+        title: PostTitle? = null,
+        text: PostText? = null,
+        link: PostLink? = null
+    ): Result<Post> {
+        val newProps = PostProps(
+            memberId = props.memberId,
+            slug = props.slug,
+            title = title ?: props.title,
+            type = props.type,
+            text = text ?: props.text,
+            link = link ?: props.link,
+            comments = props.comments,
+            votes = props.votes,
+            totalNumComments = props.totalNumComments,
+            points = props.points,
+            dateTimePosted = props.dateTimePosted
+        )
+        return Post.create(newProps, _id)
     }
 
     companion object {

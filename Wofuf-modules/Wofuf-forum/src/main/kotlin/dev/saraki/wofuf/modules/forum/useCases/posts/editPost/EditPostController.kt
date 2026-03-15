@@ -1,0 +1,35 @@
+package dev.saraki.wofuf.modules.forum.useCases.posts.editPost
+
+import dev.saraki.wofuf.modules.forum.config.ForumApiConstantV1
+import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
+import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
+import org.springframework.web.bind.annotation.*
+
+/**
+ * @author YaeSaraki
+ * @email ikaraswork@iCloud.com
+ * @date 2026/3/15
+ * @description Controller for editing an existing post
+ */
+@RestController
+@RequestMapping(ForumApiConstantV1.Posts.BY_ID)
+class EditPostController(
+    private val editPostUseCase: EditPostUseCase
+) : BaseController() {
+
+    @PutMapping
+    fun editPost(
+        @PathVariable postId: String,
+        @RequestBody request: EditPostDto.Request
+    ): ApiResponse<EditPostDto.Response> {
+        val result = editPostUseCase.execute(
+            EditPostDto.Request(
+                postId = postId,
+                title = request.title,
+                text = request.text,
+                link = request.link
+            )
+        ).getOrThrow()
+        return ApiResponse.success(result)
+    }
+}
