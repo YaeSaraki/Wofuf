@@ -14,6 +14,21 @@ const router = createRouter({
       component: () => import('@/views/PlayerView.vue'),
     },
     {
+      path: '/forum',
+      name: 'forum',
+      component: () => import('@/views/ForumView.vue'),
+    },
+    {
+      path: '/forum/create',
+      name: 'createPost',
+      component: () => import('@/views/CreatePostView.vue'),
+    },
+    {
+      path: '/forum/posts/:slug',
+      name: 'post',
+      component: () => import('@/views/PostView.vue'),
+    },
+    {
       path: '/about',
       name: 'about',
       component: () => import('@/views/AboutView.vue'),

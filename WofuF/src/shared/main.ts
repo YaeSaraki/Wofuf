@@ -8,6 +8,7 @@ import '@S/services/i18n/index.ts'
 
 import '@M/app/index.ts'
 import '@M/players/index.ts'
+import '@M/forum/index.ts'
 
 // 全局样式
 import Aura from '@primeuix/themes/aura'
