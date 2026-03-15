@@ -1,11 +1,12 @@
 plugins {
-    id("org.springframework.boot") version "4.0.1"
-    id("io.spring.dependency-management") version "1.1.7"
-    id("org.jetbrains.kotlin.jvm") version "2.2.21"
-    id ("org.jetbrains.kotlin.plugin.noarg") version "2.1.21"
-    id ("org.jetbrains.kotlin.plugin.allopen") version "2.1.21"
-    id("org.jetbrains.kotlin.plugin.spring") version "2.2.21"
-    id("org.asciidoctor.jvm.convert") version "4.0.5"
+    java
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
+    id("org.jetbrains.kotlin.jvm")
+    id ("org.jetbrains.kotlin.plugin.noarg")
+    id ("org.jetbrains.kotlin.plugin.allopen")
+    id("org.jetbrains.kotlin.plugin.spring")
+    id("org.asciidoctor.jvm.convert")
 }
 
 group = "dev.saraki"
@@ -23,6 +24,10 @@ dependencyManagement {
 }
 
 dependencies {
+    runtimeOnly(libs.jjwt.impl)
+    runtimeOnly(libs.jjwt.jackson)
+    runtimeOnly("com.mysql:mysql-connector-j")
+
     implementation(project(":shared"))
     implementation(project(":shared-auth"))
     implementation(project(":modules-users"))
@@ -42,11 +47,9 @@ dependencies {
     testImplementation(libs.mybatis.starter.test)
 
     implementation(libs.jjwt.api)
-    runtimeOnly(libs.jjwt.impl)
-    runtimeOnly(libs.jjwt.jackson)
 
     implementation(libs.gson)
     implementation(libs.uuid)
+    implementation(libs.kotlin.stdlib)
     implementation(libs.kotlin.logging)
-    runtimeOnly("com.mysql:mysql-connector-j")
 }
