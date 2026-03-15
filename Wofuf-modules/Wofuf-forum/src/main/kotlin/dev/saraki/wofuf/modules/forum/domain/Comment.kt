@@ -1,6 +1,12 @@
 package dev.saraki.wofuf.modules.forum.domain
 
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentText
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import dev.saraki.wofuf.shared.core.Guard
+import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.Entity
 
 /**
@@ -9,7 +15,6 @@ import dev.saraki.wofuf.shared.domain.Entity
  *   @date 2026/2/6 13:30
  *   @description:
  */
-import dev.saraki.wofuf.shared.domain.UniqueEntityId
 
 data class CommentProps(
     val memberId: MemberId,

@@ -1,6 +1,8 @@
 package dev.saraki.wofuf.modules.forum.domain
 
 import dev.saraki.wofuf.modules.forum.domain.events.MemberCreated
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
 import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerId
 import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
 import dev.saraki.wofuf.shared.core.Guard

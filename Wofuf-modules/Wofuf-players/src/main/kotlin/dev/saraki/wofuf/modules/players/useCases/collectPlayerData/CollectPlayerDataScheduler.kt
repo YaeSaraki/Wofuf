@@ -18,8 +18,8 @@ class CollectPlayerDataScheduler(
     private val collectPlayerDataUseCase: CollectPlayerDataUseCase,
     private val collectedPlayerQueue: MutableSet<UUID> = ConcurrentHashMap.newKeySet(),
     private val playerCollectCooldownCache: PlayerCollectCooldownCache,
-    @Value("\${collector.players.delay-ms:60000}")
-    private val collectCooldownMinutes: Int
+    @Value("\${collector.players.pop-delay-ms:60000}")
+    private val collectCooldownMs: Int
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -58,7 +58,7 @@ class CollectPlayerDataScheduler(
                 return@forEach
             }
             collectedPlayerQueue.add(player.uuid)
-            playerCollectCooldownCache.setCooldown(player, collectCooldownMinutes)
+            playerCollectCooldownCache.setCooldown(player, collectCooldownMs / 60000)
 
             // 获取统计数据（返回 Map）
             val statisticsResult = pluginApiClient.fetchPlayerStatistics(player.uuid) ?: return@forEach

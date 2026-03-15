@@ -1,6 +1,13 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers
 
 import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLink
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLinkProps
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostText
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostTitle
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostType
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.PostEntity
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.domain.UniqueEntityId

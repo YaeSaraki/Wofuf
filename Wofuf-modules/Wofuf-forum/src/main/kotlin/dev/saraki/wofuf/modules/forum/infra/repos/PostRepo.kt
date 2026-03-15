@@ -1,8 +1,8 @@
 package dev.saraki.wofuf.modules.forum.infra.repos
 
 import dev.saraki.wofuf.modules.forum.domain.Post
-import dev.saraki.wofuf.modules.forum.domain.PostId
-import dev.saraki.wofuf.modules.forum.domain.PostSlug
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 
 /**
  *   @author YaeSaraki

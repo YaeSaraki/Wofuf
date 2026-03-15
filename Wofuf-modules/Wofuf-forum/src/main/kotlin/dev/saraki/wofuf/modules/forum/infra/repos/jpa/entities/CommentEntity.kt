@@ -6,7 +6,7 @@ import org.hibernate.annotations.DynamicUpdate
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
-@Entity
+@jakarta.persistence.Entity
 @Table(name = "comment")
 @DynamicUpdate
 data class CommentEntity(
@@ -27,7 +27,7 @@ data class CommentEntity(
     val text: String,
 
     @Column(name = "points", nullable = true)
-    val points: Int? = null,
+    val points: Int = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(

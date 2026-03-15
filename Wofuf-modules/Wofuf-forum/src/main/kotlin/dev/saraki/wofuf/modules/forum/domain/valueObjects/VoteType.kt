@@ -1,4 +1,4 @@
-package dev.saraki.wofuf.modules.forum.domain
+package dev.saraki.wofuf.modules.forum.domain.valueObjects
 
 /**
  *   @author YaeSaraki

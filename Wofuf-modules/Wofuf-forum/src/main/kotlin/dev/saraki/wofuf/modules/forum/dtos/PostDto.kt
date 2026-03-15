@@ -1,6 +1,6 @@
 package dev.saraki.wofuf.modules.forum.dtos
 
-import dev.saraki.wofuf.modules.forum.domain.PostType
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostType
 import java.time.LocalDateTime
 
 /**

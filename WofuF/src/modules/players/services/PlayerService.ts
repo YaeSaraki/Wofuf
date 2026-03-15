@@ -78,7 +78,7 @@ export class PlayerService implements IPlayerService {
 
     try {
       const response = await http.get<ApiResponse<Player>>(
-        `/api/v1/players/profile/${playerNameOrUuid}`,
+        `/api/v1/players/playerNameOrUuid/${playerNameOrUuid}`,
         {
           signal: options?.signal,
         },
@@ -99,7 +99,7 @@ export class PlayerService implements IPlayerService {
 
   /* ---------------- 昨日在线玩家 ---------------- */
   public async getPlayerYesterdayOnline(options?: RequestOptions): Promise<Result<PlayerNameList>> {
-    const cacheKey = 'yesterday_online'
+    const cacheKey = 'yesterday'
 
     // 尝试从缓存获取
     const cached = cacheService.get<PlayerNameList>(PlayerService.CACHE_MODULE, cacheKey)

@@ -1,6 +1,10 @@
 package dev.saraki.wofuf.modules.forum.infra.repos
 
 import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostVote
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 
 /**
  *   @author YaeSaraki

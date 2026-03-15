@@ -29,10 +29,7 @@ class LogoutUseCase(
         val userId = userIdOrError.getOrThrow()
 
         // 查找用户实体
-        val user = userRepo.findUserByUserId(userId)
-        if (user == null) {
-            return LogoutErrors.UserNotFoundError(request.id)
-        }
+        val user = userRepo.findUserByUserId(userId) ?: return LogoutErrors.UserNotFoundError(request.id)
 
         // 注销用户
         userAuthService.logout(request.accessToken)

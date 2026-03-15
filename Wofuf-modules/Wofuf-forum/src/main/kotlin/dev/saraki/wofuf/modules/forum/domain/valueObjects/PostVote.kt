@@ -1,4 +1,4 @@
-package dev.saraki.wofuf.modules.forum.domain
+package dev.saraki.wofuf.modules.forum.domain.valueObjects
 
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.domain.Entity

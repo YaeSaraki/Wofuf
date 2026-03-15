@@ -1,6 +1,9 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.impl
 
 import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentDetails
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentVotesRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.CommentJpaRepo
@@ -35,6 +38,11 @@ class CommentRepoImpl(
         return commentEntities.map(CommentEntityMapper::toDomain)
     }
 
+    override fun findCommentDetailsByCommentId(commentId: CommentId): CommentDetails? {
+        return commentJpaRepo.findById(commentId.stringValue)
+            .map(CommentEntityMapper::toCommentDetails)
+            .orElse(null)
+    }
 
     @Transactional
     override fun save(comment: Comment): Comment {

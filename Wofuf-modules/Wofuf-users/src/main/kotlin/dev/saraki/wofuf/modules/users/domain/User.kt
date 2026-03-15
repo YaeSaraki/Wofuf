@@ -78,7 +78,6 @@ class User private constructor(
         return DeleteUserErrors.UserDeleteError(this.userId.stringValue)
     }
 
-
     fun setAccessToken(accessToken: String, refreshToken: String) {
         addDomainEvent(UserLoggedIn(this))
         this.props.accessToken = accessToken

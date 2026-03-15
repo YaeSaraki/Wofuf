@@ -1,6 +1,15 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers
 
 import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentDetails
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentDetails.Companion.create
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentDetailsProps
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentText
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostTitle
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.CommentEntity
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 
@@ -31,6 +40,21 @@ object CommentEntityMapper {
         comment._updatedAt = entity.updatedAt
 
         return comment
+    }
+
+    fun toCommentDetails(commentEntity: CommentEntity): CommentDetails {
+        return create(
+            CommentDetailsProps(
+                commentId = CommentId.create(UniqueEntityId(commentEntity.commentId)).getOrThrow(),
+                text = commentEntity.text,
+                memberDetails = MemberEntityMapper.toMemberDetails(commentEntity.memberEntity!!),
+                postSlug = PostSlug.createFromExisting(commentEntity.postEntity!!.slug).getOrThrow(),
+                postTitle = PostTitle.create(commentEntity.postEntity!!.title).getOrThrow(),
+                parentCommentId = commentEntity.parentCommentId?.let { CommentId.create(UniqueEntityId(it)).getOrThrow() },
+                points = commentEntity.points,
+                createdAt = commentEntity.createdAt,
+            )
+        ).getOrThrow()
     }
 
     fun toEntity(domain: Comment): CommentEntity {

@@ -6,7 +6,9 @@ package dev.saraki.wofuf.modules.forum.domain
  *   @date 2026/2/8 13:41
  *   @description:
  */
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostVote
 import dev.saraki.wofuf.shared.domain.WatchedList
+import java.util.Collections.emptyList
 
 /**
  *   @author YaeSaraki

@@ -1,6 +1,7 @@
-package dev.saraki.wofuf.modules.forum.domain
+package dev.saraki.wofuf.modules.forum.domain.valueObjects
 
 import dev.saraki.wofuf.shared.core.Guard
+import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.ValueObject
 import dev.saraki.wofuf.shared.utils.TextUtil
 

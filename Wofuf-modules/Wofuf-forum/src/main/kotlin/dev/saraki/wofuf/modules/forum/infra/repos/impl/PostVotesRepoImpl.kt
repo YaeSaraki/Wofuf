@@ -1,6 +1,10 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.impl
 
 import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostVote
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.PostVotesJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.PostVoteEntityMapper

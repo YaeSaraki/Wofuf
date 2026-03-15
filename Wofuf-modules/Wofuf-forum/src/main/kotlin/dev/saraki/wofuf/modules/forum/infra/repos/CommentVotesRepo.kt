@@ -1,6 +1,9 @@
 package dev.saraki.wofuf.modules.forum.infra.repos
 
 import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 
 /**
  *   @author YaeSaraki

@@ -40,6 +40,14 @@ export const statisticsTranslation = {
     zh: '综合统计',
     en: 'Miscellaneous',
   },
+  'stats.units.converted': {
+    zh: '可读数据',
+    en: 'Readable Data',
+  },
+  'stats.units.original': {
+    zh: '原始数据',
+    en: 'Original Data',
+  },
 
   // 统计项 - 移动类
   'stats.item.ANIMALS_BRED': {
@@ -221,35 +229,35 @@ export const statisticsTranslation = {
   },
 
   // 单位说明
-  'stats.unit.blocks': {zh: '格', en: 'blocks'},
-  'stats.unit.cm': {zh: '厘米', en: 'cm'},
-  'stats.unit.items': {zh: '个', en: ''}, // 英文通常不加单位
-  'stats.unit.times': {zh: '次', en: 'times'},
-  'stats.unit.damage': {zh: '伤害值', en: 'damage'},
-  'stats.unit.hearts': {zh: '心', en: 'hearts'},
+  'stats.unit.blocks': { zh: '格', en: 'blocks' },
+  'stats.unit.cm': { zh: '厘米', en: 'cm' },
+  'stats.unit.items': { zh: '个', en: '' }, // 英文通常不加单位
+  'stats.unit.times': { zh: '次', en: 'times' },
+  'stats.unit.damage': { zh: '伤害值', en: 'damage' },
+  'stats.unit.hearts': { zh: '心', en: 'hearts' },
 
   // 辅助文本
-  'stats.sort.by_name': {zh: '按名称排序', en: 'Sort by Name'},
-  'stats.sort.by_value': {zh: '按数量排序', en: 'Sort by Value'},
-  'stats.sort.by_category': {zh: '按分类排序', en: 'Sort by Category'},
-  'stats.filter.all': {zh: '全部显示', en: 'Show All'},
-  'stats.filter.top10': {zh: '前十项', en: 'Top 10'},
-  'stats.filter.recent': {zh: '最近活动', en: 'Recent Activities'},
-  'stats.total': {zh: '总计', en: 'Total'},
-  'stats.average': {zh: '平均值', en: 'Average'},
-  'stats.max': {zh: '最高值', en: 'Maximum'},
-  'stats.min': {zh: '最低值', en: 'Minimum'},
+  'stats.sort.by_name': { zh: '按名称排序', en: 'Sort by Name' },
+  'stats.sort.by_value': { zh: '按数量排序', en: 'Sort by Value' },
+  'stats.sort.by_category': { zh: '按分类排序', en: 'Sort by Category' },
+  'stats.filter.all': { zh: '全部显示', en: 'Show All' },
+  'stats.filter.top10': { zh: '前十项', en: 'Top 10' },
+  'stats.filter.recent': { zh: '最近活动', en: 'Recent Activities' },
+  'stats.total': { zh: '总计', en: 'Total' },
+  'stats.average': { zh: '平均值', en: 'Average' },
+  'stats.max': { zh: '最高值', en: 'Maximum' },
+  'stats.min': { zh: '最低值', en: 'Minimum' },
 
   // 时间单位
-  'stats.time.seconds': {zh: '秒', en: 'seconds'},
-  'stats.time.minutes': {zh: '分钟', en: 'minutes'},
-  'stats.time.hours': {zh: '小时', en: 'hours'},
-  'stats.time.days': {zh: '天', en: 'days'},
+  'stats.time.seconds': { zh: '秒', en: 'seconds' },
+  'stats.time.minutes': { zh: '分钟', en: 'minutes' },
+  'stats.time.hours': { zh: '小时', en: 'hours' },
+  'stats.time.days': { zh: '天', en: 'days' },
 
   // 数据格式
-  'stats.format.number': {zh: '{value} {unit}', en: '{value} {unit}'},
-  'stats.format.withCommas': {zh: '{value} {unit}', en: '{value} {unit}'},
-  'stats.format.percentage': {zh: '{value}%', en: '{value}%'},
+  'stats.format.number': { zh: '{value} {unit}', en: '{value} {unit}' },
+  'stats.format.withCommas': { zh: '{value} {unit}', en: '{value} {unit}' },
+  'stats.format.percentage': { zh: '{value}%', en: '{value}%' },
 
   // 统计说明
   'stats.description.movement': {

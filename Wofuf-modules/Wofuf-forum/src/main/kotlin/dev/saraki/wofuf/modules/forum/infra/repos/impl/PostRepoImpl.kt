@@ -1,9 +1,8 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.impl
 
 import dev.saraki.wofuf.modules.forum.domain.Post
-import dev.saraki.wofuf.modules.forum.domain.PostId
-import dev.saraki.wofuf.modules.forum.domain.PostSlug
-import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.PostJpaRepo

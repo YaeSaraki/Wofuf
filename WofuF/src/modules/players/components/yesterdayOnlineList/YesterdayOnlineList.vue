@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-import {onMounted, reactive, ref, watch} from 'vue'
-import {PlayerService} from '@M/players/services/PlayerService.ts'
-import {useAsyncLoader} from '@SU/async/useAsyncLoader.ts'
-import type {PlayerName, PlayerNameList} from '@M/players/dtos/PlayerName.ts'
-import {translate} from '@S/services/i18n'
+import { onMounted, reactive, ref, watch } from 'vue'
+import { PlayerService } from '@M/players/services/PlayerService.ts'
+import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
+import type { PlayerName, PlayerNameList } from '@M/players/dtos/PlayerName.ts'
+import { translate } from '@S/services/i18n'
 import router from '@S/infra/router'
-import {renderAvatar} from '@SU/renderUTil.ts'
-import {addImagePrefixToBase64} from '@SU/Base64Util.ts'
+import { renderAvatar } from '@SU/renderUTil.ts'
+import { addImagePrefixToBase64 } from '@SU/Base64Util.ts'
 
 /* ---------------- 复用通用加载逻辑 ---------------- */
-const {isLoading, errorMsg, executeAsync} = useAsyncLoader()
+const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
 
 /* ---------------- 业务状态 ---------------- */
 const playerService = new PlayerService()
@@ -26,6 +26,10 @@ const placeholderImage =
  */
 const loadAvatar = async (playerName: string): Promise<void> => {
   // 如果已经在加载或已加载完成，跳过
+  if (playerName == null || playerName === '') {
+    return
+  }
+
   if (loadingAvatars.value.has(playerName) || avatarMap[playerName]) {
     return
   }
@@ -41,9 +45,10 @@ const loadAvatar = async (playerName: string): Promise<void> => {
     if (player) {
       const skin = await playerService.getPlayerSkin(player.getValue().id)
       if (skin) {
-        // 调用渲染函数获取头像
-        const avatarUrl = await renderAvatar(addImagePrefixToBase64(skin.getValue().skin), 128)
-        avatarMap[playerName] = avatarUrl
+        avatarMap[playerName] = await renderAvatar(
+          addImagePrefixToBase64(skin.getValue().skin),
+          128,
+        )
       }
     }
   } catch (error) {
@@ -74,7 +79,7 @@ watch(
       loadAllAvatars()
     }
   },
-  {immediate: true},
+  { immediate: true },
 )
 
 /* ---------------- 业务行为 ---------------- */
@@ -86,7 +91,7 @@ async function loadYesterdayOnlinePlayers() {
 
   const result = await executeAsync(
     async (signal) => {
-      const result = await playerService.getPlayerYesterdayOnline({signal})
+      const result = await playerService.getPlayerYesterdayOnline({ signal })
       if (result.isSuccess) {
         return result.getValue()
       }
@@ -137,7 +142,7 @@ onMounted(() => {
         {{ translate('app', 'actions.retry') }}
       </button>
     </div>
-
+    <div v-else-if="playerNameList?.playerNames.length === 1"></div>
     <div v-else class="card-list ml-8 mr-8">
       <div
         v-for="item in playerNameList?.playerNames"

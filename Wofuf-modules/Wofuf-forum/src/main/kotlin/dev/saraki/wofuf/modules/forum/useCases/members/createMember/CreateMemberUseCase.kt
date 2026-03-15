@@ -2,7 +2,7 @@ package dev.saraki.wofuf.modules.forum.useCases.members.createMember
 
 import dev.saraki.wofuf.modules.forum.domain.Member
 import dev.saraki.wofuf.modules.forum.domain.MemberProps
-import dev.saraki.wofuf.modules.forum.domain.NickName
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerId
 import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId

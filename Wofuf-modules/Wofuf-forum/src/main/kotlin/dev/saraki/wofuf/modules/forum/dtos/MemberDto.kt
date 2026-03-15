@@ -9,6 +9,6 @@ import dev.saraki.wofuf.modules.users.dtos.UserDto
  *   @description:
  */
 data class MemberDto(
+    val nickname: String,
     val reputation: Int,
-    val user: UserDto
 )

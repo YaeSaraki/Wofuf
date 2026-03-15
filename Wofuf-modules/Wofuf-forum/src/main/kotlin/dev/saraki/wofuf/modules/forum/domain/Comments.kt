@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.domain
 
 import dev.saraki.wofuf.shared.domain.WatchedList
+import java.util.Collections.emptyList
 
 /**
  *   @author YaeSaraki

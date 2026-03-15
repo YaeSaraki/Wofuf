@@ -141,10 +141,6 @@ const ungroupedIncompleteAdvancements = computed(() => {
   return ungroupedAdvancements.value.filter((adv) => !adv.done)
 })
 
-// 切换显示/隐藏未完成成就
-const toggleShowIncomplete = () => {
-  showIncomplete.value = !showIncomplete.value
-}
 </script>
 
 <template>
@@ -161,7 +157,7 @@ const toggleShowIncomplete = () => {
             : translate('players', 'advancements.show-incomplete')
         "
         class="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-300/50 dark:bg-zinc-600/50 hover:bg-zinc-300/70 dark:hover:bg-zinc-600/70 rounded-lg border border-zinc-200 dark:border-zinc-700 transition-colors"
-        @click="toggleShowIncomplete"
+        @click="showIncomplete = !showIncomplete"
       >
         <svg
           v-if="!showIncomplete"
@@ -371,7 +367,7 @@ const toggleShowIncomplete = () => {
           >
             <button
               class="w-full text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-center gap-1 py-1"
-              @click="toggleShowIncomplete"
+              @click="showIncomplete = !showIncomplete"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -501,7 +497,7 @@ const toggleShowIncomplete = () => {
           >
             <button
               class="w-full text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-center gap-1 py-1"
-              @click="toggleShowIncomplete"
+              @click="showIncomplete = !showIncomplete"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path

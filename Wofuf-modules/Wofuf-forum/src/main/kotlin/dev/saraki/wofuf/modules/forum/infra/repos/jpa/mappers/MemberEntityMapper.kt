@@ -2,7 +2,9 @@ package dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers
 
 import dev.saraki.wofuf.modules.forum.domain.Member
 import dev.saraki.wofuf.modules.forum.domain.MemberProps
-import dev.saraki.wofuf.modules.forum.domain.NickName
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetails
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetailsProps
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.MemberEntity
 import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerId
 import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
@@ -17,8 +19,6 @@ import dev.saraki.wofuf.shared.domain.UniqueEntityId
 object MemberEntityMapper {
 
     fun toDomain(memberEntity: MemberEntity): Member {
-
-
         val member = Member.create(
             props = MemberProps(
                 userId = UserId.create(UniqueEntityId(memberEntity.userId)).getOrThrow(),
@@ -32,6 +32,15 @@ object MemberEntityMapper {
         member._updatedAt = memberEntity.updatedAt
 
         return member
+    }
+
+    fun toMemberDetails(memberEntity: MemberEntity): MemberDetails {
+        return MemberDetails.create(
+            MemberDetailsProps(
+                nickName = NickName.create(memberEntity.nickname).getOrThrow(),
+                reputation = memberEntity.reputation,
+            )
+        ).getOrThrow()
     }
 
     fun toEntity(domain: Member): MemberEntity {

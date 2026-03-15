@@ -1,9 +1,9 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers
 
-import dev.saraki.wofuf.modules.forum.domain.CommentId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
 import dev.saraki.wofuf.modules.forum.domain.CommentVote
-import dev.saraki.wofuf.modules.forum.domain.MemberId
-import dev.saraki.wofuf.modules.forum.domain.VoteType
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.CommentVoteEntity
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.domain.UniqueEntityId

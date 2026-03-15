@@ -1,12 +1,15 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.impl
 
 import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLink
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.MemberJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.PostJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.MemberEntityMapper
 import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
-import dev.saraki.wofuf.modules.users.infra.repos.jpa.UserJpaRepo
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
