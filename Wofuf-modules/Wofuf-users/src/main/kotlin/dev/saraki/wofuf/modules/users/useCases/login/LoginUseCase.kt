@@ -40,8 +40,12 @@ class LoginUseCase(
         val user = userRepo.findUserByUserName(userName) ?: return LoginErrors.UserNotFoundError(userName.value)
 
         val authenticationToken = UsernamePasswordAuthenticationToken(request.username, request.password)
-        val authenticate =  authenticationManager.authenticate(authenticationToken)
-        if (!authenticate.isAuthenticated) {
+        try {
+            val authenticate = authenticationManager.authenticate(authenticationToken)
+            if (!authenticate.isAuthenticated) {
+                return LoginErrors.AuthenticationFailedError(userName.value)
+            }
+        } catch (e: Exception) {
             return LoginErrors.AuthenticationFailedError(userName.value)
         }
 
