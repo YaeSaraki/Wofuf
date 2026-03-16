@@ -70,6 +70,11 @@ async function createPost() {
     text: formData.value.text?.trim() || undefined,
     link: formData.value.link?.trim() || undefined,
   }
+  
+  // Debug: 打印请求数据
+  console.log('=== CreatePost Request Debug ===')
+  console.log('requestData:', JSON.stringify(requestData, null, 2))
+  console.log('================================')
 
   const result = await executeAsync(async () => {
     const apiResult = await forumService.createPost(requestData)

@@ -25,6 +25,15 @@ class CreatePostUseCase(
     private val postRepo: PostRepo,
 ) : UseCase<CreatePostDto.Request, CreatePostDto.Response> {
     override fun execute(request: CreatePostDto.Request): Result<CreatePostDto.Response> {
+        // Debug: 打印请求内容
+        println("=== CreatePost Debug ===")
+        println("userId: '${request.userId}'")
+        println("title: '${request.title}'")
+        println("type: '${request.type}'")
+        println("text: '${request.text}'")
+        println("link: '${request.link}'")
+        println("========================")
+        
         if (request.userId.isBlank()) {
             return CreatePostErrors.UserIdEmptyError()
         }
