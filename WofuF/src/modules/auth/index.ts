@@ -5,3 +5,7 @@
 
 // 引入翻译配置
 import './config/translation'
+
+// 初始化认证拦截器 - 自动刷新 JWT Token
+import { setupAuthInterceptor } from './interceptors/authInterceptor'
+setupAuthInterceptor()

@@ -6,6 +6,8 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.mappers.PostDtoMapper
+import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerSkin
+import dev.saraki.wofuf.modules.players.infra.repos.jpa.PlayerJpaRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import org.springframework.stereotype.Service
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service
 class GetPopularPostsUseCase(
     private val postRepo: PostRepo,
     private val memberRepo: MemberRepo,
+    private val playerJpaRepo: PlayerJpaRepo,
 ) : UseCase<GetPopularPostsDto.Request, GetPopularPostsDto.Response> {
 
     override fun execute(request: GetPopularPostsDto.Request): Result<GetPopularPostsDto.Response> {
@@ -35,11 +38,13 @@ class GetPopularPostsUseCase(
         val postDtos = posts.map { post ->
             // Get member details
             val member = memberRepo.findMemberById(post.memberId)
+            val playerSkin = getPlayerSkinFromMember(member?.playerId?.stringValue)
             val memberDetails = if (member != null) {
                 MemberDetails.create(
                     MemberDetailsProps(
                         nickName = member.nickname,
-                        reputation = member.reputation
+                        reputation = member.reputation,
+                        playerSkin = playerSkin
                     )
                 ).getOrThrow()
             } else {
@@ -47,7 +52,8 @@ class GetPopularPostsUseCase(
                 MemberDetails.create(
                     MemberDetailsProps(
                         nickName = NickName.create("Unknown").getOrThrow(),
-                        reputation = 0
+                        reputation = 0,
+                        playerSkin = null
                     )
                 ).getOrThrow()
             }
@@ -62,5 +68,16 @@ class GetPopularPostsUseCase(
 
         // 4. Return success response
         return Result.success(GetPopularPostsDto.Response(postDtos))
+    }
+
+    private fun getPlayerSkinFromMember(playerId: String?): PlayerSkin? {
+        if (playerId == null) return null
+        val playerEntity = playerJpaRepo.findById(playerId).orElse(null) ?: return null
+        val skinEntity = playerEntity.playerSkin ?: return null
+        return PlayerSkin.create(
+            type = skinEntity.type ?: "",
+            skin = skinEntity.skin,
+            cape = skinEntity.cape ?: ""
+        ).getOrNull()
     }
 }

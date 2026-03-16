@@ -20,6 +20,8 @@ export interface AuthSession {
   userId: string
   accessToken: JwtToken
   refreshToken: RefreshToken
+  expiresAt?: number  // Token 过期时间戳（毫秒）
+  expiresIn?: number  // Token 有效期（毫秒）
 }
 
 // 注册请求

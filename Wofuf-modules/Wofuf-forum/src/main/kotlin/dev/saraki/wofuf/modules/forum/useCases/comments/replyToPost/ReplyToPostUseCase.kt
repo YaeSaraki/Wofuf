@@ -1,8 +1,11 @@
 package dev.saraki.wofuf.modules.forum.useCases.comments.replyToPost
 
-import dev.saraki.wofuf.modules.forum.domain.Member
+import dev.saraki.wofuf.modules.forum.domain.Comment
+import dev.saraki.wofuf.modules.forum.domain.CommentProps
+import dev.saraki.wofuf.modules.forum.domain.CommentVotes
 import dev.saraki.wofuf.modules.forum.domain.Post
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.*
+import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.shared.core.Result
@@ -15,21 +18,31 @@ import org.springframework.stereotype.Service
 class ReplyToPostUseCase(
     private val memberRepo: MemberRepo,
     private val postRepo: PostRepo,
+    private val commentRepo: CommentRepo,
 ) : UseCase<ReplyToPostDto.Request, ReplyToPostDto.Response> {
     override fun execute(request: ReplyToPostDto.Request): Result<ReplyToPostDto.Response> {
         if (request.comment.isBlank()) {
             return ReplyToPostErrors.CommentTextEmptyError()
         }
 
-        // Validate post ID
-        val postIdOrError = PostId.create(UniqueEntityId(request.postId))
-        if (postIdOrError.isFailure) {
-            return ReplyToPostErrors.PostNotFoundError(request.postId)
+        // 通过 slug 或 postId 查找帖子
+        val post: Post = when {
+            !request.postSlug.isNullOrBlank() -> {
+                val postSlug = PostSlug.createFromExisting(request.postSlug).getOrThrow()
+                postRepo.findPostBySlug(postSlug) ?: return ReplyToPostErrors.PostNotFoundError(request.postSlug)
+            }
+            !request.postId.isNullOrBlank() -> {
+                val postIdOrError = PostId.create(UniqueEntityId(request.postId))
+                if (postIdOrError.isFailure) {
+                    return ReplyToPostErrors.PostNotFoundError(request.postId)
+                }
+                val postId = postIdOrError.getOrThrow()
+                postRepo.findPostByPostId(postId) ?: return ReplyToPostErrors.PostNotFoundError(request.postId)
+            }
+            else -> {
+                return ReplyToPostErrors.PostNotFoundError("null")
+            }
         }
-        val postId = postIdOrError.getOrThrow()
-
-        // Get post
-        val post = postRepo.findPostByPostId(postId) ?: return ReplyToPostErrors.PostNotFoundError(request.postId)
 
         // Get member
         val userIdOrError = UserId.create(UniqueEntityId(request.userId))
@@ -46,14 +59,19 @@ class ReplyToPostUseCase(
         }
         val commentText = commentTextOrError.getOrThrow()
 
-        // Add comment directly to post (no parent comment)
-        val updatedPost = post.addComment(member.memberId, post.postId, commentText, null)
-        if (updatedPost.isFailure) {
-            return Result.failure(updatedPost.exceptionOrThrow())
-        }
+        // 创建评论
+        val commentProps = CommentProps(
+            postId = post.postId,
+            text = commentText,
+            memberId = member.memberId,
+            parentCommentId = null,
+            points = 0,
+            votes = CommentVotes.create(),
+        )
+        val comment = Comment.create(commentProps).getOrThrow()
 
-        // Save the updated post
-        postRepo.save(updatedPost.getOrThrow())
+        // 直接保存评论到数据库
+        commentRepo.save(comment)
 
         return Result.success(ReplyToPostDto.Response())
     }

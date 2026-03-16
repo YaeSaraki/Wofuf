@@ -7,7 +7,7 @@ import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
 import { translate } from '@S/services/i18n'
 
 interface Props {
-  postId: string
+  postSlug: string  // 改名为 postSlug，表示帖子的 slug
   parentCommentId?: string
 }
 
@@ -35,7 +35,7 @@ async function submitReply() {
   // 检查是否已登录
   const userId = getCurrentUserId()
   if (!userId) {
-    router.push('/login')
+    router.push('forum/login')
     return
   }
 
@@ -43,13 +43,13 @@ async function submitReply() {
     if (props.parentCommentId) {
       // 回复评论
       return await forumService.replyToComment(props.parentCommentId, {
-        postSlug: props.postId,
+        postSlug: props.postSlug,
         userId,
         comment: replyText.value.trim(),
       })
     } else {
-      // 回复帖子
-      return await forumService.replyToPost(props.postId, {
+      // 回复帖子 - 使用新的 slug API
+      return await forumService.replyToPostBySlug(props.postSlug, {
         userId,
         comment: replyText.value.trim(),
       })
@@ -72,7 +72,7 @@ function cancelReply() {
 // 开始回复
 function startReply() {
   if (!isAuthenticated()) {
-    router.push('/login')
+    router.push('forum/login')
     return
   }
   isReplying.value = true

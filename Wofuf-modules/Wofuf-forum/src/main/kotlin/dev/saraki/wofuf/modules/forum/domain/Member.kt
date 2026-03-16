@@ -44,7 +44,7 @@ class Member private constructor(
         get() = props.reputation
 
     companion object {
-        fun create(props: MemberProps, id: UniqueEntityId? = null): Result<Member> {
+        fun create(props: MemberProps, id: UniqueEntityId?): Result<Member> {
             val guardResult = Guard.againstNullOrUndefinedBulk(
                 listOf(
                     Guard.GuardArgument(props.userId, "userId"),

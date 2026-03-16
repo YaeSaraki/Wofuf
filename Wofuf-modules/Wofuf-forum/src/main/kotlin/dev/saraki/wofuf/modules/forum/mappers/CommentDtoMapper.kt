@@ -19,6 +19,8 @@ object CommentDtoMapper {
             parentCommentId = commentDetials.parentCommentId?.stringValue,
             text = commentDetials.text,
             memberId = comment.memberId.stringValue,
+            memberNickname = commentDetials.memberDetails.nickName.value,
+            memberPlayerSkin = commentDetials.memberDetails.playerSkin?.skin,
             createdAt = commentDetials.createdAt,
             childComments = emptyList(),
             points = commentDetials.points

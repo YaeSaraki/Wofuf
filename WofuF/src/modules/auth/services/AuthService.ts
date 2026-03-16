@@ -1,5 +1,6 @@
 /**
  * 认证服务 - 处理用户注册、登录、令牌管理
+ * 支持自动刷新 Token 机制
  */
 
 import type { RequestOptions } from '@SU/async/RequestOptions.ts'
@@ -17,6 +18,7 @@ import { Result } from '@S/core/Result.ts'
 import { http } from '@S/infra/api/http.ts'
 import { cacheService } from '@S/infra/cache'
 import { UserApiConstantV1 } from '@S/infra/api/v1/ApiConstants.ts'
+import { isTokenExpired, getTokenExpiration } from '@M/auth/utils/jwt.ts'
 
 /**
  * 认证服务接口
@@ -39,18 +41,33 @@ export interface IAuthService {
 
   // 删除用户
   deleteUser(options?: RequestOptions): Promise<Result<void>>
+
+  // 确保有效 Token（自动刷新）
+  ensureValidToken(): Promise<boolean>
+
+  // 检查 Token 是否即将过期
+  isTokenExpiringSoon(): boolean
 }
 
 /**
  * 认证服务实现
+ * 支持 JWT 自动刷新机制
  */
 export class AuthService implements IAuthService {
   private static readonly CACHE_MODULE = 'auth_service'
   private static readonly TOKEN_KEY = 'auth_tokens'
   private static readonly USER_KEY = 'current_user'
 
+  // Token 刷新相关配置
+  private static readonly REFRESH_BUFFER_SECONDS = 120 // 提前 2 分钟刷新
+  private static readonly MIN_REFRESH_INTERVAL = 10_000 // 最小刷新间隔 10 秒
+
   // 存储的令牌
   private tokens: AuthSession | null = null
+
+  // 刷新锁 - 防止并发刷新
+  private refreshPromise: Promise<boolean> | null = null
+  private lastRefreshTime = 0
 
   constructor() {
     // 从 localStorage 恢复令牌
@@ -246,16 +263,107 @@ export class AuthService implements IAuthService {
    * 检查是否已登录
    */
   public isAuthenticated(): boolean {
-    return this.tokens !== null
+    return this.tokens !== null && !this.isAccessTokenExpired()
+  }
+
+  /**
+   * 检查 Access Token 是否已过期
+   */
+  public isAccessTokenExpired(): boolean {
+    if (!this.tokens?.accessToken) return true
+    return isTokenExpired(this.tokens.accessToken, 0)
+  }
+
+  /**
+   * 检查 Token 是否即将过期（需要刷新）
+   */
+  public isTokenExpiringSoon(): boolean {
+    if (!this.tokens?.accessToken) return false
+    return isTokenExpired(this.tokens.accessToken, AuthService.REFRESH_BUFFER_SECONDS)
+  }
+
+  /**
+   * 确保有效的 Token（自动刷新机制）
+   * @returns 是否有有效的 Token
+   */
+  public async ensureValidToken(): Promise<boolean> {
+    // 没有 Token
+    if (!this.tokens) {
+      return false
+    }
+
+    // Access Token 仍然有效且不需要刷新
+    if (!this.isTokenExpiringSoon()) {
+      return true
+    }
+
+    // 检查是否有 Refresh Token
+    if (!this.tokens.refreshToken) {
+      this.clearTokens()
+      return false
+    }
+
+    // 如果已经在刷新中，等待刷新完成
+    if (this.refreshPromise) {
+      return this.refreshPromise
+    }
+
+    // 检查最小刷新间隔，防止频繁刷新
+    const now = Date.now()
+    if (now - this.lastRefreshTime < AuthService.MIN_REFRESH_INTERVAL) {
+      // 刚刚刷新过，认为 Token 仍然有效
+      return !this.isAccessTokenExpired()
+    }
+
+    // 开始刷新
+    this.refreshPromise = this.doRefresh()
+
+    try {
+      const success = await this.refreshPromise
+      return success
+    } finally {
+      this.refreshPromise = null
+    }
+  }
+
+  /**
+   * 执行 Token 刷新
+   */
+  private async doRefresh(): Promise<boolean> {
+    if (!this.tokens?.refreshToken) {
+      return false
+    }
+
+    try {
+      const result = await this.refreshToken(this.tokens.refreshToken)
+      this.lastRefreshTime = Date.now()
+
+      if (result.isSuccess) {
+        return true
+      }
+
+      // 刷新失败，清除 Token
+      this.clearTokens()
+      return false
+    } catch {
+      this.clearTokens()
+      return false
+    }
   }
 
   /**
    * 保存令牌到内存和 localStorage
    */
   private saveTokens(tokens: AuthSession): void {
-    this.tokens = tokens
+    // 计算 Token 过期时间
+    const expiresAt = getTokenExpiration(tokens.accessToken)
+    this.tokens = {
+      ...tokens,
+      expiresAt: expiresAt ?? undefined,
+    }
+
     try {
-      localStorage.setItem(AuthService.TOKEN_KEY, JSON.stringify(tokens))
+      localStorage.setItem(AuthService.TOKEN_KEY, JSON.stringify(this.tokens))
     } catch {
       // localStorage 不可用时忽略
     }
@@ -269,6 +377,12 @@ export class AuthService implements IAuthService {
       const stored = localStorage.getItem(AuthService.TOKEN_KEY)
       if (stored) {
         this.tokens = JSON.parse(stored)
+
+        // 加载后检查 Token 是否已过期
+        if (this.isAccessTokenExpired()) {
+          // Token 已过期，尝试刷新
+          this.refreshPromise = this.doRefresh()
+        }
       }
     } catch {
       this.tokens = null
@@ -280,6 +394,8 @@ export class AuthService implements IAuthService {
    */
   private clearTokens(): void {
     this.tokens = null
+    this.refreshPromise = null
+    this.lastRefreshTime = 0
     cacheService.clearModule(AuthService.CACHE_MODULE)
     try {
       localStorage.removeItem(AuthService.TOKEN_KEY)

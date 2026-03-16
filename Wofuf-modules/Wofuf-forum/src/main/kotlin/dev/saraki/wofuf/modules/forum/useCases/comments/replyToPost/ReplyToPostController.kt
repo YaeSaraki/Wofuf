@@ -16,19 +16,41 @@ import org.springframework.web.bind.annotation.RestController
  * @description Reply to a post directly (not to a comment)
  */
 @RestController
-@RequestMapping(ForumApiConstantV1.Posts.REPLIES)
 class ReplyToPostController(
     private val replyToPostUseCase: ReplyToPostUseCase
 ) : BaseController() {
 
-    @PostMapping
+    /**
+     * 通过帖子 UUID 回复
+     */
+    @PostMapping(ForumApiConstantV1.Posts.REPLIES)
     fun replyToPost(
         @PathVariable postId: String,
         @RequestBody request: ReplyToPostRequest
     ): ApiResponse<ReplyToPostDto.Response> {
         val result = replyToPostUseCase.execute(
             ReplyToPostDto.Request(
+                postSlug = null,
                 postId = postId,
+                userId = request.userId,
+                comment = request.comment,
+            )
+        ).getOrThrow()
+        return ApiResponse.success(result)
+    }
+
+    /**
+     * 通过帖子 Slug 回复
+     */
+    @PostMapping(ForumApiConstantV1.Posts.REPLIES_BY_SLUG)
+    fun replyToPostBySlug(
+        @PathVariable postSlug: String,
+        @RequestBody request: ReplyToPostRequest
+    ): ApiResponse<ReplyToPostDto.Response> {
+        val result = replyToPostUseCase.execute(
+            ReplyToPostDto.Request(
+                postSlug = postSlug,
+                postId = null,
                 userId = request.userId,
                 comment = request.comment,
             )

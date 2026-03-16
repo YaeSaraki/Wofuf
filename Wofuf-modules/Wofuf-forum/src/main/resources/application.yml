@@ -1,6 +1,22 @@
 # ===================== Player ====================
 secretKey: "This is a secret key that only the server and the client know."
 
+# ===================== Auth =====================
+auth:
+  jwt:
+    secret: your-secret-key-must-be-at-least-32-bytes-long-and-secure!
+    expiration: 3600000  # 1小时
+    refresh-expiration: 604800000  # 7天
+    issuer: auth-service
+    clock-skew: 60  # 60秒时钟偏差
+    token-version: '0'
+
+  redis:
+    host: localhost
+    port: 6380
+    password: ""
+    database: 0
+
 # ===================== Spring Boot =====================
 debug: true
 server:

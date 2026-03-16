@@ -6,6 +6,7 @@ import { forumService } from '@M/forum/services/ForumService.ts'
 import { useAuth } from '@M/auth/composables/useAuth.ts'
 import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
 import { translate } from '@S/services/i18n'
+import { renderAvatar } from '@SU/renderUTil.ts'
 import ReplyToComment from '@M/forum/components/replyToComment/ReplyToComment.vue'
 
 const route = useRoute()
@@ -14,8 +15,15 @@ const post = ref<PostDto | null>(null)
 const comments = ref<CommentDto[]>([])
 const { isAuthenticated } = useAuth()
 
-/* ---------------- 复用通用加载逻辑 ---------------- */
-const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
+/* ---------------- 使用独立的加载状态，避免互相取消 ---------------- */
+const { isLoading: isPostLoading, errorMsg: postError, executeAsync: executePostAsync } = useAsyncLoader()
+const { isLoading: isCommentsLoading, errorMsg: commentsError, executeAsync: executeCommentsAsync } = useAsyncLoader()
+
+// 合并的加载状态（用于模板显示）
+const isLoading = isPostLoading
+
+// 合并的错误信息
+const errorMsg = postError
 
 // 投票状态
 const isVoting = ref(false)
@@ -24,20 +32,37 @@ const voteError = ref<string | null>(null)
 // 获取帖子详情
 async function fetchPost() {
   const slug = route.params.slug as string
-  if (!slug) return
+  console.debug('[PostDetail] 开始获取帖子, slug:', slug, 'route.params:', route.params)
 
-  const result = await executeAsync(async (signal) => {
+  if (!slug) {
+    console.error('[PostDetail] slug 参数为空')
+    return
+  }
+
+  const result = await executePostAsync(async (signal) => {
+    console.debug('[PostDetail] 调用 forumService.getPostBySlug...')
     const apiResult = await forumService.getPostBySlug(slug, { signal })
 
+    console.debug('[PostDetail] API 结果:', apiResult)
+
     if (apiResult.isSuccess) {
-      return apiResult.getValue()
+      const value = apiResult.getValue()
+      console.debug('[PostDetail] 获取成功:', value)
+      return value
     }
 
-    throw new Error('获取帖子失败')
+    // 输出实际错误信息便于调试
+    console.error('[PostDetail] 获取帖子失败:', apiResult.error)
+    throw new Error(`获取帖子失败: ${apiResult.error || '未知错误'}`)
   }, translate('forum', 'error'))
 
   if (result) {
     post.value = result.post
+    console.debug('[PostDetail] 设置 post.value:', post.value)
+    // 加载帖子作者头像
+    loadPostAuthorAvatar()
+  } else {
+    console.error('[PostDetail] result 为空')
   }
 }
 
@@ -46,7 +71,7 @@ async function fetchComments() {
   const slug = route.params.slug as string
   if (!slug) return
 
-  const result = await executeAsync(async (signal) => {
+  const result = await executeCommentsAsync(async (signal) => {
     const apiResult = await forumService.getCommentsByPostSlug(slug, { signal })
 
     if (apiResult.isSuccess) {
@@ -58,6 +83,8 @@ async function fetchComments() {
 
   if (result) {
     comments.value = result.comments
+    // 渲染评论头像
+    renderAllAvatars()
   }
 }
 
@@ -116,6 +143,44 @@ function getAuthorInitial(post: PostDto | null): string {
   return nickname.charAt(0).toUpperCase()
 }
 
+// 帖子作者头像
+const postAuthorAvatar = ref<string | null>(null)
+
+async function loadPostAuthorAvatar() {
+  if (!post.value?.memberPostBy?.playerSkin) return
+  try {
+    const skinDataUrl = `data:image/png;base64,${post.value.memberPostBy.playerSkin}`
+    postAuthorAvatar.value = await renderAvatar(skinDataUrl, 24)
+  } catch (e) {
+    console.warn('Failed to render post author avatar:', e)
+  }
+}
+
+// 评论头像缓存
+const commentAvatars = ref<Map<string, string>>(new Map())
+
+// 渲染评论头像
+async function renderCommentAvatar(comment: CommentDto) {
+  if (!comment.memberPlayerSkin) return
+  if (commentAvatars.value.has(comment.commentId)) return
+  
+  try {
+    // 添加 data URL 前缀
+    const skinDataUrl = `data:image/png;base64,${comment.memberPlayerSkin}`
+    const avatarUrl = await renderAvatar(skinDataUrl, 24)
+    commentAvatars.value.set(comment.commentId, avatarUrl)
+  } catch (e) {
+    console.warn('Failed to render avatar for comment:', comment.commentId, e)
+  }
+}
+
+// 监听评论变化，渲染头像
+async function renderAllAvatars() {
+  for (const comment of comments.value) {
+    await renderCommentAvatar(comment)
+  }
+}
+
 onMounted(() => {
   fetchPost()
   fetchComments()
@@ -166,7 +231,13 @@ onMounted(() => {
           <!-- 元信息 -->
           <div class="bf-post-meta">
             <div class="bf-author">
-              <div class="bf-author-avatar">
+              <img
+                v-if="postAuthorAvatar"
+                :src="postAuthorAvatar"
+                class="bf-author-avatar bf-author-avatar--img"
+                alt=""
+              />
+              <div v-else class="bf-author-avatar">
                 {{ getAuthorInitial(post) }}
               </div>
               <span class="bf-author-name">{{ post.memberPostBy?.nickname || 'Unknown' }}</span>
@@ -245,7 +316,16 @@ onMounted(() => {
             <!-- 评论内容 -->
             <div class="bf-comment-content">
               <div class="bf-comment-meta">
-                <span class="bf-comment-author">{{ comment.memberId }}</span>
+                <img
+                  v-if="commentAvatars.get(comment.commentId)"
+                  :src="commentAvatars.get(comment.commentId)"
+                  class="bf-comment-avatar"
+                  alt=""
+                />
+                <div v-else class="bf-comment-avatar-placeholder">
+                  {{ (comment.memberNickname || comment.memberId).charAt(0).toUpperCase() }}
+                </div>
+                <span class="bf-comment-author">{{ comment.memberNickname || comment.memberId }}</span>
                 <span class="bf-meta-divider">•</span>
                 <span class="bf-comment-date">{{ new Date(comment.createdAt).toLocaleDateString() }}</span>
               </div>
@@ -263,7 +343,7 @@ onMounted(() => {
         </div>
 
         <!-- 回复评论组件 -->
-        <ReplyToComment :post-id="post.slug" @reply-added="fetchComments" />
+        <ReplyToComment :post-slug="post.slug" @reply-added="fetchComments" />
       </div>
     </template>
   </div>
@@ -408,6 +488,12 @@ onMounted(() => {
   color: white;
 }
 
+.bf-author-avatar--img {
+  background: transparent;
+  border-radius: 4px;
+  image-rendering: pixelated;
+}
+
 .bf-author-name {
   color: var(--bf-primary, #FF6B35);
   font-weight: 500;
@@ -546,6 +632,28 @@ onMounted(() => {
   align-items: center;
   gap: var(--bf-space-xs, 4px);
   margin-bottom: var(--bf-space-sm, 8px);
+}
+
+.bf-comment-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  image-rendering: pixelated;
+  margin-right: var(--bf-space-xs, 4px);
+}
+
+.bf-comment-avatar-placeholder {
+  width: 24px;
+  height: 24px;
+  background: var(--bf-fire-gradient, linear-gradient(135deg, #FF6B35 0%, #FF9F1C 50%, #FFBE0B 100%));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  margin-right: var(--bf-space-xs, 4px);
 }
 
 .bf-comment-author {

@@ -18,6 +18,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
+import java.time.Duration
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
@@ -71,8 +74,10 @@ class RedisUserAuthService(
     override fun decodeJWT(jwtToken: JwtToken): JwtClaims? {
         return try {
             val clean = jwtToken.removePrefix("Bearer ").trim()
+            
             val payload = Jwts.parser()
                 .verifyWith(secretKey)
+                .clockSkewSeconds(jwtConfig.clockSkew.toLong())
                 .build()
                 .parseSignedClaims(clean)
                 .payload
@@ -86,6 +91,7 @@ class RedisUserAuthService(
                 )
             ).getOrNull()
         } catch (e: Exception) {
+            log.debug("JWT 解码失败: ${e.message}")
             null
         }
     }

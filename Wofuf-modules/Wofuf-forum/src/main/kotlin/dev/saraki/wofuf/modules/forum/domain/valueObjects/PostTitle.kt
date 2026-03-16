@@ -1,5 +1,6 @@
 package dev.saraki.wofuf.modules.forum.domain.valueObjects
 
+import dev.saraki.wofuf.shared.core.AppError
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.ValueObject
@@ -27,12 +28,20 @@ class PostTitle private constructor(
 
         fun create(value: String): Result<PostTitle> {
             val guardResult = Guard.againstNullOrUndefined(value, "PostTitle")
-            val lengthGuardResult = Guard.againstAtMost(MIN_LENGTH, "PostTitle is too short")
-            val maxLengthGuardResult = Guard.againstAtLeast(MAX_LENGTH, "PostTitle is too long")
-
-            val combinedGuardResult = Guard.combine(listOf(guardResult, lengthGuardResult, maxLengthGuardResult))
-            if (combinedGuardResult.isFailure) {
-                return Result.failure(combinedGuardResult.exceptionOrThrow())
+            if (guardResult.isFailure) {
+                return Result.failure(guardResult.exceptionOrThrow())
+            }
+            
+            // 检查最小长度 - 文本长度必须至少为 MIN_LENGTH
+            val minLengthResult = Guard.againstAtLeast(MIN_LENGTH, value)
+            if (minLengthResult.isFailure) {
+                return Result.failure(AppError("PostTitle must be at least $MIN_LENGTH characters", "TITLE_TOO_SHORT"))
+            }
+            
+            // 检查最大长度 - 文本长度必须最多为 MAX_LENGTH
+            val maxLengthResult = Guard.againstAtMost(MAX_LENGTH, value)
+            if (maxLengthResult.isFailure) {
+                return Result.failure(AppError("PostTitle must be at most $MAX_LENGTH characters", "TITLE_TOO_LONG"))
             }
 
             return Result.success(PostTitle(PostTitleProps(value)))

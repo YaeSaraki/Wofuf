@@ -69,10 +69,10 @@ data class CommentEntity(
     )
     val replies: MutableList<CommentEntity> = mutableListOf(),
 
-    // 评论点赞关联
+    // 评论点赞关联 - 不使用级联，手动管理
     @OneToMany(
         mappedBy = "commentEntity",
-        cascade = [CascadeType.ALL],
+        cascade = [],
         fetch = FetchType.LAZY
     )
     val commentVoteEntities: MutableList<CommentVoteEntity> = mutableListOf(),

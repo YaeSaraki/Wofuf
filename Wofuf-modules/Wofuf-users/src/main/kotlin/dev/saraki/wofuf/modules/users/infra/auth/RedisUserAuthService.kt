@@ -195,6 +195,7 @@ class RedisUserAuthService(
             val clean = jwtToken.removePrefix("Bearer ").trim()
             val payload = Jwts.parser()
                 .verifyWith(secretKey)
+                .clockSkewSeconds(jwtConfig.clockSkew.toLong())
                 .build()
                 .parseSignedClaims(clean)
                 .payload
@@ -208,6 +209,7 @@ class RedisUserAuthService(
                 )
             ).getOrNull()
         } catch (e: Exception) {
+            log.debug("JWT 解码失败: ${e.message}")
             null
         }
     }

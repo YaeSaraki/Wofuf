@@ -41,6 +41,7 @@ export interface IForumService {
   /* ---------------- 评论 ---------------- */
   getCommentsByPostSlug(postSlug: string, options?: RequestOptions): Promise<Result<GetCommentsResponse>>
   replyToPost(postId: string, data: ReplyToPostRequest, options?: RequestOptions): Promise<Result<void>>
+  replyToPostBySlug(postSlug: string, data: ReplyToPostRequest, options?: RequestOptions): Promise<Result<void>>
   replyToComment(commentId: string, data: ReplyToCommentRequest, options?: RequestOptions): Promise<Result<void>>
 }
 
@@ -141,7 +142,15 @@ export class ForumService implements IForumService {
     const cacheKey = `post_slug_${slug}`
     const cached = cacheService.get<GetPostResponse>(ForumService.CACHE_MODULE, cacheKey)
     if (cached) {
-      return Result.success(cached)
+      // 验证缓存数据有效性
+      if (cached.post && cached.post.slug === slug) {
+        console.debug('[ForumService] 使用缓存的帖子数据:', slug)
+        return Result.success(cached)
+      } else {
+        // 缓存数据无效，清除
+        console.warn('[ForumService] 缓存数据无效，清除:', slug)
+        cacheService.delete(ForumService.CACHE_MODULE, cacheKey)
+      }
     }
 
     try {
@@ -149,6 +158,8 @@ export class ForumService implements IForumService {
       const params: Record<string, string> | undefined = tokens?.userId
         ? { userId: tokens.userId }
         : undefined
+
+      console.debug('[ForumService] 请求帖子详情:', slug, 'params:', params)
 
       const response = await http.get<ApiResponse<GetPostResponse>>(
         `/api/v1/forum/posts/slug/${slug}`,
@@ -158,14 +169,18 @@ export class ForumService implements IForumService {
         }
       )
 
+      console.debug('[ForumService] 帖子响应:', response.data)
+
       if (response.data.success) {
         const result = response.data.data
         cacheService.set(ForumService.CACHE_MODULE, cacheKey, result)
         return Result.success(result)
       }
+      console.error('[ForumService] API 返回失败:', response.data.message)
       return Result.failure(response.data.message || '获取帖子失败')
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      const err = error as { response?: { data?: { message?: string }; status?: number }; message?: string }
+      console.error('[ForumService] 请求异常:', err.response?.status, err.message, err.response?.data)
       return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
     }
   }
@@ -396,7 +411,7 @@ export class ForumService implements IForumService {
   }
 
   /**
-   * 回复帖子
+   * 回复帖子（通过 UUID）
    */
   public async replyToPost(
     postId: string,
@@ -406,6 +421,35 @@ export class ForumService implements IForumService {
     try {
       const response = await http.post<ApiResponse<void>>(
         `/api/v1/forum/posts/${postId}/replies`,
+        data,
+        {
+          signal: options?.signal,
+          headers: authService.getAuthHeaders(),
+        }
+      )
+
+      if (response.data.success) {
+        cacheService.clearModule(ForumService.CACHE_MODULE)
+        return Result.success(undefined)
+      }
+      return Result.failure(response.data.message || '回复失败')
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+    }
+  }
+
+  /**
+   * 回复帖子（通过 Slug）
+   */
+  public async replyToPostBySlug(
+    postSlug: string,
+    data: ReplyToPostRequest,
+    options?: RequestOptions,
+  ): Promise<Result<void>> {
+    try {
+      const response = await http.post<ApiResponse<void>>(
+        `/api/v1/forum/posts/slug/${postSlug}/replies`,
         data,
         {
           signal: options?.signal,

@@ -34,9 +34,6 @@ class GetCommentByPostSlugUseCase(
         val post = postRepo.findPostBySlug(postSlug) ?: return GetCommentByPostSlugErrors.PostNotFoundError()
 
         val comments = commentRepo.findCommentsByPostSlug(postSlug)
-        if (comments.isEmpty()) {
-            return GetCommentByPostSlugErrors.CommentsNotFoundError()
-        }
 
         val commentDtos = comments.map { comment ->
             val commentDetails = commentRepo.findCommentDetailsByCommentId(comment.commentId)

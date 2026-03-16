@@ -8,6 +8,8 @@ import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentVotesRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.CommentJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.CommentEntityMapper
+import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerSkin
+import dev.saraki.wofuf.modules.players.infra.repos.jpa.PlayerJpaRepo
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional
 class CommentRepoImpl(
     private val commentJpaRepo: CommentJpaRepo,
     private val commentVotesRepo: CommentVotesRepo,
+    private val playerJpaRepo: PlayerJpaRepo,
 ) : CommentRepo {
 
     override fun exists(commentId: CommentId): Boolean =
@@ -40,21 +43,31 @@ class CommentRepoImpl(
 
     override fun findCommentDetailsByCommentId(commentId: CommentId): CommentDetails? {
         return commentJpaRepo.findById(commentId.stringValue)
-            .map(CommentEntityMapper::toCommentDetails)
+            .map { commentEntity ->
+                val playerSkin = getPlayerSkinFromMember(commentEntity.memberEntity?.playerId)
+                CommentEntityMapper.toCommentDetails(commentEntity, playerSkin)
+            }
             .orElse(null)
+    }
+
+    private fun getPlayerSkinFromMember(playerId: String?): PlayerSkin? {
+        if (playerId == null) return null
+        val playerEntity = playerJpaRepo.findById(playerId).orElse(null) ?: return null
+        val skinEntity = playerEntity.playerSkin ?: return null
+        return PlayerSkin.create(
+            type = skinEntity.type ?: "",
+            skin = skinEntity.skin,
+            cape = skinEntity.cape ?: ""
+        ).getOrNull()
     }
 
     @Transactional
     override fun save(comment: Comment): Comment {
         val entity = CommentEntityMapper.toEntity(comment)
 
-        // 保存评论
-        val savedEntity = commentJpaRepo.save(entity)
-        val savedComment = CommentEntityMapper.toDomain(savedEntity)
-
-        // 保存投票信息
-        commentVotesRepo.saveBulk(comment.getVotes())
-        return savedComment
+        // 保存评论（不保存 votes，因为新评论没有 votes）
+        val savedEntity = commentJpaRepo.saveAndFlush(entity)
+        return CommentEntityMapper.toDomain(savedEntity)
     }
 
     @Transactional

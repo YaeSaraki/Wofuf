@@ -1,5 +1,6 @@
 package dev.saraki.wofuf.modules.forum.domain.valueObjects
 
+import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerSkin
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.ValueObject
@@ -13,6 +14,7 @@ import dev.saraki.wofuf.shared.domain.ValueObject
 data class MemberDetailsProps(
     val nickName: NickName,
     val reputation: Int,
+    val playerSkin: PlayerSkin?,
 )
 
 class MemberDetails private constructor(
@@ -23,6 +25,9 @@ class MemberDetails private constructor(
 
     val reputation: Int
         get() = props.reputation
+
+    val playerSkin: PlayerSkin?
+        get() = props.playerSkin
 
     companion object {
         fun create(props: MemberDetailsProps): Result<MemberDetails> {

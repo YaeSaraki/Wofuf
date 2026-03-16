@@ -53,6 +53,8 @@ class CreateMemberUseCase(
                 nickName = nickName,
                 reputation = 0
             )
+            ,
+            null
         )
 
         if (memberResult.isFailure) {

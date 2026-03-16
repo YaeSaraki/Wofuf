@@ -7,6 +7,8 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.mappers.PostDtoMapper
+import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerSkin
+import dev.saraki.wofuf.modules.players.infra.repos.jpa.PlayerJpaRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import org.springframework.stereotype.Service
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service
 class GetPostBySlugUseCase(
     private val postRepo: PostRepo,
     private val memberRepo: MemberRepo,
+    private val playerJpaRepo: PlayerJpaRepo,
 ) : UseCase<GetPostBySlugDto.Request, GetPostBySlugDto.Response> {
 
     override fun execute(request: GetPostBySlugDto.Request): Result<GetPostBySlugDto.Response> {
@@ -45,10 +48,12 @@ class GetPostBySlugUseCase(
             ?: return GetPostBySlugErrors.MemberNotFoundError(request.postSlug)
 
         // 5. Create MemberDetails
+        val playerSkin = getPlayerSkinFromMember(member.playerId.stringValue)
         val memberDetailsOrError = MemberDetails.create(
             MemberDetailsProps(
                 nickName = member.nickname,
-                reputation = member.reputation
+                reputation = member.reputation,
+                playerSkin = playerSkin
             )
         )
         if (memberDetailsOrError.isFailure) {
@@ -65,5 +70,16 @@ class GetPostBySlugUseCase(
 
         // 8. Return success response
         return Result.success(GetPostBySlugDto.Response(postDto))
+    }
+
+    private fun getPlayerSkinFromMember(playerId: String?): PlayerSkin? {
+        if (playerId == null) return null
+        val playerEntity = playerJpaRepo.findById(playerId).orElse(null) ?: return null
+        val skinEntity = playerEntity.playerSkin ?: return null
+        return PlayerSkin.create(
+            type = skinEntity.type ?: "",
+            skin = skinEntity.skin,
+            cape = skinEntity.cape ?: ""
+        ).getOrNull()
     }
 }

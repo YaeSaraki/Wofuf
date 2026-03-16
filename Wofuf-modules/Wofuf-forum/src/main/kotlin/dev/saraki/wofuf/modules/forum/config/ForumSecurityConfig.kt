@@ -32,9 +32,9 @@ class ForumSecurityConfig {
             .csrf { it.disable() }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers(ForumApiConstantV1.Members.ROOT).permitAll()
-                    .requestMatchers(ForumApiConstantV1.Posts.ROOT).permitAll()
-                    .requestMatchers(ForumApiConstantV1.Comments.ROOT).permitAll()
+                    .requestMatchers(ForumApiConstantV1.Members.ROOT + "/**").permitAll()
+                    .requestMatchers(ForumApiConstantV1.Posts.ROOT + "/**").permitAll()
+                    .requestMatchers(ForumApiConstantV1.Comments.ROOT + "/**").permitAll()
             }
         http.addFilterBefore(jwtUserAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()

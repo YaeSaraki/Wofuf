@@ -14,6 +14,7 @@ export interface MemberDto {
   memberId: string
   nickname: string
   reputation: number
+  playerSkin: string | null  // 用户头像皮肤 (base64)
 }
 
 // 帖子 DTO (对应后端 PostDto)
@@ -40,6 +41,8 @@ export interface CommentDto {
   parentCommentId: string | null
   text: string
   memberId: string
+  memberNickname: string  // 用户昵称
+  memberPlayerSkin: string | null  // 用户头像皮肤 (base64)
   createdAt: string
   childComments: CommentDto[]
   points: number

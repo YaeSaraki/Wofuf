@@ -7,6 +7,7 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetailsProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.MemberEntity
 import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerId
+import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerSkin
 import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 
@@ -25,7 +26,8 @@ object MemberEntityMapper {
                 playerId = PlayerId.create(UniqueEntityId(memberEntity.playerId)).getOrThrow(),
                 nickName = NickName.create(memberEntity.nickname).getOrThrow(),
                 reputation = memberEntity.reputation
-            )
+            ),
+            UniqueEntityId(memberEntity.memberId)
         ).getOrThrow()
 
         member._createdAt = memberEntity.createdAt
@@ -34,11 +36,12 @@ object MemberEntityMapper {
         return member
     }
 
-    fun toMemberDetails(memberEntity: MemberEntity): MemberDetails {
+    fun toMemberDetails(memberEntity: MemberEntity, playerSkin: PlayerSkin? = null): MemberDetails {
         return MemberDetails.create(
             MemberDetailsProps(
                 nickName = NickName.create(memberEntity.nickname).getOrThrow(),
                 reputation = memberEntity.reputation,
+                playerSkin = playerSkin,
             )
         ).getOrThrow()
     }

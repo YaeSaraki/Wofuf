@@ -61,6 +61,9 @@ object ForumApiConstantV1 {
         /** /api/v1/forum/posts/{postId}/replies */
         const val REPLIES = "$BY_ID/replies"
 
+        /** /api/v1/forum/posts/slug/{postSlug}/replies */
+        const val REPLIES_BY_SLUG = "$BY_SLUG/replies"
+
         /** /api/v1/forum/posts/recent */
         const val RECENT = "$ROOT/recent"
 

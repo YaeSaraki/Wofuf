@@ -11,6 +11,7 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostTitle
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.CommentEntity
+import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerSkin
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 
 /**
@@ -42,12 +43,12 @@ object CommentEntityMapper {
         return comment
     }
 
-    fun toCommentDetails(commentEntity: CommentEntity): CommentDetails {
+    fun toCommentDetails(commentEntity: CommentEntity, playerSkin: PlayerSkin? = null): CommentDetails {
         return create(
             CommentDetailsProps(
                 commentId = CommentId.create(UniqueEntityId(commentEntity.commentId)).getOrThrow(),
                 text = commentEntity.text,
-                memberDetails = MemberEntityMapper.toMemberDetails(commentEntity.memberEntity!!),
+                memberDetails = MemberEntityMapper.toMemberDetails(commentEntity.memberEntity!!, playerSkin),
                 postSlug = PostSlug.createFromExisting(commentEntity.postEntity!!.slug).getOrThrow(),
                 postTitle = PostTitle.create(commentEntity.postEntity!!.title).getOrThrow(),
                 parentCommentId = commentEntity.parentCommentId?.let { CommentId.create(UniqueEntityId(it)).getOrThrow() },

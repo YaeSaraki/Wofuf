@@ -4,11 +4,12 @@
  */
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import type { PostDto } from '@M/forum/dtos/Post'
 import { translate } from '@S/services/i18n'
 import { authService } from '@M/auth/services/AuthService'
+import { renderAvatar } from '@SU/renderUTil.ts'
 
 const props = defineProps<{
   post: PostDto
@@ -86,6 +87,22 @@ const visitLink = (event: Event) => {
     window.open(props.post.link, '_blank', 'noopener,noreferrer')
   }
 }
+
+// 头像渲染
+const avatarUrl = ref<string | null>(null)
+
+async function loadAvatar() {
+  if (!props.post.memberPostBy.playerSkin) return
+  try {
+    const skinDataUrl = `data:image/png;base64,${props.post.memberPostBy.playerSkin}`
+    avatarUrl.value = await renderAvatar(skinDataUrl, 24)
+  } catch (e) {
+    console.warn('Failed to render avatar:', e)
+  }
+}
+
+// 监听 post 变化加载头像
+watch(() => props.post, loadAvatar, { immediate: true })
 </script>
 
 <template>
@@ -127,7 +144,13 @@ const visitLink = (event: Event) => {
       <!-- 元信息行 -->
       <div class="bf-post-card__meta">
         <div class="bf-post-card__author">
-          <div class="bf-avatar">
+          <img
+            v-if="avatarUrl"
+            :src="avatarUrl"
+            class="bf-avatar bf-avatar--img"
+            alt=""
+          />
+          <div v-else class="bf-avatar">
             {{ post.memberPostBy.nickname.charAt(0).toUpperCase() }}
           </div>
           <span class="bf-author-name">{{ post.memberPostBy.nickname }}</span>
@@ -292,6 +315,11 @@ const visitLink = (event: Event) => {
   font-size: 12px;
   font-weight: 600;
   color: white;
+}
+
+.bf-avatar--img {
+  background: transparent;
+  image-rendering: pixelated;
 }
 
 .bf-author-name {

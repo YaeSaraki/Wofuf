@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.persistence.autoconfigure.EntityScan
 import org.springframework.boot.runApplication
 
 /**
@@ -14,6 +15,12 @@ import org.springframework.boot.runApplication
         "dev.saraki.wofuf.auth",
         "dev.saraki.wofuf.shared",
         "dev.saraki.wofuf.modules.forum"
+    ]
+)
+@EntityScan(
+    basePackages = [
+        "dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities",
+        "dev.saraki.wofuf.modules.players.infra.repos.jpa.entities"
     ]
 )
 class ForumApplication

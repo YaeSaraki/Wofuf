@@ -22,7 +22,7 @@ class PostId private constructor(
         get() = props.value
 
     val stringValue: String
-        get() = props.value.toString()
+        get() = props.value.uuid.toString()
 
     companion object {
         fun create(value: UniqueEntityId): Result<PostId> {
