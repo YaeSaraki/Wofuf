@@ -62,10 +62,17 @@ async function createPost() {
     return
   }
   
-  formData.value.userId = userId
+  // 构建请求数据，确保所有字段都正确
+  const requestData: CreatePostRequest = {
+    userId: userId,
+    title: formData.value.title.trim(),
+    type: formData.value.type,
+    text: formData.value.text?.trim() || undefined,
+    link: formData.value.link?.trim() || undefined,
+  }
 
   const result = await executeAsync(async () => {
-    const apiResult = await forumService.createPost(formData.value)
+    const apiResult = await forumService.createPost(requestData)
 
     if (apiResult.isSuccess) {
       return apiResult.getValue()
