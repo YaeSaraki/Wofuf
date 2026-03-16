@@ -1,4 +1,8 @@
 @import 'tailwindcss';
+
+/* Tailwind v4 Dark Mode - Class Strategy */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* styles/globals.css */
 @layer utilities {
   /* 隐藏 Webkit 浏览器滚动条 */
