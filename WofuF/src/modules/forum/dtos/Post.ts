@@ -18,6 +18,7 @@ export interface MemberDto {
 
 // 帖子 DTO (对应后端 PostDto)
 export interface PostDto {
+  postId?: string
   slug: string
   title: string
   createdAt: string
@@ -86,6 +87,7 @@ export interface VoteRequest {
 export interface VoteResponse {
   success: boolean
   newPoints: number
+  points: number
 }
 
 // 回复帖子请求

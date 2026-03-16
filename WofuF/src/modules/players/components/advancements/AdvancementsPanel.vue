@@ -144,9 +144,9 @@ const ungroupedIncompleteAdvancements = computed(() => {
 </script>
 
 <template>
-  <div class="bg-zinc-200 dark:bg-zinc-700 rounded-xl shadow-sm p-4 relative">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold text-lg text-zinc-800 dark:text-white">
+  <div class="bf-advancements-panel">
+    <div class="bf-panel-header">
+      <h3 class="bf-panel-title">
         {{ translate('players', 'advancements.title') }}
       </h3>
 
@@ -156,12 +156,12 @@ const ungroupedIncompleteAdvancements = computed(() => {
             ? translate('players', 'advancements.hide-incomplete')
             : translate('players', 'advancements.show-incomplete')
         "
-        class="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-300/50 dark:bg-zinc-600/50 hover:bg-zinc-300/70 dark:hover:bg-zinc-600/70 rounded-lg border border-zinc-200 dark:border-zinc-700 transition-colors"
+        class="bf-toggle-btn"
         @click="showIncomplete = !showIncomplete"
       >
         <svg
           v-if="!showIncomplete"
-          class="w-4 h-4 text-gray-600 dark:text-gray-400"
+          class="bf-icon"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -175,7 +175,7 @@ const ungroupedIncompleteAdvancements = computed(() => {
         </svg>
         <svg
           v-else
-          class="w-4 h-4 text-gray-600 dark:text-gray-400"
+          class="bf-icon"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -193,7 +193,7 @@ const ungroupedIncompleteAdvancements = computed(() => {
             stroke-width="2"
           />
         </svg>
-        <span class="text-xs text-zinc-700 dark:text-zinc-300">
+        <span class="bf-toggle-text">
           {{
             showIncomplete
               ? translate('players', 'advancements.incomplete-show')
@@ -205,115 +205,107 @@ const ungroupedIncompleteAdvancements = computed(() => {
 
     <div
       v-if="isLoading"
-      class="flex justify-center items-center h-40 bg-zinc-50 dark:bg-zinc-700 rounded-lg"
+      class="bf-loading-container"
     >
-      <div
-        class="animate-spin h-8 w-8 rounded-full border-2 border-blue-500 border-t-transparent"
-      ></div>
+      <div class="bf-spinner"></div>
     </div>
     <div
       v-else-if="errorMsg"
-      class="text-center text-red-500 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg"
+      class="bf-error-message"
     >
       {{ errorMsg }}
     </div>
     <div v-else-if="playerAdvancementList">
       <!-- 成就统计概览 -->
       <div class="mb-6">
-        <h4 class="font-semibold text-sm text-zinc-600 dark:text-zinc-300 mb-2">
+        <h4 class="bf-section-subtitle">
           {{ translate('players', 'advancements.overview') }}
         </h4>
 
         <!-- 统计卡片 -->
-        <div class="flex flex-wrap gap-3 mb-4 adv-stats-container">
-          <div
-            class="adv-stat-card bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-3 rounded-lg border border-blue-100 dark:border-blue-800"
-          >
-            <div class="text-xs text-blue-600 dark:text-blue-400 mb-1">
+        <div class="bf-adv-stats">
+          <div class="bf-adv-stat-card bf-adv-stat-card--primary">
+            <div class="bf-adv-stat-label">
               {{ translate('players', 'advancements.total') }}
             </div>
-            <div class="text-xl font-bold text-zinc-800 dark:text-white">
+            <div class="bf-adv-stat-value">
               {{ advancementStats.total }}
             </div>
           </div>
-          <div
-            class="adv-stat-card bg-linear-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 p-3 rounded-lg border border-green-100 dark:border-green-800"
-          >
-            <div class="text-xs text-green-600 dark:text-green-400 mb-1">
+          <div class="bf-adv-stat-card bf-adv-stat-card--success">
+            <div class="bf-adv-stat-label">
               {{ translate('players', 'advancements.completed') }}
             </div>
-            <div class="text-xl font-bold text-zinc-800 dark:text-white">
+            <div class="bf-adv-stat-value">
               {{ advancementStats.completed }}
             </div>
           </div>
-          <div
-            class="adv-stat-card bg-linear-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 p-3 rounded-lg border border-purple-100 dark:border-purple-800"
-          >
-            <div class="text-xs text-purple-600 dark:text-purple-400 mb-1">
+          <div class="bf-adv-stat-card bf-adv-stat-card--accent">
+            <div class="bf-adv-stat-label">
               {{ translate('players', 'advancements.completion-rate') }}
             </div>
-            <div class="text-xl font-bold text-zinc-800 dark:text-white">
+            <div class="bf-adv-stat-value">
               {{ advancementStats.percentage }}%
             </div>
           </div>
         </div>
 
         <!-- 进度条 -->
-        <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2.5">
+        <div class="bf-progress-bar">
           <div
             :style="{ width: `${advancementStats.percentage}%` }"
-            class="bg-linear-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full transition-all duration-500"
+            class="bf-progress-fill"
           ></div>
         </div>
       </div>
 
       <!-- 成就分类展示 -->
-      <div class="space-y-6">
+      <div class="bf-adv-groups">
         <div
           v-for="group in advancementsByCategory"
           :key="group.category"
-          class="bg-zinc-300/50 dark:bg-zinc-600/50 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700"
+          class="bf-adv-group"
         >
-          <h4 class="font-semibold text-sm text-zinc-600 dark:text-zinc-300 mb-3 flex items-center">
-            <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+          <h4 class="bf-group-header">
+            <span class="bf-group-indicator bf-group-indicator--success"></span>
             {{ group.name }}
-            <span class="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
+            <span class="bf-group-count">
               ({{ group.completed }}/{{ group.total }})
             </span>
           </h4>
 
           <!-- 已完成的成就 -->
           <div v-if="getGroupCompleteAdvancements(group.category).length > 0" class="mb-3">
-            <div class="text-xs text-green-600 dark:text-green-400 mb-1 flex items-center">
+            <div class="bf-adv-complete-label">
               {{ translate('players', 'advancements.completed') }}
             </div>
-            <div class="flex flex-wrap gap-x-4 gap-y-7 adv-item-container">
+            <div class="bf-adv-items">
               <div
                 v-for="adv in getGroupCompleteAdvancements(group.category)"
                 :key="adv.key"
-                class="hover:scale-105 adv-item flex items-center py-1 px-2 rounded transition-colors cursor-pointer"
+                class="bf-adv-item bf-adv-item--complete"
                 @click="openPopup(adv, $event)"
               >
                 <!-- 成就图标框和图标 -->
-                <div class="absolute w-12 h-12 mr-2 translate-y-2">
+                <div class="bf-adv-icon-wrapper">
                   <!-- 图标框 -->
                   <img
                     :alt="`${advancementService.translateAdvancement(adv)} frame`"
                     :src="advancementService.getAdvancementFramePath(adv)"
-                    class="absolute -translate-x-2 -translate-y-2 inset-0 w-full h-full object-contain z-0"
+                    class="bf-adv-frame"
                   />
                   <!-- 成就图标 -->
                   <img
                     :alt="advancementService.translateAdvancement(adv)"
                     :src="advancementService.getAdvancementImagePath(adv)"
-                    class="absolute w-8 h-8 mr-2 object-contain rounded z-1"
+                    class="bf-adv-icon"
                   />
                 </div>
-                <span class="ml-12 text-l text-zinc-600 dark:text-zinc-400">
+                <span class="bf-adv-name">
                   {{ advancementService.translateAdvancement(adv) }}
                 </span>
                 <!-- 完成状态 -->
-                <span class="ml-auto text-xs text-green-600 dark:text-green-400">
+                <span class="bf-adv-status bf-adv-status--complete">
                   {{ adv.completed.length }} {{ adv.remaining.length > 0 ? ':' : '/' }}
                   {{ adv.completed.length + adv.remaining.length }}
                 </span>
@@ -323,38 +315,38 @@ const ungroupedIncompleteAdvancements = computed(() => {
 
           <div
             v-if="showIncomplete && getGroupIncompleteAdvancements(group.category).length > 0"
-            class="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700"
+            class="bf-adv-incomplete-section"
           >
-            <div class="text-xs text-red-600 dark:text-red-400 mb-1 flex items-center">
+            <div class="bf-adv-incomplete-label">
               {{ translate('players', 'advancements.not-completed') }}
             </div>
-            <div class="flex flex-wrap gap-x-4 gap-y-2 adv-item-container">
+            <div class="bf-adv-items">
               <div
                 v-for="adv in getGroupIncompleteAdvancements(group.category)"
                 :key="adv.key"
-                class="hover:scale-105 adv-item flex items-center py-1 px-2 rounded transition-colors cursor-pointer"
+                class="bf-adv-item bf-adv-item--incomplete"
                 @click="openPopup(adv, $event)"
               >
                 <!-- 成就图标框和图标 -->
-                <div class="absolute w-12 h-12 mr-2 translate-y-2">
+                <div class="bf-adv-icon-wrapper">
                   <!-- 图标框 -->
                   <img
                     :alt="`${advancementService.translateAdvancement(adv)} frame`"
                     :src="advancementService.getAdvancementFramePath(adv)"
-                    class="absolute -translate-x-2 -translate-y-2 inset-0 w-full h-full object-contain z-0"
+                    class="bf-adv-frame"
                   />
                   <!-- 成就图标 -->
                   <img
                     :alt="advancementService.translateAdvancement(adv)"
                     :src="advancementService.getAdvancementImagePath(adv)"
-                    class="absolute w-8 h-8 mr-2 object-contain rounded z-1"
+                    class="bf-adv-icon"
                   />
                 </div>
-                <span class="ml-12 text-l text-zinc-600 dark:text-zinc-400">
+                <span class="bf-adv-name">
                   {{ advancementService.translateAdvancement(adv) }}
                 </span>
                 <!-- 完成状态 -->
-                <span class="ml-auto text-xs text-red-600 dark:text-red-400">
+                <span class="bf-adv-status bf-adv-status--incomplete">
                   {{ adv.completed.length }}/{{ adv.completed.length + adv.remaining.length }}
                 </span>
               </div>
@@ -363,13 +355,13 @@ const ungroupedIncompleteAdvancements = computed(() => {
 
           <div
             v-if="!showIncomplete && getGroupIncompleteAdvancements(group.category).length > 0"
-            class="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700"
+            class="bf-show-incomplete-btn"
           >
             <button
-              class="w-full text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-center gap-1 py-1"
+              class="bf-expand-btn"
               @click="showIncomplete = !showIncomplete"
             >
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="bf-icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   d="M19 9l-7 7-7-7"
                   stroke-linecap="round"
@@ -390,7 +382,7 @@ const ungroupedIncompleteAdvancements = computed(() => {
                 group.category,
               ).length === 0
             "
-            class="text-sm text-gray-500 dark:text-gray-400 italic"
+            class="bf-no-data"
           >
             {{ translate('players', 'advancements.no-data') }}
           </div>
@@ -398,49 +390,47 @@ const ungroupedIncompleteAdvancements = computed(() => {
       </div>
 
       <!-- 其他未分组成就 -->
-      <div v-if="ungroupedAdvancements.length > 0 && showUngrouped" class="mt-2">
-        <h4 class="font-semibold text-sm text-zinc-600 dark:text-zinc-300 mb-3 flex items-center">
-          <span class="w-2 h-2 rounded-full bg-gray-500 mr-2"></span>
+      <div v-if="ungroupedAdvancements.length > 0 && showUngrouped" class="bf-other-adv">
+        <h4 class="bf-group-header">
+          <span class="bf-group-indicator bf-group-indicator--secondary"></span>
           {{ translate('players', 'advancements.other') }}
         </h4>
 
-        <div
-          class="bg-zinc-300/50 dark:bg-zinc-600/50 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700"
-        >
+        <div class="bf-adv-group">
           <!-- 已完成的成就 -->
           <div v-if="ungroupedCompleteAdvancements.length > 0" class="mb-3">
-            <div class="text-xs text-green-600 dark:text-green-400 mb-1 flex items-center">
+            <div class="bf-adv-complete-label">
               {{ translate('players', 'advancements.completed') }}
             </div>
-            <div class="flex flex-wrap gap-x-4 gap-y-2 adv-item-container">
+            <div class="bf-adv-items">
               <div
                 v-for="adv in ungroupedCompleteAdvancements"
                 :key="adv.key"
-                class="hover:scale-105 adv-item flex items-center py-1 px-2 rounded transition-colors cursor-pointer"
+                class="bf-adv-item bf-adv-item--complete"
                 @click="openPopup(adv, $event)"
               >
                 <!-- 成就图标框和图标 -->
-                <div class="absolute w-12 h-12 mr-2 translate-y-2">
+                <div class="bf-adv-icon-wrapper">
                   <!-- 图标框 -->
                   <img
                     :alt="`${advancementService.translateAdvancement(adv)} frame`"
                     :src="advancementService.getAdvancementFramePath(adv)"
-                    class="absolute -translate-x-2 -translate-y-2 inset-0 w-full h-full object-contain z-0"
+                    class="bf-adv-frame"
                   />
                   <!-- 成就图标 -->
                   <img
                     :alt="advancementService.translateAdvancement(adv)"
                     :src="advancementService.getAdvancementImagePath(adv)"
-                    class="absolute w-8 h-8 mr-2 object-contain rounded z-1"
+                    class="bf-adv-icon"
                   />
                 </div>
                 <div class="flex-1">
-                  <span class="text-l text-zinc-600 dark:text-zinc-400">
+                  <span class="bf-adv-name">
                     {{ advancementService.translateAdvancement(adv) }}
                   </span>
                 </div>
                 <!-- 完成状态 -->
-                <span class="ml-auto text-xs text-green-600 dark:text-green-400">
+                <span class="bf-adv-status bf-adv-status--complete">
                   {{ adv.completed.length }}/{{ adv.completed.length + adv.remaining.length }}
                 </span>
               </div>
@@ -450,40 +440,40 @@ const ungroupedIncompleteAdvancements = computed(() => {
           <!-- 未完成的成就（根据 showIncomplete 状态决定是否显示） -->
           <div
             v-if="showIncomplete && ungroupedIncompleteAdvancements.length > 0"
-            class="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700"
+            class="bf-adv-incomplete-section"
           >
-            <div class="text-xs text-red-600 dark:text-red-400 mb-1 flex items-center">
+            <div class="bf-adv-incomplete-label">
               {{ translate('players', 'advancements.not-completed') }}
             </div>
-            <div class="flex flex-wrap gap-x-4 gap-y-2 adv-item-container">
+            <div class="bf-adv-items">
               <div
                 v-for="adv in ungroupedIncompleteAdvancements"
                 :key="adv.key"
-                class="hover:scale-105 adv-item flex items-center py-1 px-2 rounded transition-colors cursor-pointer"
+                class="bf-adv-item bf-adv-item--incomplete"
                 @click="openPopup(adv, $event)"
               >
                 <!-- 成就图标框和图标 -->
-                <div class="absolute w-12 h-12 mr-2 translate-y-2">
+                <div class="bf-adv-icon-wrapper">
                   <!-- 图标框 -->
                   <img
                     :alt="`${advancementService.translateAdvancement(adv)} frame`"
                     :src="advancementService.getAdvancementFramePath(adv)"
-                    class="absolute -translate-x-2 -translate-y-2 inset-0 w-full h-full object-contain z-0"
+                    class="bf-adv-frame"
                   />
                   <!-- 成就图标 -->
                   <img
                     :alt="advancementService.translateAdvancement(adv)"
                     :src="advancementService.getAdvancementImagePath(adv)"
-                    class="absolute w-8 h-8 mr-2 object-contain rounded z-1"
+                    class="bf-adv-icon"
                   />
                 </div>
                 <div class="flex-1">
-                  <span class="text-l text-zinc-600 dark:text-zinc-400">
+                  <span class="bf-adv-name">
                     {{ advancementService.translateAdvancement(adv) }}
                   </span>
                 </div>
                 <!-- 完成状态 -->
-                <span class="ml-auto text-xs text-red-600 dark:text-red-400">
+                <span class="bf-adv-status bf-adv-status--incomplete">
                   {{ adv.completed.length }}/{{ adv.completed.length + adv.remaining.length }}
                 </span>
               </div>
@@ -493,13 +483,13 @@ const ungroupedIncompleteAdvancements = computed(() => {
           <!-- 显示未完成成就提示 -->
           <div
             v-if="!showIncomplete && ungroupedIncompleteAdvancements.length > 0"
-            class="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700"
+            class="bf-show-incomplete-btn"
           >
             <button
-              class="w-full text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center justify-center gap-1 py-1"
+              class="bf-expand-btn"
               @click="showIncomplete = !showIncomplete"
             >
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="bf-icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   d="M19 9l-7 7-7-7"
                   stroke-linecap="round"
@@ -517,7 +507,7 @@ const ungroupedIncompleteAdvancements = computed(() => {
       <!-- 无数据提示 -->
       <div
         v-if="filteredAdvancements.length === 0"
-        class="text-center text-sm text-gray-500 dark:text-gray-400 py-4 italic"
+        class="bf-empty-state"
       >
         {{ translate('players', 'advancements.no-data') }}
       </div>
@@ -534,23 +524,23 @@ const ungroupedIncompleteAdvancements = computed(() => {
     >
       <template #content="{ handleDragStart }">
         <div
-          class="p-3 border-b border-zinc-200 dark:border-zinc-700 cursor-move shrink-0"
+          class="bf-popup-header"
           @mousedown="handleDragStart"
           @touchstart="handleDragStart"
         >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center flex-1 min-w-0">
+          <div class="bf-popup-header-content">
+            <div class="bf-popup-icon-wrapper">
               <img
                 v-if="popupState.currentAdvancement"
                 :alt="advancementService.translateAdvancement(popupState.currentAdvancement)"
                 :src="advancementService.getAdvancementImagePath(popupState.currentAdvancement)"
-                class="w-10 h-10 mr-2 rounded z-1"
+                class="bf-popup-icon"
               />
-              <div v-if="popupState.currentAdvancement" class="min-w-0 flex-1">
-                <h5 class="font-semibold text-sm text-zinc-800 dark:text-white truncate">
+              <div v-if="popupState.currentAdvancement" class="bf-popup-title-wrapper">
+                <h5 class="bf-popup-title">
                   {{ advancementService.translateAdvancement(popupState.currentAdvancement) }}
                 </h5>
-                <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                <div class="bf-popup-subtitle">
                   {{ popupState.currentAdvancement.completed.length }} /
                   {{
                     popupState.currentAdvancement.completed.length +
@@ -563,40 +553,38 @@ const ungroupedIncompleteAdvancements = computed(() => {
           </div>
         </div>
 
-        <div v-if="popupState.currentAdvancement" class="flex-1 overflow-y-scroll no-scrollbar p-0">
+        <div v-if="popupState.currentAdvancement" class="bf-popup-content">
           <div
             v-if="
               popupState.currentAdvancement.remaining.length > 0 &&
               !popupState.currentAdvancement.done
             "
-            class="p-3"
+            class="bf-popup-section"
           >
-            <h6 class="text-xs font-medium text-red-600 dark:text-red-400 mb-2 flex items-center">
+            <h6 class="bf-popup-section-title bf-popup-section-title--danger">
               <span class="mr-1"></span>
               {{ translate('players', 'advancements.remaining-items') }}
             </h6>
-            <ul class="space-y-1">
+            <ul class="bf-popup-list">
               <li
                 v-for="(item, index) in popupState.currentAdvancement.remaining"
                 :key="`remaining-${index}`"
-                class="text-xs text-zinc-700 dark:text-zinc-300 px-2 py-1 bg-red-50 dark:bg-red-900/20 rounded"
+                class="bf-popup-item bf-popup-item--danger"
               >
                 {{ translate('players', item) }}
               </li>
             </ul>
           </div>
-          <div v-if="popupState.currentAdvancement.completed.length > 0" class="p-3">
-            <h6
-              class="text-xs font-medium text-green-600 dark:text-green-400 mb-2 flex items-center"
-            >
+          <div v-if="popupState.currentAdvancement.completed.length > 0" class="bf-popup-section">
+            <h6 class="bf-popup-section-title bf-popup-section-title--success">
               <span class="mr-1"></span>
               {{ translate('players', 'advancements.completed-items') }}
             </h6>
-            <ul class="space-y-1">
+            <ul class="bf-popup-list">
               <li
                 v-for="(item, index) in popupState.currentAdvancement.completed"
                 :key="`completed-${index}`"
-                class="text-xs text-zinc-700 dark:text-zinc-300 px-2 py-1 bg-green-50 dark:bg-green-900/20 rounded"
+                class="bf-popup-item bf-popup-item--success"
               >
                 {{ translate('players', item) }}
               </li>
@@ -607,3 +595,433 @@ const ungroupedIncompleteAdvancements = computed(() => {
     </DraggablePopup>
   </div>
 </template>
+
+<style scoped>
+.bf-advancements-panel {
+  background: var(--bf-card-bg);
+  border-radius: var(--bf-radius-lg);
+  box-shadow: var(--bf-shadow-sm);
+  padding: var(--bf-space-4);
+  position: relative;
+}
+
+.bf-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--bf-space-4);
+}
+
+.bf-panel-title {
+  font-weight: bold;
+  font-size: 1.125rem;
+  color: var(--bf-text-primary);
+}
+
+.bf-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  background: var(--bf-surface-hover);
+  border-radius: var(--bf-radius-md);
+  border: 1px solid var(--bf-border);
+  color: var(--bf-text-secondary);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.bf-toggle-btn:hover {
+  background: var(--bf-surface-active);
+}
+
+.bf-toggle-text {
+  font-size: 0.75rem;
+}
+
+.bf-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.bf-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10rem;
+  background: var(--bf-surface);
+  border-radius: var(--bf-radius-md);
+}
+
+.bf-spinner {
+  animation: spin 1s linear infinite;
+  height: 2rem;
+  width: 2rem;
+  border-radius: 50%;
+  border: 2px solid var(--bf-primary);
+  border-top-color: transparent;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bf-error-message {
+  text-align: center;
+  color: var(--bf-danger);
+  padding: var(--bf-space-4);
+  background: color-mix(in srgb, var(--bf-danger) 10%, transparent);
+  border-radius: var(--bf-radius-md);
+}
+
+.bf-section-subtitle {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--bf-text-secondary);
+  margin-bottom: var(--bf-space-2);
+}
+
+.bf-adv-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-3);
+  margin-bottom: var(--bf-space-4);
+}
+
+.bf-adv-stat-card {
+  padding: var(--bf-space-3);
+  border-radius: var(--bf-radius-md);
+  border: 1px solid var(--bf-border);
+}
+
+.bf-adv-stat-card--primary {
+  background: var(--bf-gradient-primary);
+}
+
+.bf-adv-stat-card--success {
+  background: var(--bf-gradient-success);
+}
+
+.bf-adv-stat-card--accent {
+  background: var(--bf-gradient-accent);
+}
+
+.bf-adv-stat-label {
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.bf-adv-stat-card--primary .bf-adv-stat-label {
+  color: var(--bf-primary);
+}
+
+.bf-adv-stat-card--success .bf-adv-stat-label {
+  color: var(--bf-success);
+}
+
+.bf-adv-stat-card--accent .bf-adv-stat-label {
+  color: var(--bf-accent);
+}
+
+.bf-adv-stat-value {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--bf-text-primary);
+}
+
+.bf-progress-bar {
+  width: 100%;
+  background: var(--bf-surface-hover);
+  border-radius: 9999px;
+  height: 0.625rem;
+}
+
+.bf-progress-fill {
+  background: linear-gradient(to right, var(--bf-primary), var(--bf-accent));
+  height: 0.625rem;
+  border-radius: 9999px;
+  transition: all 0.5s ease;
+}
+
+.bf-adv-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.bf-adv-group {
+  background: var(--bf-surface-hover);
+  border-radius: var(--bf-radius-md);
+  padding: var(--bf-space-3);
+  border: 1px solid var(--bf-border);
+}
+
+.bf-group-header {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--bf-text-secondary);
+  margin-bottom: var(--bf-space-3);
+  display: flex;
+  align-items: center;
+}
+
+.bf-group-indicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  margin-right: var(--bf-space-2);
+}
+
+.bf-group-indicator--success {
+  background: var(--bf-success);
+}
+
+.bf-group-indicator--secondary {
+  background: var(--bf-text-muted);
+}
+
+.bf-group-count {
+  margin-left: var(--bf-space-2);
+  font-size: 0.75rem;
+  color: var(--bf-text-muted);
+}
+
+.bf-adv-complete-label {
+  font-size: 0.75rem;
+  color: var(--bf-success);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.bf-adv-incomplete-label {
+  font-size: 0.75rem;
+  color: var(--bf-danger);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.bf-adv-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+
+.bf-adv-item {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--bf-radius-sm);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.bf-adv-item:hover {
+  transform: scale(1.05);
+}
+
+.bf-adv-icon-wrapper {
+  position: relative;
+  width: 3rem;
+  height: 3rem;
+  margin-right: var(--bf-space-2);
+  transform: translateY(0.5rem);
+}
+
+.bf-adv-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 0;
+  transform: translate(-0.5rem, -0.5rem);
+}
+
+.bf-adv-icon {
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  margin-right: var(--bf-space-2);
+  object-fit: contain;
+  border-radius: var(--bf-radius-sm);
+  z-index: 1;
+}
+
+.bf-adv-name {
+  margin-left: 3rem;
+  font-size: 1rem;
+  color: var(--bf-text-secondary);
+}
+
+.bf-adv-status {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
+.bf-adv-status--complete {
+  color: var(--bf-success);
+}
+
+.bf-adv-status--incomplete {
+  color: var(--bf-danger);
+}
+
+.bf-adv-incomplete-section {
+  margin-top: var(--bf-space-3);
+  padding-top: var(--bf-space-3);
+  border-top: 1px solid var(--bf-border);
+}
+
+.bf-show-incomplete-btn {
+  margin-top: var(--bf-space-3);
+  padding-top: var(--bf-space-3);
+  border-top: 1px solid var(--bf-border);
+}
+
+.bf-expand-btn {
+  width: 100%;
+  font-size: 0.75rem;
+  color: var(--bf-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: color 0.2s ease;
+}
+
+.bf-expand-btn:hover {
+  color: var(--bf-primary-hover);
+}
+
+.bf-icon-sm {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.bf-no-data {
+  font-size: 0.875rem;
+  color: var(--bf-text-muted);
+  font-style: italic;
+}
+
+.bf-other-adv {
+  margin-top: var(--bf-space-2);
+}
+
+.bf-empty-state {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--bf-text-muted);
+  padding: 1rem 0;
+  font-style: italic;
+}
+
+/* Popup Styles */
+.bf-popup-header {
+  padding: var(--bf-space-3);
+  border-bottom: 1px solid var(--bf-border);
+  cursor: move;
+  flex-shrink: 0;
+}
+
+.bf-popup-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bf-popup-icon-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.bf-popup-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-right: var(--bf-space-2);
+  border-radius: var(--bf-radius-sm);
+  z-index: 1;
+}
+
+.bf-popup-title-wrapper {
+  min-width: 0;
+  flex: 1;
+}
+
+.bf-popup-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--bf-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bf-popup-subtitle {
+  font-size: 0.75rem;
+  color: var(--bf-text-muted);
+}
+
+.bf-popup-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.bf-popup-section {
+  padding: var(--bf-space-3);
+}
+
+.bf-popup-section-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: var(--bf-space-2);
+  display: flex;
+  align-items: center;
+}
+
+.bf-popup-section-title--danger {
+  color: var(--bf-danger);
+}
+
+.bf-popup-section-title--success {
+  color: var(--bf-success);
+}
+
+.bf-popup-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bf-popup-item {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--bf-radius-sm);
+}
+
+.bf-popup-item--danger {
+  color: var(--bf-text-primary);
+  background: color-mix(in srgb, var(--bf-danger) 10%, transparent);
+}
+
+.bf-popup-item--success {
+  color: var(--bf-text-primary);
+  background: color-mix(in srgb, var(--bf-success) 10%, transparent);
+}
+</style>

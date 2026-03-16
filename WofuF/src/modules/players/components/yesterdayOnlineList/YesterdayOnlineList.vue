@@ -126,119 +126,155 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="yesterday-online">
-    <h2 class="title text-center">{{ translate('players', 'yesterday_online_players') }}</h2>
+  <section class="bf-yesterday-online">
+    <h2 class="bf-title">{{ translate('players', 'yesterday_online_players') }}</h2>
 
-    <div v-if="isLoading" class="hint text-center">
+    <div v-if="isLoading" class="bf-hint">
       {{ translate('players', 'loading-yesterday-online') }}
     </div>
 
-    <div v-else-if="errorMsg" class="hint text-center">
+    <div v-else-if="errorMsg" class="bf-hint bf-hint--error">
       <p>{{ errorMsg }}</p>
-      <button
-        class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-        @click="loadYesterdayOnlinePlayers"
-      >
+      <button class="bf-btn bf-btn--primary" @click="loadYesterdayOnlinePlayers">
         {{ translate('app', 'actions.retry') }}
       </button>
     </div>
     <div v-else-if="playerNameList?.playerNames.length === 1"></div>
-    <div v-else class="card-list ml-8 mr-8">
+    <div v-else class="bf-card-list">
       <div
         v-for="item in playerNameList?.playerNames"
         :key="item"
-        class="player-card"
+        class="bf-player-card"
         @click="goToPlayerProfile(item)"
       >
-        <div class="avatar-wrapper">
+        <div class="bf-avatar-wrapper">
           <img
             :alt="`${item}'s avatar`"
-            :class="{ 'opacity-50': isAvatarLoading(item) }"
+            :class="{ 'bf-avatar--loading': isAvatarLoading(item) }"
             :src="getAvatarUrl(item)"
-            class="avatar"
+            class="bf-avatar"
             decoding="async"
             loading="lazy"
           />
-          <div v-if="isAvatarLoading(item)" class="loading-indicator">
-            <div class="loading-spinner"></div>
+          <div v-if="isAvatarLoading(item)" class="bf-loading-indicator">
+            <div class="bf-loading-spinner"></div>
           </div>
         </div>
-        <div class="name">{{ item }}</div>
+        <div class="bf-name">{{ item }}</div>
       </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-.yesterday-online {
-  padding: 24px;
+.bf-yesterday-online {
+  padding: var(--bf-space-lg, 24px);
 }
 
-.title {
+.bf-title {
   font-size: 18px;
-  margin-bottom: 16px;
+  margin-bottom: var(--bf-space-md, 16px);
   font-weight: 600;
+  color: var(--bf-text-primary);
+  text-align: center;
 }
 
-.hint {
-  color: #6b7280;
+.bf-hint {
+  color: var(--bf-text-muted);
   font-size: 14px;
   padding: 20px;
+  text-align: center;
 }
 
-.card-list {
+.bf-hint--error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bf-space-md, 16px);
+}
+
+.bf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--bf-space-sm, 8px) var(--bf-space-md, 16px);
+  border-radius: var(--bf-btn-radius, 12px);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-btn--primary {
+  background: var(--bf-btn-primary-bg);
+  color: white;
+}
+
+.bf-btn--primary:hover {
+  background: var(--bf-btn-primary-hover);
+  box-shadow: 0 4px 16px var(--bf-primary-glow);
+}
+
+.bf-card-list {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 20px;
+  margin: 0 var(--bf-space-md, 16px);
 }
 
-.player-card {
-  border-radius: 12px;
-  padding: 16px 12px;
+.bf-player-card {
+  background: var(--bf-card-bg);
+  border: 1px solid var(--bf-card-border);
+  border-radius: var(--bf-card-radius-sm, 12px);
+  padding: var(--bf-space-md, 16px) 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: all 0.2s ease;
+  transition: all var(--bf-transition-fast, 0.15s ease);
   position: relative;
   width: 100px;
   cursor: pointer;
+  box-shadow: var(--bf-card-shadow);
 }
 
-.player-card:hover {
+.bf-player-card:hover {
   transform: translateY(-2px);
+  border-color: var(--bf-border-accent);
+  box-shadow: var(--bf-card-shadow-hover);
 }
 
-.avatar-wrapper {
+.bf-avatar-wrapper {
   position: relative;
-  margin-bottom: 8px;
+  margin-bottom: var(--bf-space-sm, 8px);
 }
 
-.avatar {
+.bf-avatar {
   border-radius: 10px;
   width: 64px;
   height: 64px;
   object-fit: cover;
-  background-color: #f3f4f6;
+  background-color: var(--bf-bg-tertiary);
   transition: opacity 0.3s ease;
 }
 
-.avatar.opacity-50 {
+.bf-avatar--loading {
   opacity: 0.5;
 }
 
-.loading-indicator {
+.bf-loading-indicator {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
-.loading-spinner {
+.bf-loading-spinner {
   width: 24px;
   height: 24px;
-  border: 2px solid #e5e7eb;
-  border-top-color: #3b82f6;
+  border: 2px solid var(--bf-border-default);
+  border-top-color: var(--bf-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -249,21 +285,28 @@ onMounted(() => {
   }
 }
 
-.dark .avatar {
-  background-color: #374151;
+.bf-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bf-text-primary);
+  text-align: center;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (max-width: 640px) {
-  .card-list {
+  .bf-card-list {
     gap: 12px;
   }
 
-  .player-card {
+  .bf-player-card {
     width: 88px;
     padding: 12px 8px;
   }
 
-  .avatar {
+  .bf-avatar {
     width: 56px;
     height: 56px;
   }

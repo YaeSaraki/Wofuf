@@ -1,5 +1,5 @@
 /**
- * 帖子卡片组件
+ * 帖子卡片组件 - Bonfire 风格
  * 显示单个帖子信息，支持投票、点击跳转
  */
 
@@ -9,7 +9,6 @@ import { useRouter } from 'vue-router'
 import type { PostDto } from '@M/forum/dtos/Post'
 import { translate } from '@S/services/i18n'
 import { authService } from '@M/auth/services/AuthService'
-import Tag from 'primevue/tag'
 
 const props = defineProps<{
   post: PostDto
@@ -49,6 +48,13 @@ const voteState = computed(() => {
   return 'none'
 })
 
+// 投票数字颜色
+const voteColor = computed(() => {
+  if (props.post.points > 0) return 'var(--bf-primary)'
+  if (props.post.points < 0) return '#8B5CF6'
+  return 'var(--bf-text-muted)'
+})
+
 // 跳转到帖子详情
 const goToPost = () => {
   router.push(`/forum/posts/${props.post.slug}`)
@@ -84,108 +90,90 @@ const visitLink = (event: Event) => {
 
 <template>
   <article
-    class="post-card group cursor-pointer"
+    class="bf-post-card"
     @click="goToPost"
     tabindex="0"
     @keydown.enter="goToPost"
   >
-    <!-- 投票区域 -->
-    <div class="vote-section">
+    <!-- 左侧投票区 -->
+    <div class="bf-post-card__vote">
       <button
-        class="vote-btn upvote"
-        :class="{ active: voteState === 'upvoted' }"
+        class="bf-vote-btn bf-vote-btn--up"
+        :class="{ 'bf-vote-btn--active': voteState === 'upvoted' }"
         :title="translate('forum', 'upvote')"
         @click="handleUpvote"
-        :aria-label="translate('forum', 'upvote')"
       >
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            d="M10 3.5l-6.5 8h4v5h5v-5h4l-6.5-8z"
-            :class="{ 'text-orange-500': voteState === 'upvoted' }"
-          />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
         </svg>
       </button>
-      <span class="vote-count" :class="{ positive: post.points > 0, negative: post.points < 0 }">
+      <span class="bf-vote-count" :style="{ color: voteColor }">
         {{ post.points }}
       </span>
       <button
-        class="vote-btn downvote"
-        :class="{ active: voteState === 'downvoted' }"
+        class="bf-vote-btn bf-vote-btn--down"
+        :class="{ 'bf-vote-btn--active': voteState === 'downvoted' }"
         :title="translate('forum', 'downvote')"
         @click="handleDownvote"
-        :aria-label="translate('forum', 'downvote')"
       >
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            d="M10 16.5l6.5-8h-4v-5h-5v5h-4l6.5 8z"
-            :class="{ 'text-violet-500': voteState === 'downvoted' }"
-          />
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
     </div>
 
-    <!-- 内容区域 -->
-    <div class="content-section">
-      <!-- 元信息 -->
-      <div class="post-meta">
-        <span class="author">
-          {{ translate('forum', 'by') }}
-          <span class="author-name">{{ post.memberPostBy.nickname }}</span>
+    <!-- 右侧内容区 -->
+    <div class="bf-post-card__content">
+      <!-- 元信息行 -->
+      <div class="bf-post-card__meta">
+        <div class="bf-post-card__author">
+          <div class="bf-avatar">
+            {{ post.memberPostBy.nickname.charAt(0).toUpperCase() }}
+          </div>
+          <span class="bf-author-name">{{ post.memberPostBy.nickname }}</span>
+        </div>
+        <span class="bf-meta-dot">·</span>
+        <span class="bf-meta-time">{{ formattedDate }}</span>
+        <span v-if="post.type === 'LINK'" class="bf-badge bf-badge--sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="bf-badge__icon">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+          链接
         </span>
-        <span class="separator">·</span>
-        <span class="time">{{ formattedDate }}</span>
-        <Tag
-          v-if="post.type === 'LINK'"
-          value="Link"
-          severity="info"
-          class="link-tag"
-        />
       </div>
 
       <!-- 标题 -->
-      <h2 class="post-title">
+      <h2 class="bf-post-card__title">
         {{ post.title }}
       </h2>
 
       <!-- 内容预览 -->
-      <p v-if="post.type === 'TEXT' && post.text" class="post-preview">
+      <p v-if="post.type === 'TEXT' && post.text" class="bf-post-card__preview">
         {{ post.text.slice(0, 200) }}{{ post.text.length > 200 ? '...' : '' }}
       </p>
 
       <!-- 链接预览 -->
-      <div v-if="post.type === 'LINK' && post.link" class="link-preview" @click="visitLink">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-          />
+      <a v-if="post.type === 'LINK' && post.link" class="bf-link-preview" @click="visitLink">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
         </svg>
-        <span class="link-url">{{ post.link }}</span>
-      </div>
+        <span class="bf-link-preview__url">{{ post.link }}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="bf-link-preview__arrow">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+      </a>
 
       <!-- 底部统计 -->
-      <div class="post-stats">
-        <span class="stat-item">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
+      <div class="bf-post-card__stats">
+        <span class="bf-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          {{ post.numComments }} {{ translate('forum', 'comments') }}
+          {{ post.numComments }}
         </span>
-        <span class="stat-item reputation">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-            />
+        <span class="bf-stat bf-stat--reputation">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
           </svg>
           {{ post.memberPostBy.reputation }}
         </span>
@@ -195,207 +183,290 @@ const visitLink = (event: Event) => {
 </template>
 
 <style scoped>
-.post-card {
+/* === 卡片容器 === */
+.bf-post-card {
   display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background: var(--w-surface-card);
-  border-radius: var(--w-radius-lg);
-  border: 1px solid var(--w-border);
-  transition: all var(--w-transition-normal);
-  box-shadow: var(--w-shadow-sm);
+  gap: var(--bf-space-md, 16px);
+  padding: var(--bf-space-lg, 20px);
+  background: var(--bf-card-bg);
+  border: 1px solid var(--bf-card-border);
+  border-radius: var(--bf-card-radius, 16px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--bf-card-shadow);
+  cursor: pointer;
+  transition: all var(--bf-transition-normal, 0.25s ease);
 }
 
-.post-card:hover {
-  border-color: var(--w-primary);
-  box-shadow: var(--w-shadow-md);
-  transform: translateY(-1px);
+.bf-post-card:hover {
+  border-color: var(--bf-border-accent);
+  box-shadow: var(--bf-card-shadow-hover);
+  transform: translateY(-2px);
 }
 
-.post-card:focus {
-  outline: 2px solid var(--w-primary);
+.bf-post-card:focus {
+  outline: 2px solid var(--bf-primary);
   outline-offset: 2px;
 }
 
-/* 暗色模式增强 */
-:global(.dark) .post-card {
-  background: #1c1c1e;
-  border-color: #3a3a3c;
-}
-
-:global(.dark) .post-card:hover {
-  border-color: var(--w-primary);
-}
-
-/* 投票区域 */
-.vote-section {
+/* === 投票区 === */
+.bf-post-card__vote {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  min-width: 2.5rem;
+  gap: 4px;
+  min-width: 40px;
 }
 
-.vote-btn {
+.bf-vote-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--w-radius-sm);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--w-text-muted);
-  transition: all var(--w-transition-fast);
+  color: var(--bf-text-muted);
+  transition: all var(--bf-transition-fast, 0.15s ease);
 }
 
-.vote-btn:hover {
-  background: var(--w-surface-hover);
-  color: var(--w-text);
+.bf-vote-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
-.vote-btn.active {
-  background: rgba(var(--w-primary-rgb, 59, 130, 246), 0.1);
+.bf-vote-btn:hover {
+  background: var(--bf-btn-secondary-bg);
+  color: var(--bf-text-secondary);
 }
 
-:global(.dark) .vote-btn:hover {
-  background: #2c2c2e;
+.bf-vote-btn--up:hover,
+.bf-vote-btn--up.bf-vote-btn--active {
+  color: var(--bf-primary);
+  background: var(--bf-fire-gradient-subtle);
 }
 
-.vote-count {
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: var(--w-text-muted);
+.bf-vote-btn--down:hover,
+.bf-vote-btn--down.bf-vote-btn--active {
+  color: #8B5CF6;
+  background: rgba(139, 92, 246, 0.1);
 }
 
-.vote-count.positive {
-  color: var(--w-vote-up);
+.bf-vote-count {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
 }
 
-.vote-count.negative {
-  color: var(--w-vote-down);
-}
-
-/* 内容区域 */
-.content-section {
+/* === 内容区 === */
+.bf-post-card__content {
   flex: 1;
   min-width: 0;
 }
 
-.post-meta {
+/* === 元信息 === */
+.bf-post-card__meta {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--w-text-muted);
-  margin-bottom: 0.5rem;
+  gap: var(--bf-space-sm, 8px);
+  margin-bottom: 10px;
+  font-size: 13px;
 }
 
-.author-name {
-  font-weight: 500;
-  color: var(--w-text);
+.bf-post-card__author {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-sm, 8px);
 }
 
-.separator {
-  color: var(--w-text-muted);
-}
-
-.link-tag {
-  font-size: 0.625rem;
-  padding: 0.125rem 0.375rem;
-}
-
-.post-title {
-  font-size: 1.125rem;
+.bf-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--bf-fire-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--w-text);
-  margin: 0 0 0.5rem 0;
+  color: white;
+}
+
+.bf-author-name {
+  font-weight: 500;
+  color: var(--bf-text-primary);
+}
+
+.bf-meta-dot {
+  color: var(--bf-text-muted);
+}
+
+.bf-meta-time {
+  color: var(--bf-text-muted);
+}
+
+.bf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--bf-fire-gradient-subtle);
+  border: 1px solid var(--bf-border-accent);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--bf-primary);
+}
+
+.bf-badge--sm {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+.bf-badge__icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* === 标题 === */
+.bf-post-card__title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--bf-text-primary);
+  margin: 0 0 var(--bf-space-sm, 8px) 0;
   line-height: 1.4;
+  transition: color var(--bf-transition-fast, 0.15s ease);
 }
 
-.group:hover .post-title {
-  color: var(--w-primary);
+.bf-post-card:hover .bf-post-card__title {
+  color: var(--bf-primary);
 }
 
-.post-preview {
-  font-size: 0.875rem;
-  color: var(--w-text-muted);
-  line-height: 1.5;
-  margin: 0 0 0.75rem 0;
+/* === 内容预览 === */
+.bf-post-card__preview {
+  font-size: 14px;
+  color: var(--bf-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 var(--bf-space-md, 12px) 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.link-preview {
+/* === 链接预览 === */
+.bf-link-preview {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--w-surface);
-  border-radius: var(--w-radius-sm);
-  font-size: 0.875rem;
-  color: var(--w-primary);
-  margin-bottom: 0.75rem;
-  transition: background var(--w-transition-fast);
+  gap: var(--bf-space-sm, 8px);
+  padding: 10px 14px;
+  background: var(--bf-input-bg);
+  border: 1px solid var(--bf-border-default);
+  border-radius: var(--bf-input-radius, 10px);
+  font-size: 13px;
+  color: var(--bf-primary);
+  margin-bottom: var(--bf-space-md, 12px);
+  text-decoration: none;
+  transition: all var(--bf-transition-fast, 0.15s ease);
 }
 
-.link-preview:hover {
-  background: var(--w-surface-hover);
+.bf-link-preview svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
-:global(.dark) .link-preview {
-  background: #2c2c2e;
+.bf-link-preview:hover {
+  background: var(--bf-btn-secondary-bg);
+  border-color: var(--bf-border-accent);
 }
 
-:global(.dark) .link-preview:hover {
-  background: #3a3a3c;
-}
-
-.link-url {
-  max-width: 300px;
+.bf-link-preview__url {
+  max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* 底部统计 */
-.post-stats {
+.bf-link-preview__arrow {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-link-preview:hover .bf-link-preview__arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* === 底部统计 === */
+.bf-post-card__stats {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  font-size: 0.75rem;
-  color: var(--w-text-muted);
+  gap: var(--bf-space-md, 16px);
+  font-size: 13px;
+  color: var(--bf-text-muted);
 }
 
-.stat-item {
+.bf-stat {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 6px;
+  transition: color var(--bf-transition-fast, 0.15s ease);
 }
 
-.stat-item.reputation {
-  color: var(--w-reputation);
+.bf-stat svg {
+  width: 16px;
+  height: 16px;
 }
 
-/* 响应式 */
+.bf-stat:hover {
+  color: var(--bf-text-secondary);
+}
+
+.bf-stat--reputation {
+  color: #FFB800;
+}
+
+/* === 响应式 === */
 @media (max-width: 640px) {
-  .post-card {
-    padding: 0.75rem;
+  .bf-post-card {
+    padding: 14px;
+    gap: 12px;
   }
 
-  .vote-section {
-    min-width: 2rem;
+  .bf-post-card__vote {
+    min-width: 32px;
   }
 
-  .post-title {
-    font-size: 1rem;
+  .bf-vote-btn {
+    width: 28px;
+    height: 28px;
   }
 
-  .link-url {
-    max-width: 200px;
+  .bf-vote-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .bf-post-card__title {
+    font-size: 15px;
+  }
+
+  .bf-post-card__preview {
+    font-size: 13px;
+  }
+
+  .bf-link-preview__url {
+    max-width: 180px;
+  }
+
+  .bf-avatar {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
   }
 }
 </style>

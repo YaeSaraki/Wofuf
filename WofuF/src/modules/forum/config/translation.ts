@@ -93,6 +93,14 @@ const forumTranslations = {
     zh: '标题不能为空',
     en: 'Title is required',
   },
+  contentRequired: {
+    zh: '内容不能为空',
+    en: 'Content is required',
+  },
+  linkRequired: {
+    zh: '链接不能为空',
+    en: 'Link is required',
+  },
   title: {
     zh: '标题',
     en: 'Title',

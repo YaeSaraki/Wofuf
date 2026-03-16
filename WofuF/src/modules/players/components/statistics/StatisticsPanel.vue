@@ -112,18 +112,18 @@ const getStatsByGroup = (groupId: string) => {
 }
 </script>
 <template>
-  <div class="bg-zinc-200 dark:bg-zinc-700 rounded-xl shadow-sm p-4 gap-4">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold text-lg text-zinc-800 dark:text-white">
+  <div class="bf-statistics-panel">
+    <div class="bf-panel-header">
+      <h3 class="bf-panel-title">
         {{ translate('players', 'stats.title') }}
       </h3>
       <button
         @click="useConvertedUnits = !useConvertedUnits"
-        class="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-300/50 dark:bg-zinc-600/50 hover:bg-zinc-300/70 dark:hover:bg-zinc-600/70 rounded-lg border border-zinc-200 dark:border-zinc-700 transition-colors"
+        class="bf-toggle-btn"
       >
         <svg
           v-if="!useConvertedUnits"
-          class="w-4 h-4 text-gray-600 dark:text-gray-400"
+          class="bf-icon"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -143,7 +143,7 @@ const getStatsByGroup = (groupId: string) => {
         </svg>
         <svg
           v-else
-          class="w-4 h-4 text-gray-600 dark:text-gray-400"
+          class="bf-icon"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -165,16 +165,14 @@ const getStatsByGroup = (groupId: string) => {
 
     <div
       v-if="isLoading"
-      class="flex justify-center items-center h-40 bg-zinc-50 dark:bg-zinc-700 rounded-lg"
+      class="bf-loading-container"
     >
-      <div
-        class="animate-spin h-8 w-8 rounded-full border-2 border-blue-500 border-t-transparent"
-      ></div>
+      <div class="bf-spinner"></div>
     </div>
 
     <div
       v-else-if="errorMsg"
-      class="text-center text-red-500 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg"
+      class="bf-error-message"
     >
       {{ errorMsg }}
     </div>
@@ -182,19 +180,19 @@ const getStatsByGroup = (groupId: string) => {
     <div v-else>
       <!-- 分组统计概览 - 固定大小 Flex 布局（每行对齐） -->
       <div class="mb-6">
-        <h4 class="font-semibold text-sm text-zinc-600 dark:text-zinc-300 mb-2">
+        <h4 class="bf-section-subtitle">
           {{ translate('players', 'stats.overview') }}
         </h4>
-        <div class="flex flex-wrap gap-3 stats-overview-container">
+        <div class="bf-stats-overview">
           <div
             v-for="group in groupedStats"
             :key="group.category"
-            class="stat-overview-card bg-linear-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-3 rounded-lg border border-blue-100 dark:border-blue-800"
+            class="bf-stat-card bf-stat-card--primary"
           >
-            <div class="text-xs text-blue-600 dark:text-blue-400 mb-1">
+            <div class="bf-stat-label">
               {{ translate('players', `stats.group.${group.category.toLowerCase()}`) }}
             </div>
-            <div class="text-xl font-bold text-zinc-800 dark:text-white">
+            <div class="bf-stat-value">
               {{ useConvertedUnits ? formatValue(group.total, group.category) : group.total }}
             </div>
           </div>
@@ -202,25 +200,25 @@ const getStatsByGroup = (groupId: string) => {
       </div>
 
       <!-- 详细统计分组展示-->
-      <div class="space-y-6">
+      <div class="bf-stats-groups">
         <div
           v-for="group in statisticGroups"
           :key="group.category"
-          class="bg-zinc-300/50 dark:bg-zinc-600/50 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700"
+          class="bf-stat-group"
         >
-          <h4 class="font-semibold text-sm text-zinc-600 dark:text-zinc-300 mb-3 flex items-center">
-            <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
+          <h4 class="bf-group-header">
+            <span class="bf-group-indicator bf-group-indicator--primary"></span>
             {{ translate('players', `stats.group.${group.category.toLowerCase()}`) }}
           </h4>
 
-          <div class="flex flex-wrap gap-x-4 gap-y-2 stats-detail-container">
+          <div class="bf-stat-items">
             <div
               v-for="stat in getStatsByGroup(group.category)"
               :key="stat.key"
-              class="stat-detail-item flex justify-between items-center py-1 px-2 hover:bg-zinc-400/50 dark:hover:bg-zinc-500/50 rounded transition-colors"
+              class="bf-stat-item"
             >
-              <span class="text-sm text-zinc-600 dark:text-zinc-400">{{ stat.translatedKey }}</span>
-              <span class="text-sm font-medium text-zinc-800 dark:text-white">{{
+              <span class="bf-stat-item-label">{{ stat.translatedKey }}</span>
+              <span class="bf-stat-item-value">{{
                 formatValue(stat.value, stat.key)
               }}</span>
             </div>
@@ -229,7 +227,7 @@ const getStatsByGroup = (groupId: string) => {
           <!-- 无数据提示 -->
           <div
             v-if="getStatsByGroup(group.category).length === 0"
-            class="text-sm text-gray-500 dark:text-gray-400 italic py-2"
+            class="bf-no-data"
           >
             {{ translate('players', 'stats.no-data') }}
           </div>
@@ -242,23 +240,23 @@ const getStatsByGroup = (groupId: string) => {
           allStats.filter((s) => !statisticGroups.some((g) => g.statistics.includes(s.key)))
             .length > 0
         "
-        class="mt-6 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700"
+        class="bf-other-stats"
       >
-        <h4 class="font-semibold text-sm text-zinc-600 dark:text-zinc-300 mb-3 flex items-center">
-          <span class="w-2 h-2 rounded-full bg-gray-500 mr-2"></span>
+        <h4 class="bf-group-header">
+          <span class="bf-group-indicator bf-group-indicator--secondary"></span>
           {{ translate('players', 'stats.other') }}
         </h4>
 
-        <div class="flex flex-wrap gap-x-4 gap-y-2 stats-detail-container">
+        <div class="bf-stat-items">
           <div
             v-for="stat in allStats.filter(
               (s) => !statisticGroups.some((g) => g.statistics.includes(s.key)),
             )"
             :key="stat.key"
-            class="stat-detail-item flex justify-between items-center py-1 px-2 hover:bg-zinc-100 dark:hover:bg-zinc-600/50 rounded transition-colors"
+            class="bf-stat-item"
           >
-            <span class="text-sm text-zinc-600 dark:text-zinc-400">{{ stat.translatedKey }}</span>
-            <span class="text-sm font-medium text-zinc-800 dark:text-white">{{
+            <span class="bf-stat-item-label">{{ stat.translatedKey }}</span>
+            <span class="bf-stat-item-value">{{
               formatValue(stat.value, stat.key)
             }}</span>
           </div>
@@ -267,3 +265,200 @@ const getStatsByGroup = (groupId: string) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.bf-statistics-panel {
+  background: var(--bf-card-bg);
+  border-radius: var(--bf-radius-lg);
+  box-shadow: var(--bf-shadow-sm);
+  padding: var(--bf-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--bf-space-4);
+}
+
+.bf-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--bf-space-4);
+}
+
+.bf-panel-title {
+  font-weight: bold;
+  font-size: 1.125rem;
+  color: var(--bf-text-primary);
+}
+
+.bf-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-2);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  background: var(--bf-surface-hover);
+  border-radius: var(--bf-radius-md);
+  border: 1px solid var(--bf-border);
+  color: var(--bf-text-secondary);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.bf-toggle-btn:hover {
+  background: var(--bf-surface-active);
+}
+
+.bf-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.bf-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10rem;
+  background: var(--bf-surface);
+  border-radius: var(--bf-radius-md);
+}
+
+.bf-spinner {
+  animation: spin 1s linear infinite;
+  height: 2rem;
+  width: 2rem;
+  border-radius: 50%;
+  border: 2px solid var(--bf-primary);
+  border-top-color: transparent;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bf-error-message {
+  text-align: center;
+  color: var(--bf-danger);
+  padding: var(--bf-space-4);
+  background: color-mix(in srgb, var(--bf-danger) 10%, transparent);
+  border-radius: var(--bf-radius-md);
+}
+
+.bf-section-subtitle {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--bf-text-secondary);
+  margin-bottom: var(--bf-space-2);
+}
+
+.bf-stats-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bf-space-3);
+}
+
+.bf-stat-card {
+  padding: var(--bf-space-3);
+  border-radius: var(--bf-radius-md);
+  border: 1px solid var(--bf-border);
+}
+
+.bf-stat-card--primary {
+  background: var(--bf-gradient-primary);
+}
+
+.bf-stat-label {
+  font-size: 0.75rem;
+  color: var(--bf-primary);
+  margin-bottom: 0.25rem;
+}
+
+.bf-stat-value {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--bf-text-primary);
+}
+
+.bf-stats-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.bf-stat-group {
+  background: var(--bf-surface-hover);
+  border-radius: var(--bf-radius-md);
+  padding: var(--bf-space-3);
+  border: 1px solid var(--bf-border);
+}
+
+.bf-group-header {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--bf-text-secondary);
+  margin-bottom: var(--bf-space-3);
+  display: flex;
+  align-items: center;
+}
+
+.bf-group-indicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  margin-right: var(--bf-space-2);
+}
+
+.bf-group-indicator--primary {
+  background: var(--bf-primary);
+}
+
+.bf-group-indicator--secondary {
+  background: var(--bf-text-muted);
+}
+
+.bf-stat-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+
+.bf-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--bf-radius-sm);
+  transition: background 0.2s ease;
+}
+
+.bf-stat-item:hover {
+  background: var(--bf-surface-active);
+}
+
+.bf-stat-item-label {
+  font-size: 0.875rem;
+  color: var(--bf-text-secondary);
+}
+
+.bf-stat-item-value {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--bf-text-primary);
+}
+
+.bf-no-data {
+  font-size: 0.875rem;
+  color: var(--bf-text-muted);
+  font-style: italic;
+  padding: var(--bf-space-2) 0;
+}
+
+.bf-other-stats {
+  margin-top: 1.5rem;
+  background: var(--bf-surface);
+  border-radius: var(--bf-radius-md);
+  padding: var(--bf-space-3);
+  border: 1px solid var(--bf-border);
+}
+</style>

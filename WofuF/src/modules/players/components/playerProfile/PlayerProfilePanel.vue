@@ -111,8 +111,6 @@ function initOrUpdateViewer(skinData: PlayerSkin) {
 
     viewer.animation = new WalkingAnimation()
     viewer.animation.speed = 0.5
-    // viewer.autoRotate = true
-    // viewer.autoRotateSpeed = 0.5
 
     // 确保事件监听只添加一次
     if (!hasSkinViewerResizeListener.value) {
@@ -157,86 +155,195 @@ function cleanup() {
   }
 }
 
-// onMounted(() => {
-//   // 如果props中已经有玩家数据，watch会立即触发获取
-//   // 不需要额外的setTimeout
-// })
-
 onUnmounted(() => {
   cleanup()
 })
-
-// defineExpose({
-//   refreshSkin: fetchPlayerSkin,
-//   getViewer: () => viewer
-// })
 </script>
 
 <template>
-  <div v-if="isLoading" class="flex justify-center items-center h-40">
-    <div
-      class="animate-spin h-6 w-6 rounded-full border-2 border-blue-500 border-t-transparent"
-    ></div>
+  <div v-if="isLoading" class="bf-loading">
+    <div class="bf-loading__spinner"></div>
   </div>
-  <div v-else-if="errorMsg" class="text-center text-red-500">
+  <div v-else-if="errorMsg" class="bf-error">
     {{ errorMsg }}
   </div>
-  <div
-    v-else-if="player"
-    class="flex flex-col justify-center items-center text-center space-y-4 px-6 py-8 w-full"
-  >
+  <div v-else-if="player" class="bf-player-profile">
     <!-- 玩家名称 -->
-    <h2 class="text-2xl md:text-3xl font-bold text-zinc-800 dark:text-zinc-100 tracking-tight">
+    <h2 class="bf-player-name">
       {{ player.name }}
     </h2>
 
-    <!--    &lt;!&ndash; 玩家头像（加圆角+阴影，提升质感） &ndash;&gt;-->
-    <!--    <div class="relative">-->
-    <!--      <img-->
-    <!--        class="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white dark:border-zinc-700 shadow-lg object-cover"-->
-    <!--        :src="`https://visage.surgeplay.com/bust/128/${player.name}`"-->
-    <!--        :alt="`${player.name} ${translate('players', 'alt.avatar')}`"-->
-    <!--      />-->
-    <!--    </div>-->
-
-    <canvas
-      ref="canvas"
-      :height="dims.height"
-      :width="dims.width"
-      class="rounded-lg border-purple-300 hover:hover:border-2 hover:scale-105"
-    />
+    <!-- 3D皮肤展示 -->
+    <div class="bf-skin-viewer">
+      <canvas
+        ref="canvas"
+        :height="dims.height"
+        :width="dims.width"
+        class="bf-skin-canvas"
+      />
+    </div>
 
     <!-- 信息面板 -->
-    <div class="grid grid-cols-1 gap-3 w-full max-w-70">
+    <div class="bf-info-grid">
       <!-- 游玩时长 -->
-      <div class="bg-zinc-200 dark:bg-zinc-700 rounded-lg p-3 shadow-sm">
-        <p class="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+      <div class="bf-info-card">
+        <p class="bf-info-label">
           {{ translate('players', 'player.playtime') }}
         </p>
-        <p class="text-lg font-semibold text-zinc-800 dark:text-zinc-100">
+        <p class="bf-info-value">
           {{ (player.totalPlaytimeSeconds / (20 * 60 * 60)).toFixed(1) }} h
         </p>
       </div>
 
       <!-- 上次游玩 -->
-      <div class="bg-zinc-200 dark:bg-zinc-700 rounded-lg p-3 shadow-sm">
-        <p class="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+      <div class="bf-info-card">
+        <p class="bf-info-label">
           {{ translate('players', 'player.last-login') }}
         </p>
-        <p class="text-lg font-semibold text-zinc-800 dark:text-zinc-100">
+        <p class="bf-info-value">
           {{ new Date(player.lastLogin).toLocaleString().split(',')[0] }}
         </p>
       </div>
 
       <!-- 注册时间 -->
-      <div class="bg-zinc-200 dark:bg-zinc-700 rounded-lg p-3 shadow-sm">
-        <p class="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
+      <div class="bf-info-card">
+        <p class="bf-info-label">
           {{ translate('players', 'player.register-time') }}
         </p>
-        <p class="text-lg font-semibold text-zinc-800 dark:text-zinc-100">
+        <p class="bf-info-value">
           {{ new Date(player.firstLogin).toLocaleString().split(',')[0] }}
         </p>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 加载状态 */
+.bf-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 160px;
+}
+
+.bf-loading__spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--bf-border-default);
+  border-top-color: var(--bf-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 错误状态 */
+.bf-error {
+  text-align: center;
+  color: #ef4444;
+  padding: var(--bf-space-lg, 24px);
+}
+
+/* 玩家资料容器 */
+.bf-player-profile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: var(--bf-space-lg, 24px);
+  padding: var(--bf-space-xl, 32px) var(--bf-space-md, 16px);
+  width: 100%;
+}
+
+/* 玩家名称 */
+.bf-player-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--bf-text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+  background: var(--bf-fire-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (min-width: 768px) {
+  .bf-player-name {
+    font-size: 2rem;
+  }
+}
+
+/* 皮肤查看器 */
+.bf-skin-viewer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bf-skin-canvas {
+  border-radius: var(--bf-card-radius, 16px);
+  border: 2px solid var(--bf-border-default);
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-skin-canvas:hover {
+  border-color: var(--bf-border-accent);
+  transform: scale(1.02);
+}
+
+/* 信息网格 */
+.bf-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--bf-space-md, 16px);
+  width: 100%;
+  max-width: 280px;
+}
+
+/* 信息卡片 */
+.bf-info-card {
+  background: var(--bf-card-bg);
+  border: 1px solid var(--bf-card-border);
+  border-radius: var(--bf-card-radius-sm, 12px);
+  padding: var(--bf-space-md, 16px);
+  box-shadow: var(--bf-card-shadow);
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-info-card:hover {
+  border-color: var(--bf-border-accent);
+  transform: translateY(-2px);
+}
+
+.bf-info-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--bf-text-muted);
+  margin: 0 0 var(--bf-space-xs, 4px) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bf-info-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--bf-text-primary);
+  margin: 0;
+}
+
+/* 响应式 */
+@media (max-width: 640px) {
+  .bf-player-profile {
+    padding: var(--bf-space-lg, 24px) var(--bf-space-sm, 8px);
+  }
+
+  .bf-info-grid {
+    max-width: 240px;
+  }
+}
+</style>

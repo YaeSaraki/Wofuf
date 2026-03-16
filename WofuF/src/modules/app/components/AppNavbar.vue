@@ -5,9 +5,11 @@ import { getLocale, setLocale, useLocale } from '@S/services/i18n/useLocale.ts'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { MenuItem } from 'primevue/menuitem'
 import DraggablePopup from '@S/components/DraggablePopup.vue'
+import { useTheme, type ThemeMode } from '@S/composables/useTheme.ts'
 
 const router = useRouter()
 const { translate } = useLocale()
+const { currentTheme, isDark, setTheme } = useTheme()
 
 // 响应式检测
 const isMobile = ref(false)
@@ -15,23 +17,15 @@ const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024
 }
 
-// 夜间模式状态 - 始终跟随系统
-const isDark = ref(false)
-
-const checkDarkMode = () => {
-  isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches
-  // 同步更新 document 的 dark class
-  if (isDark.value) {
-    document.documentElement.classList.add('dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-  }
-}
-
 // 切换语言
 const toggleLanguage = (lang: 'zh' | 'en') => {
   setLocale(lang)
   closeSettingsPopup()
+}
+
+// 切换主题
+const toggleThemeMode = (theme: ThemeMode) => {
+  setTheme(theme)
 }
 
 // 导航项（桌面端浮动菜单）
@@ -379,16 +373,8 @@ const handleSettingsBallClick = () => {
   }
 }
 
-// 系统主题变化监听
-let systemThemeMediaQuery: MediaQueryList | null = null
-
-const handleSystemThemeChange = () => {
-  checkDarkMode()
-}
-
 onMounted(() => {
   checkMobile()
-  checkDarkMode()
   
   // 计算抽屉最大高度
   if (isMobile.value) {
@@ -409,10 +395,6 @@ onMounted(() => {
       settingsBallPosition.value.y = Math.floor(window.innerHeight * 0.2)
     }
   })
-  
-  // 监听系统主题变化
-  systemThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  systemThemeMediaQuery.addEventListener('change', handleSystemThemeChange)
 })
 
 onUnmounted(() => {
@@ -430,11 +412,6 @@ onUnmounted(() => {
   document.removeEventListener('touchend', handleDrawerDragEnd)
   document.body.style.userSelect = ''
   clearTimer()
-  
-  // 清理系统主题监听
-  if (systemThemeMediaQuery) {
-    systemThemeMediaQuery.removeEventListener('change', handleSystemThemeChange)
-  }
   window.removeEventListener('resize', checkMobile)
 })
 </script>
@@ -568,13 +545,40 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- 主题提示 -->
-        <div class="settings-section theme-hint">
-          <div class="hint-text">
-            <svg class="hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-            </svg>
-            <span>{{ translate('app', 'settings.themeFollowSystem') }}</span>
+        <!-- 主题设置 -->
+        <div class="settings-section">
+          <div class="section-label">{{ translate('app', 'settings.theme') }}</div>
+          <div class="theme-options">
+            <button 
+              class="theme-btn" 
+              :class="{ active: currentTheme === 'light' }" 
+              @click="toggleThemeMode('light')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+              </svg>
+              <span>{{ translate('app', 'settings.themeLight') }}</span>
+            </button>
+            <button 
+              class="theme-btn" 
+              :class="{ active: currentTheme === 'dark' }" 
+              @click="toggleThemeMode('dark')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+              </svg>
+              <span>{{ translate('app', 'settings.themeDark') }}</span>
+            </button>
+            <button 
+              class="theme-btn" 
+              :class="{ active: currentTheme === 'system' }" 
+              @click="toggleThemeMode('system')"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+              </svg>
+              <span>{{ translate('app', 'settings.themeSystem') }}</span>
+            </button>
           </div>
         </div>
 
@@ -1004,6 +1008,81 @@ html.dark .check-icon {
 
 html.dark .theme-icon.dark {
   color: #BF5AF2;
+}
+
+/* 主题选择按钮 */
+.theme-options {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 6px;
+  background: rgba(118, 118, 128, 0.08);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.dark .theme-btn {
+  background: rgba(118, 118, 128, 0.24);
+}
+
+.theme-btn:active {
+  transform: scale(0.96);
+}
+
+.theme-btn.active {
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 159, 28, 0.15) 100%);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+}
+
+html.dark .theme-btn.active {
+  background: linear-gradient(135deg, rgba(255, 140, 90, 0.2) 0%, rgba(255, 190, 11, 0.2) 100%);
+  border: 1px solid rgba(255, 140, 90, 0.4);
+}
+
+.theme-btn svg {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 4px;
+  color: rgba(60, 60, 67, 0.6);
+}
+
+html.dark .theme-btn svg {
+  color: rgba(235, 235, 245, 0.6);
+}
+
+.theme-btn.active svg {
+  color: #FF6B35;
+}
+
+html.dark .theme-btn.active svg {
+  color: #FF8C5A;
+}
+
+.theme-btn span {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: rgba(60, 60, 67, 0.8);
+}
+
+html.dark .theme-btn span {
+  color: rgba(235, 235, 245, 0.8);
+}
+
+.theme-btn.active span {
+  color: #E55A25;
+}
+
+html.dark .theme-btn.active span {
+  color: #FF8C5A;
 }
 
 .close-btn {

@@ -24,8 +24,9 @@ const translations = {
   // 设置
   'settings.language': {zh: '语言', en: 'Language'},
   'settings.theme': {zh: '主题', en: 'Theme'},
-  'settings.light': {zh: '日间', en: 'Light'},
-  'settings.dark': {zh: '夜间', en: 'Dark'},
+  'settings.themeLight': {zh: '日间', en: 'Light'},
+  'settings.themeDark': {zh: '夜间', en: 'Dark'},
+  'settings.themeSystem': {zh: '自动', en: 'Auto'},
   'settings.themeFollowSystem': {zh: '主题跟随系统', en: 'Theme follows system'},
 
   // 通用

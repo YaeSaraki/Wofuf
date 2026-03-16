@@ -16,25 +16,36 @@ import Aura from '@primeuix/themes/aura'
 import '@S/assets/main.css'
 import '@S/assets/base.css'
 import '@S/assets/theme.css'
+import '@S/assets/bonfire-theme.css'
 import '@S/layout'
 
 import '@S/assets/primevue.css'
 
-// 初始化暗黑模式 - 在 Vue 应用挂载前执行以避免闪烁
-;(function initDarkMode() {
-  const isDark =
-    localStorage.theme === 'dark' ||
-    (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
-
+// 初始化主题系统 - 支持 light/dark/system 三种模式
+;(function initTheme() {
+  const savedTheme = localStorage.getItem('theme')
+  let isDark = false
+  
+  if (savedTheme === 'dark') {
+    isDark = true
+  } else if (savedTheme === 'light') {
+    isDark = false
+  } else {
+    // system 或未设置时跟随系统
+    isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  
   if (isDark) {
     document.documentElement.classList.add('dark')
   } else {
     document.documentElement.classList.remove('dark')
   }
-
+  
   // 监听系统主题变化
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    if (!('theme' in localStorage)) {
+    const currentTheme = localStorage.getItem('theme')
+    // 只有在跟随系统模式时才响应系统主题变化
+    if (!currentTheme || currentTheme === 'system') {
       if (e.matches) {
         document.documentElement.classList.add('dark')
       } else {
@@ -45,10 +56,6 @@ import '@S/assets/primevue.css'
 })()
 
 const app = createApp(App)
-
-// initImageResources()
-// app.config.globalProperties.$getImageUrl = getImageUrl;
-// app.provide('$getImageUrl', getImageUrl);
 
 app.use(router)
 app.use(PrimeVue, {
