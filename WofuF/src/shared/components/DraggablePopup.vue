@@ -1,13 +1,11 @@
 <script lang="ts" setup>
 import {
   computed,
-  defineEmits,
-  defineProps,
   nextTick,
+  onMounted,
   onUnmounted,
   ref,
   watch,
-  withDefaults,
 } from 'vue'
 
 const props = withDefaults(
@@ -22,10 +20,13 @@ const props = withDefaults(
     width?: string | number
     // 弹窗最大高度（默认 400px）
     maxHeight?: string | number
+    // z-index 层级
+    zIndex?: number
   }>(),
   {
     width: 320,
     maxHeight: 400,
+    zIndex: 10000,
   },
 )
 
@@ -38,6 +39,12 @@ const emit = defineEmits<{
 
 // 弹窗 DOM 引用
 const popupRef = ref<HTMLElement | null>(null)
+
+// 夜间模式状态
+const isDark = ref(false)
+const checkDarkMode = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
 
 // 拖拽状态
 const dragState = ref({
@@ -53,7 +60,7 @@ let cleanupExternalClick: (() => void) | null = null
 
 // 计算弹窗样式（核心：边界检测 + 拖拽位置计算）
 const popupStyle = computed(() => {
-  if (!props.visible) return {display: 'none'}
+  if (!props.visible) return { display: 'none' }
 
   // 获取弹窗实际尺寸（优先 DOM 渲染值，其次默认值/Props 值）
   const menuWidth = typeof props.width === 'number' ? props.width : parseInt(props.width) || 320
@@ -77,7 +84,6 @@ const popupStyle = computed(() => {
 
   // 拖拽状态下的样式微调
   const transform = dragState.value.isDragging ? 'scale(0.98)' : 'scale(1)'
-  const backdropFilter = dragState.value.isDragging ? 'blur(3px)' : 'blur(2px)'
 
   return {
     left: `${x}px`,
@@ -85,8 +91,8 @@ const popupStyle = computed(() => {
     width: typeof props.width === 'string' ? props.width : `${props.width}px`,
     maxHeight: typeof props.maxHeight === 'string' ? props.maxHeight : `${props.maxHeight}px`,
     transform,
-    backdropFilter,
     display: 'block',
+    zIndex: props.zIndex,
   }
 })
 
@@ -95,8 +101,13 @@ const initPopup = () => {
   if (!props.visible) return
 
   // 重置拖拽偏移量为初始位置
-  dragState.value.offsetX = props.initX
-  dragState.value.offsetY = props.initY
+  dragState.value = {
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    offsetX: props.initX,
+    offsetY: props.initY,
+  }
 
   // 下一次渲染后添加外部点击关闭监听
   nextTick(() => {
@@ -111,15 +122,22 @@ const setupExternalClickHandler = () => {
     cleanupExternalClick()
   }
 
-  const handleClickOutside = (event: MouseEvent) => {
+  const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+    // 拖拽时不关闭
+    if (dragState.value.isDragging) return
+    
     if (popupRef.value && !popupRef.value.contains(event.target as Node)) {
       emit('close')
     }
   }
 
-  document.addEventListener('mousedown', handleClickOutside)
+  // 同时监听 mouseup 和 touchend 以支持移动端
+  document.addEventListener('mouseup', handleClickOutside)
+  document.addEventListener('touchend', handleClickOutside)
+  
   cleanupExternalClick = () => {
-    document.removeEventListener('mousedown', handleClickOutside)
+    document.removeEventListener('mouseup', handleClickOutside)
+    document.removeEventListener('touchend', handleClickOutside)
     cleanupExternalClick = null
   }
 }
@@ -135,18 +153,22 @@ const handleDragStart = (event: MouseEvent | TouchEvent) => {
   const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0]?.clientX || 0
   const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0]?.clientY || 0
 
+  // 使用当前位置作为起点
+  const currentX = parseInt(popupStyle.value.left as string) || props.initX
+  const currentY = parseInt(popupStyle.value.top as string) || props.initY
+
   // 初始化拖拽状态
   dragState.value = {
     isDragging: true,
     startX: clientX,
     startY: clientY,
-    offsetX: parseInt(popupStyle.value.left as string) || props.initX,
-    offsetY: parseInt(popupStyle.value.top as string) || props.initY,
+    offsetX: currentX,
+    offsetY: currentY,
   }
 
   // 添加拖拽移动/结束监听
   document.addEventListener('mousemove', handleDragMove)
-  document.addEventListener('touchmove', handleDragMove)
+  document.addEventListener('touchmove', handleDragMove, { passive: false })
   document.addEventListener('mouseup', handleDragEnd)
   document.addEventListener('touchend', handleDragEnd)
 
@@ -168,6 +190,7 @@ const handleDragMove = (event: MouseEvent | TouchEvent) => {
   const deltaX = clientX - dragState.value.startX
   const deltaY = clientY - dragState.value.startY
 
+  // 更新位置
   dragState.value.offsetX += deltaX
   dragState.value.offsetY += deltaY
 
@@ -192,7 +215,7 @@ const handleDragEnd = () => {
   // 恢复文本选择
   document.body.style.userSelect = ''
 
-  // 重置拖拽状态
+  // 重置拖拽状态（但保留位置）
   dragState.value.isDragging = false
 
   // 发射最终位置更新事件
@@ -224,7 +247,7 @@ watch(
       }
     }
   },
-  {immediate: true},
+  { immediate: true },
 )
 
 // 组件卸载时清理所有监听
@@ -240,6 +263,19 @@ onUnmounted(() => {
   document.removeEventListener('touchend', handleDragEnd)
 })
 
+// 初始化和监听夜间模式变化
+onMounted(() => {
+  checkDarkMode()
+  // 使用 MutationObserver 监听 dark class 变化
+  const observer = new MutationObserver(() => {
+    checkDarkMode()
+  })
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
+})
+
 // 暴露插槽道具（供父组件使用拖拽开始方法）
 defineExpose({
   handleDragStart,
@@ -247,15 +283,50 @@ defineExpose({
 </script>
 
 <template>
-  <!-- 通用可拖拽弹窗容器 -->
+  <!-- 通用可拖拽弹窗容器 - 液态玻璃效果 -->
   <div
     ref="popupRef"
     :style="popupStyle"
-    class="floating-menu fixed z-50 shadow-xl rounded-2xl border border-zinc-400 dark:border-zinc-600 overflow-y-auto no-scrollbar flex flex-col"
+    class="draggable-popup shadow-xl rounded-2xl overflow-y-auto no-scrollbar flex flex-col"
+    :class="{ 'draggable-popup--dark': isDark }"
     @click.stop
   >
-    <slot :closePopup="closePopup" :handleDragStart="handleDragStart" name="content"/>
+    <slot :closePopup="closePopup" :handleDragStart="handleDragStart" name="content" />
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.draggable-popup {
+  position: fixed;
+  /* 液态玻璃效果 - 增强版 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.35) 100%
+  );
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.draggable-popup--dark {
+  background: linear-gradient(
+    135deg,
+    rgba(70, 70, 80, 0.45) 0%,
+    rgba(60, 60, 67, 0.4) 50%,
+    rgba(70, 70, 80, 0.45) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+</style>

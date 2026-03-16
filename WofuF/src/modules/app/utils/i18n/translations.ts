@@ -5,6 +5,8 @@ const translations = {
   // 导航栏
   'nav.status': {zh: '状态', en: 'Status'},
   'nav.about': {zh: '关于', en: 'About'},
+  'nav.forum': {zh: '论坛', en: 'Forum'},
+  'nav.settings': {zh: '设置', en: 'Settings'},
 
   // 页脚
   'footer.copyright': {
@@ -18,6 +20,16 @@ const translations = {
 
   // 操作按钮
   'actions.retry': {zh: '重试', en: 'Retry'},
+
+  // 设置
+  'settings.language': {zh: '语言', en: 'Language'},
+  'settings.theme': {zh: '主题', en: 'Theme'},
+  'settings.light': {zh: '日间', en: 'Light'},
+  'settings.dark': {zh: '夜间', en: 'Dark'},
+  'settings.themeFollowSystem': {zh: '主题跟随系统', en: 'Theme follows system'},
+
+  // 通用
+  'common.close': {zh: '关闭', en: 'Close'},
 }
 
 // 注册app模块翻译
