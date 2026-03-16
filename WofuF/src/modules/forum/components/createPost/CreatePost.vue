@@ -121,6 +121,20 @@ function resetForm() {
           />
         </div>
 
+        <!-- 用户ID（临时） -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            User ID (临时)
+          </label>
+          <input
+            v-model="formData.userId"
+            type="text"
+            required
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            placeholder="输入用户ID"
+          />
+        </div>
+
         <!-- 操作按钮 -->
         <div class="flex space-x-4">
           <button

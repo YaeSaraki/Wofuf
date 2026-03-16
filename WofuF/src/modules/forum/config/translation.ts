@@ -2,6 +2,15 @@
 import {registerTranslations} from '@S/services/i18n'
 
 const forumTranslations = {
+  // 页面标题
+  forumTitle: {
+    zh: '论坛',
+    en: 'Forum',
+  },
+  forumSubtitle: {
+    zh: '分享你的游戏体验，与其他玩家交流',
+    en: 'Share your gaming experience, connect with other players',
+  },
   // 帖子相关
   post: {
     zh: '帖子',
@@ -19,9 +28,31 @@ const forumTranslations = {
     zh: '暂无帖子',
     en: 'No posts yet',
   },
+  noPostsDesc: {
+    zh: '成为第一个发帖的人吧！',
+    en: 'Be the first to post!',
+  },
   points: {
     zh: '积分',
     en: 'Points',
+  },
+  // 排序
+  sortRecent: {
+    zh: '最新',
+    en: 'Recent',
+  },
+  sortPopular: {
+    zh: '热门',
+    en: 'Popular',
+  },
+  // 投票
+  upvote: {
+    zh: '点赞',
+    en: 'Upvote',
+  },
+  downvote: {
+    zh: '点踩',
+    en: 'Downvote',
   },
   // 评论相关
   comment: {
@@ -48,6 +79,10 @@ const forumTranslations = {
   error: {
     zh: '错误',
     en: 'Error',
+  },
+  retry: {
+    zh: '重试',
+    en: 'Retry',
   },
   // 发帖表单相关
   createPostFailed: {
@@ -130,6 +165,29 @@ const forumTranslations = {
   submitReply: {
     zh: '提交回复',
     en: 'Submit Reply',
+  },
+  // 时间相关
+  postedAt: {
+    zh: '发布于',
+    en: 'Posted',
+  },
+  by: {
+    zh: '由',
+    en: 'by',
+  },
+  // 链接帖子
+  visitLink: {
+    zh: '访问链接',
+    en: 'Visit Link',
+  },
+  // 认证提示
+  loginToPost: {
+    zh: '登录后发帖',
+    en: 'Login to Post',
+  },
+  loginToVote: {
+    zh: '登录后投票',
+    en: 'Login to Vote',
   },
 }
 

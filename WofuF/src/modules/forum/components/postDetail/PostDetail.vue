@@ -1,16 +1,15 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import type { Post, Comment } from '@M/forum/dtos/Post.ts'
-import { ForumService } from '@M/forum/services/ForumService.ts'
+import type { PostDto, CommentDto } from '@M/forum/dtos/Post.ts'
+import { forumService } from '@M/forum/services/ForumService.ts'
 import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
 import { translate } from '@S/services/i18n'
 import ReplyToComment from '@M/forum/components/replyToComment/ReplyToComment.vue'
 
 const route = useRoute()
-const forumService = new ForumService()
-const post = ref<Post | null>(null)
-const comments = ref<Comment[]>([])
+const post = ref<PostDto | null>(null)
+const comments = ref<CommentDto[]>([])
 
 /* ---------------- 复用通用加载逻辑 ---------------- */
 const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
@@ -51,7 +50,7 @@ async function fetchComments() {
   }, translate('forum', 'error'))
 
   if (result) {
-    comments.value = result
+    comments.value = result.comments
   }
 }
 
@@ -78,8 +77,8 @@ onMounted(() => {
           {{ post.title }}
         </h1>
         <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-4">
-          <span class="mr-4">{{ post.member?.nickname || 'Unknown' }}</span>
-          <span>{{ new Date(post.dateTimePosted).toLocaleDateString() }}</span>
+          <span class="mr-4">{{ post.memberPostBy?.nickname || 'Unknown' }}</span>
+          <span>{{ new Date(post.createdAt).toLocaleDateString() }}</span>
         </div>
         <div v-if="post.text" class="text-gray-700 dark:text-gray-300 mb-4">
           {{ post.text }}
@@ -89,7 +88,7 @@ onMounted(() => {
         </div>
         <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mt-4">
           <span class="mr-4">{{ post.points }} {{ translate('forum', 'points') }}</span>
-          <span>{{ post.totalNumComments }} {{ translate('forum', 'comments') }}</span>
+          <span>{{ post.numComments }} {{ translate('forum', 'comments') }}</span>
         </div>
       </div>
 
@@ -101,11 +100,11 @@ onMounted(() => {
         <div class="space-y-4">
           <div
             v-for="comment in comments"
-            :key="comment.id"
+            :key="comment.commentId"
             class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
           >
             <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-2">
-              <span class="mr-4">{{ comment.member?.nickname || 'Unknown' }}</span>
+              <span class="mr-4">{{ comment.memberId }}</span>
               <span>{{ new Date(comment.createdAt).toLocaleDateString() }}</span>
             </div>
             <div class="text-gray-700 dark:text-gray-300">
@@ -123,7 +122,7 @@ onMounted(() => {
       </div>
 
       <!-- 回复评论组件 -->
-      <ReplyToComment :post-id="post.id" @reply-added="fetchComments" />
+      <ReplyToComment :post-id="post.slug" @reply-added="fetchComments" />
     </div>
   </div>
 </template>
