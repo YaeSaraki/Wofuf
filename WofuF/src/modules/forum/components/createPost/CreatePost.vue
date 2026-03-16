@@ -58,7 +58,7 @@ async function createPost() {
   // 检查是否已登录
   const userId = getCurrentUserId()
   if (!userId) {
-    router.push('/login')
+    router.push('/forum/login')
     return
   }
   
@@ -95,7 +95,7 @@ function resetForm() {
 onMounted(() => {
   // 如果未登录，跳转到登录页
   if (!isAuthenticated()) {
-    router.push('/login')
+    router.push('/forum/login')
   }
 })
 </script>

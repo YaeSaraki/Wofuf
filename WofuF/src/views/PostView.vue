@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import PostDetail from '@M/forum/components/postDetail/PostDetail.vue'
+import PageBackground from '@S/components/PageBackground.vue'
 </script>
 
 <template>
-  <div class="post-view">
+  <PageBackground variant="default" :show-pattern="true">
     <PostDetail />
-  </div>
+  </PageBackground>
 </template>

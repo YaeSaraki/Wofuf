@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import CreatePost from '@M/forum/components/createPost/CreatePost.vue'
+import PageBackground from '@S/components/PageBackground.vue'
 </script>
 
 <template>
-  <div class="create-post-view">
+  <PageBackground variant="gradient">
     <CreatePost />
-  </div>
+  </PageBackground>
 </template>
