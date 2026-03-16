@@ -4,7 +4,7 @@
  * 使用 PrimeVue 组件按照标准编码规范
  * 两步注册流程：用户信息 -> 玩家绑定
  */
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
 import { authService } from '@M/auth/services/AuthService.ts'
@@ -56,6 +56,18 @@ const formErrors = reactive({
   nickName: '',
   code: '',
 })
+
+// 当用户修改输入时清除对应错误
+watch(() => userData.email, () => { if (formErrors.email) formErrors.email = '' })
+watch(() => userData.username, () => { if (formErrors.username) formErrors.username = '' })
+watch(() => userData.password, () => { 
+  if (formErrors.password) formErrors.password = ''
+  if (formErrors.confirmPassword && userData.confirmPassword) formErrors.confirmPassword = ''
+})
+watch(() => userData.confirmPassword, () => { if (formErrors.confirmPassword) formErrors.confirmPassword = '' })
+watch(() => memberData.playerId, () => { if (formErrors.playerId) formErrors.playerId = '' })
+watch(() => memberData.nickName, () => { if (formErrors.nickName) formErrors.nickName = '' })
+watch(() => memberData.code, () => { if (formErrors.code) formErrors.code = '' })
 
 const validateUserForm = (): boolean => {
   let isValid = true

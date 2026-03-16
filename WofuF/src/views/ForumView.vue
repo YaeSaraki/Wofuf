@@ -44,7 +44,7 @@ function goToCreatePost() {
 </template>
 
 <style scoped>
-/* 头部 */
+/* 头部 - 亮色模式默认 */
 .bf-forum-header {
   background: var(--bf-fire-gradient, linear-gradient(135deg, #FF6B35 0%, #FF9F1C 50%, #FFBE0B 100%));
   padding: 3rem 1rem;
@@ -58,6 +58,15 @@ function goToCreatePost() {
   inset: 0;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.1) 100%);
   pointer-events: none;
+}
+
+/* 暗色模式 - 更深的渐变和更强的对比 */
+:global(.dark) .bf-forum-header {
+  background: linear-gradient(135deg, #E55A25 0%, #E88A1C 30%, #FF6B35 60%, #FF9F1C 100%);
+}
+
+:global(.dark) .bf-forum-header::before {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 100%);
 }
 
 .bf-header-content {
@@ -91,6 +100,14 @@ function goToCreatePost() {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* 暗色模式 - 标题更亮 */
+:global(.dark) .bf-title-gradient {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 50%, #FFF5EB 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+}
+
 .bf-forum-subtitle {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.9);
@@ -98,7 +115,13 @@ function goToCreatePost() {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* 发帖按钮 */
+/* 暗色模式 - 副标题 */
+:global(.dark) .bf-forum-subtitle {
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* 发帖按钮 - 亮色模式 */
 .bf-create-btn {
   display: flex;
   align-items: center;
@@ -119,6 +142,18 @@ function goToCreatePost() {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   background: #FFFFFF;
+}
+
+/* 暗色模式 - 按钮样式调整 */
+:global(.dark) .bf-create-btn {
+  background: rgba(30, 30, 30, 0.95);
+  color: var(--bf-primary, #FF8C5A);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 140, 90, 0.2);
+}
+
+:global(.dark) .bf-create-btn:hover {
+  background: rgba(45, 45, 45, 0.98);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 140, 90, 0.3);
 }
 
 .bf-create-btn:active {

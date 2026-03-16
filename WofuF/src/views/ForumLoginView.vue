@@ -3,7 +3,7 @@
  * 论坛登录页面
  * 使用 PrimeVue 组件按照标准编码规范
  */
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
 import { authService } from '@M/auth/services/AuthService.ts'
@@ -30,6 +30,27 @@ const formData = ref<LoginRequest>({
 const formErrors = ref({
   username: '',
   password: '',
+})
+
+// 当用户修改输入时清除对应错误
+watch(() => formData.value.username, () => {
+  if (formErrors.value.username) {
+    formErrors.value.username = ''
+  }
+  // 清除全局错误信息
+  if (errorMsg.value) {
+    errorMsg.value = null
+  }
+})
+
+watch(() => formData.value.password, () => {
+  if (formErrors.value.password) {
+    formErrors.value.password = ''
+  }
+  // 清除全局错误信息
+  if (errorMsg.value) {
+    errorMsg.value = null
+  }
 })
 
 // 验证表单
@@ -63,9 +84,10 @@ const validateForm = (): boolean => {
 }
 
 const canSubmit = computed(() => {
-  const usernameValid = formData.value.username && !formErrors.value.username
-  const passwordValid = formData.value.password && !formErrors.value.password
-  return usernameValid && passwordValid && !isLoading.value
+  // 只检查是否有内容，不检查验证错误（错误会在用户输入时自动清除）
+  const hasUsername = !!formData.value.username.trim()
+  const hasPassword = !!formData.value.password.trim()
+  return hasUsername && hasPassword && !isLoading.value
 })
 
 const handleSubmit = async () => {
