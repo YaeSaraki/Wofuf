@@ -374,6 +374,38 @@ export class ForumService implements IForumService {
     }
   }
 
+  /**
+   * 给评论点踩
+   */
+  public async downvoteComment(
+    commentId: string,
+    options?: RequestOptions,
+  ): Promise<Result<VoteResponse>> {
+    try {
+      const tokens = authService.getTokens()
+      if (!tokens?.userId) {
+        return Result.failure('请先登录')
+      }
+
+      const response = await http.put<ApiResponse<VoteResponse>>(
+        `/api/v1/forum/comments/${commentId}/downvote`,
+        { userId: tokens.userId } as VoteRequest,
+        {
+          signal: options?.signal,
+          headers: authService.getAuthHeaders(),
+        }
+      )
+
+      if (response.data.success) {
+        return Result.success(response.data.data)
+      }
+      return Result.failure(response.data.message || '投票失败')
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+    }
+  }
+
   /* ==================== 评论 ==================== */
 
   /**

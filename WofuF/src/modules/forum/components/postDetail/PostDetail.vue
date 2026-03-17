@@ -1,19 +1,25 @@
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { PostDto, CommentDto } from '@M/forum/dtos/Post.ts'
 import { forumService } from '@M/forum/services/ForumService.ts'
 import { useAuth } from '@M/auth/composables/useAuth.ts'
 import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
 import { translate } from '@S/services/i18n'
-import { renderAvatar } from '@SU/renderUTil.ts'
+import { cacheService } from '@S/infra/cache'
+import { PlayerService } from '@M/players/services/PlayerService'
 import ReplyToComment from '@M/forum/components/replyToComment/ReplyToComment.vue'
+
+const playerService = new PlayerService()
 
 const route = useRoute()
 const router = useRouter()
 const post = ref<PostDto | null>(null)
 const comments = ref<CommentDto[]>([])
 const { isAuthenticated } = useAuth()
+
+// 占位图
+const placeholderImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIGZpbGw9IiNlNWU1ZTUiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjgiIHI9IjQiIGZpbGw9IiM5OTkiLz48L3N2Zz4='
 
 /* ---------------- 使用独立的加载状态，避免互相取消 ---------------- */
 const { isLoading: isPostLoading, errorMsg: postError, executeAsync: executePostAsync } = useAsyncLoader()
@@ -83,29 +89,27 @@ async function fetchComments() {
 
   if (result) {
     comments.value = result.comments
-    // 渲染评论头像
-    renderAllAvatars()
   }
 }
 
 // 投票
 async function vote(direction: 'up' | 'down') {
   if (!post.value) return
-  
+
   // 检查是否已登录
   if (!isAuthenticated()) {
     router.push('/login')
     return
   }
-  
+
   isVoting.value = true
   voteError.value = null
-  
+
   const postId = post.value.postId || post.value.slug
-  const result = direction === 'up' 
+  const result = direction === 'up'
     ? await forumService.upvotePost(postId)
     : await forumService.downvotePost(postId)
-  
+
   if (result.isSuccess) {
     // 更新本地投票数
     const voteData = result.getValue()
@@ -116,7 +120,7 @@ async function vote(direction: 'up' | 'down') {
   } else {
     voteError.value = String(result.error)
   }
-  
+
   isVoting.value = false
 }
 
@@ -126,9 +130,9 @@ async function voteComment(commentId: string) {
     router.push('/login')
     return
   }
-  
+
   const result = await forumService.upvoteComment(commentId)
-  
+
   if (result.isSuccess) {
     // 刷新评论列表
     await fetchComments()
@@ -147,39 +151,73 @@ function getAuthorInitial(post: PostDto | null): string {
 const postAuthorAvatar = ref<string | null>(null)
 
 async function loadPostAuthorAvatar() {
-  if (!post.value?.memberPostBy?.playerSkin) return
+  const playerId = post.value?.memberPostBy?.playerId
+  console.log('[PostDetail] loadPostAuthorAvatar called, playerId:', playerId, 'post:', post.value)
+  if (!playerId) return
+
   try {
-    const skinDataUrl = `data:image/png;base64,${post.value.memberPostBy.playerSkin}`
-    postAuthorAvatar.value = await renderAvatar(skinDataUrl, 24)
+    const result = await playerService.getPlayerSkin(playerId)
+    console.log('[PostDetail] getPlayerSkin result:', result, 'isSuccess:', result.isSuccess)
+    if (result.isSuccess) {
+      const skinData = result.getValue()
+      console.log('[PostDetail] skinData:', skinData, 'hasSkin:', !!skinData?.skin)
+      if (skinData?.skin) {
+        postAuthorAvatar.value = await playerService.renderAvatar(skinData.skin, 24)
+        console.log('[PostDetail] postAuthorAvatar set')
+      }
+    } else {
+      console.log('[PostDetail] result is failure, error:', result.error)
+    }
   } catch (e) {
-    console.warn('Failed to render post author avatar:', e)
+    console.warn('[PostDetail] Failed to load post author avatar:', e)
   }
 }
 
-// 评论头像缓存
-const commentAvatars = ref<Map<string, string>>(new Map())
+// 评论头像 - 使用 reactive Map
+const commentAvatars = reactive(new Map<string, string>())
 
-// 渲染评论头像
-async function renderCommentAvatar(comment: CommentDto) {
-  if (!comment.memberPlayerSkin) return
-  if (commentAvatars.value.has(comment.commentId)) return
-  
+/**
+ * 加载评论头像
+ */
+async function loadCommentAvatar(playerId: string) {
+  console.log('[PostDetail] loadCommentAvatar called, playerId:', playerId)
+  if (!playerId || commentAvatars.has(playerId)) return
+
   try {
-    // 添加 data URL 前缀
-    const skinDataUrl = `data:image/png;base64,${comment.memberPlayerSkin}`
-    const avatarUrl = await renderAvatar(skinDataUrl, 24)
-    commentAvatars.value.set(comment.commentId, avatarUrl)
+    const result = await playerService.getPlayerSkin(playerId)
+    console.log('[PostDetail] getPlayerSkin for comment result:', result)
+    if (result.isSuccess) {
+      const skinData = result.getValue()
+      if (skinData?.skin) {
+        const avatarUrl = await playerService.renderAvatar(skinData.skin, 24)
+        commentAvatars.set(playerId, avatarUrl)
+        console.log('[PostDetail] comment avatar set for:', playerId)
+      }
+    }
   } catch (e) {
-    console.warn('Failed to render avatar for comment:', comment.commentId, e)
+    console.warn('[PostDetail] Failed to load comment avatar:', e)
   }
 }
 
-// 监听评论变化，渲染头像
-async function renderAllAvatars() {
-  for (const comment of comments.value) {
-    await renderCommentAvatar(comment)
-  }
+/**
+ * 获取评论头像URL
+ */
+const getCommentAvatar = (playerId: string | null): string | undefined => {
+  if (!playerId) return undefined
+  return commentAvatars.get(playerId)
 }
+
+// 监听帖子变化加载作者头像
+watch(() => post.value?.memberPostBy?.playerId, loadPostAuthorAvatar)
+
+// 监听评论变化加载头像
+watch(comments, (newComments) => {
+  newComments.forEach(comment => {
+    if (comment.playerId) {
+      loadCommentAvatar(comment.playerId)
+    }
+  })
+}, { immediate: true })
 
 onMounted(() => {
   fetchPost()
@@ -317,8 +355,8 @@ onMounted(() => {
             <div class="bf-comment-content">
               <div class="bf-comment-meta">
                 <img
-                  v-if="commentAvatars.get(comment.commentId)"
-                  :src="commentAvatars.get(comment.commentId)"
+                  v-if="getCommentAvatar(comment.playerId)"
+                  :src="getCommentAvatar(comment.playerId)"
                   class="bf-comment-avatar"
                   alt=""
                 />

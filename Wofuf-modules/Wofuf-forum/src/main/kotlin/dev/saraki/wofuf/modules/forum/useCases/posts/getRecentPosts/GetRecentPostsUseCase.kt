@@ -6,8 +6,6 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.mappers.PostDtoMapper
-import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerSkin
-import dev.saraki.wofuf.modules.players.infra.repos.jpa.PlayerJpaRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import org.springframework.stereotype.Service
@@ -22,7 +20,6 @@ import org.springframework.stereotype.Service
 class GetRecentPostsUseCase(
     private val postRepo: PostRepo,
     private val memberRepo: MemberRepo,
-    private val playerJpaRepo: PlayerJpaRepo,
 ) : UseCase<GetRecentPostsDto.Request, GetRecentPostsDto.Response> {
 
     override fun execute(request: GetRecentPostsDto.Request): Result<GetRecentPostsDto.Response> {
@@ -41,13 +38,12 @@ class GetRecentPostsUseCase(
         val postDtos = posts.map { post ->
             // Get member details
             val member = memberRepo.findMemberById(post.memberId)
-            val playerSkin = getPlayerSkinFromMember(member?.playerId?.stringValue)
             val memberDetails = if (member != null) {
                 MemberDetails.create(
                     MemberDetailsProps(
                         nickName = member.nickname,
                         reputation = member.reputation,
-                        playerSkin = playerSkin
+                        playerId = member.playerId
                     )
                 ).getOrThrow()
             } else {
@@ -56,7 +52,7 @@ class GetRecentPostsUseCase(
                     MemberDetailsProps(
                         nickName = dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName.create("Unknown").getOrThrow(),
                         reputation = 0,
-                        playerSkin = null
+                        playerId = null
                     )
                 ).getOrThrow()
             }
@@ -70,16 +66,5 @@ class GetRecentPostsUseCase(
 
         // 5. Return success response
         return Result.success(GetRecentPostsDto.Response(postDtos))
-    }
-
-    private fun getPlayerSkinFromMember(playerId: String?): PlayerSkin? {
-        if (playerId == null) return null
-        val playerEntity = playerJpaRepo.findById(playerId).orElse(null) ?: return null
-        val skinEntity = playerEntity.playerSkin ?: return null
-        return PlayerSkin.create(
-            type = skinEntity.type ?: "",
-            skin = skinEntity.skin,
-            cape = skinEntity.cape ?: ""
-        ).getOrNull()
     }
 }

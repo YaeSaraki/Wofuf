@@ -43,12 +43,12 @@ object CommentEntityMapper {
         return comment
     }
 
-    fun toCommentDetails(commentEntity: CommentEntity, playerSkin: PlayerSkin? = null): CommentDetails {
+    fun toCommentDetails(commentEntity: CommentEntity): CommentDetails {
         return create(
             CommentDetailsProps(
                 commentId = CommentId.create(UniqueEntityId(commentEntity.commentId)).getOrThrow(),
                 text = commentEntity.text,
-                memberDetails = MemberEntityMapper.toMemberDetails(commentEntity.memberEntity!!, playerSkin),
+                memberDetails = MemberEntityMapper.toMemberDetails(commentEntity.memberEntity!!),
                 postSlug = PostSlug.createFromExisting(commentEntity.postEntity!!.slug).getOrThrow(),
                 postTitle = PostTitle.create(commentEntity.postEntity!!.title).getOrThrow(),
                 parentCommentId = commentEntity.parentCommentId?.let { CommentId.create(UniqueEntityId(it)).getOrThrow() },

@@ -4,12 +4,14 @@
  */
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { PostDto } from '@M/forum/dtos/Post'
 import { translate } from '@S/services/i18n'
 import { authService } from '@M/auth/services/AuthService'
-import { renderAvatar } from '@SU/renderUTil.ts'
+import { PlayerService } from '@M/players/services/PlayerService'
+
+const playerService = new PlayerService()
 
 const props = defineProps<{
   post: PostDto
@@ -88,21 +90,32 @@ const visitLink = (event: Event) => {
   }
 }
 
-// 头像渲染
+// 头像相关
 const avatarUrl = ref<string | null>(null)
 
 async function loadAvatar() {
-  if (!props.post.memberPostBy.playerSkin) return
+  const playerId = props.post.memberPostBy?.playerId
+  console.log('[PostCard] loadAvatar called, playerId:', playerId)
+  if (!playerId) return
+
   try {
-    const skinDataUrl = `data:image/png;base64,${props.post.memberPostBy.playerSkin}`
-    avatarUrl.value = await renderAvatar(skinDataUrl, 32)
+    const result = await playerService.getPlayerSkin(playerId)
+    console.log('[PostCard] getPlayerSkin result:', result)
+    if (result.isSuccess) {
+      const skinData = result.getValue()
+      console.log('[PostCard] skinData:', skinData)
+      if (skinData?.skin) {
+        avatarUrl.value = await playerService.renderAvatar(skinData.skin, 32)
+        console.log('[PostCard] avatarUrl set:', avatarUrl.value?.substring(0, 50))
+      }
+    }
   } catch (e) {
-    console.warn('Failed to render avatar:', e)
+    console.warn('[PostCard] Failed to load avatar:', e)
   }
 }
 
 // 监听 post 变化加载头像
-watch(() => props.post, loadAvatar, { immediate: true })
+watch(() => props.post.memberPostBy?.playerId, loadAvatar, { immediate: true })
 
 // 生成随机标签颜色（用于演示分类）
 const categoryColors: Record<string, string> = {

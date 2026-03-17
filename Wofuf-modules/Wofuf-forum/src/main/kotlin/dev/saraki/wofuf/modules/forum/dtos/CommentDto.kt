@@ -17,7 +17,7 @@ data class CommentDto(
     val text: String,
     val memberId: String,
     val memberNickname: String,  // 用户昵称
-    val memberPlayerSkin: String?,  // 用户头像皮肤 (base64)
+    val playerId: String?,  // 玩家UUID，用于获取皮肤
     val createdAt: LocalDateTime,
     val childComments: List<CommentDto>,
     val points: Int,

@@ -20,7 +20,7 @@ object PostDtoMapper {
             memberPostBy = MemberDto(
                 nickname = memberDetails.nickName.value,
                 reputation = memberDetails.reputation,
-                playerSkin = memberDetails.playerSkin?.skin
+                playerId = memberDetails.playerId?.stringValue
             ),
             numComments = numComments,
             points = post.points,
@@ -46,7 +46,7 @@ object PostDtoMapper {
             memberPostBy = MemberDto(
                 nickname = memberDetails.nickName.value,
                 reputation = memberDetails.reputation,
-                playerSkin = memberDetails.playerSkin?.skin
+                playerId = memberDetails.playerId?.stringValue
             ),
             numComments = numComments,
             points = post.points,

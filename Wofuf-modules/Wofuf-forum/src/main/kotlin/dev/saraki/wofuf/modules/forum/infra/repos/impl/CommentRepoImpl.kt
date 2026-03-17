@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional
 class CommentRepoImpl(
     private val commentJpaRepo: CommentJpaRepo,
     private val commentVotesRepo: CommentVotesRepo,
-    private val playerJpaRepo: PlayerJpaRepo,
 ) : CommentRepo {
 
     override fun exists(commentId: CommentId): Boolean =
@@ -44,21 +43,9 @@ class CommentRepoImpl(
     override fun findCommentDetailsByCommentId(commentId: CommentId): CommentDetails? {
         return commentJpaRepo.findById(commentId.stringValue)
             .map { commentEntity ->
-                val playerSkin = getPlayerSkinFromMember(commentEntity.memberEntity?.playerId)
-                CommentEntityMapper.toCommentDetails(commentEntity, playerSkin)
+                CommentEntityMapper.toCommentDetails(commentEntity)
             }
             .orElse(null)
-    }
-
-    private fun getPlayerSkinFromMember(playerId: String?): PlayerSkin? {
-        if (playerId == null) return null
-        val playerEntity = playerJpaRepo.findById(playerId).orElse(null) ?: return null
-        val skinEntity = playerEntity.playerSkin ?: return null
-        return PlayerSkin.create(
-            type = skinEntity.type ?: "",
-            skin = skinEntity.skin,
-            cape = skinEntity.cape ?: ""
-        ).getOrNull()
     }
 
     @Transactional

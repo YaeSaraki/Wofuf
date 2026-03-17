@@ -55,6 +55,9 @@ object ForumApiConstantV1 {
         /** /api/v1/forum/posts/{postId}/downvote */
         const val DOWNVOTE = "$BY_ID/downvote"
 
+        /** /api/v1/forum/posts/{postId}/unvote */
+        const val UNVOTE = "$BY_ID/unvote"
+
         /** /api/v1/forum/posts/{postId}/comments */
         const val COMMENTS = "$BY_ID/comments"
 
@@ -87,6 +90,12 @@ object ForumApiConstantV1 {
 
         /** /api/v1/forum/comments/{commentId}/upvote */
         const val UPVOTE = "$BY_ID/upvote"
+
+        /** /api/v1/forum/comments/{commentId}/downvote */
+        const val DOWNVOTE = "$BY_ID/downvote"
+
+        /** /api/v1/forum/comments/{commentId}/unvote */
+        const val UNVOTE = "$BY_ID/unvote"
 
         /** /api/v1/forum/posts/slug/{postSlug}/comments */
         const val BY_POST_SLUG = "$BASE/posts/slug/{${Param.POST_SLUG}}/comments"

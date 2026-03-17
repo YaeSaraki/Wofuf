@@ -29,6 +29,11 @@ export async function renderAvatar(skinUrlOrBase64: string, size: number): Promi
       reject(new Error('Failed to load image'))
     }
 
-    image.src = skinUrlOrBase64
+    // 如果是纯 base64 字符串（不以 data: 开头），添加前缀
+    if (skinUrlOrBase64.startsWith('data:')) {
+      image.src = skinUrlOrBase64
+    } else {
+      image.src = `data:image/png;base64,${skinUrlOrBase64}`
+    }
   })
 }

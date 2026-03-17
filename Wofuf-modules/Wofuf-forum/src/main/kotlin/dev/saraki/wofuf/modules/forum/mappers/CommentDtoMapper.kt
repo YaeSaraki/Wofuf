@@ -20,7 +20,7 @@ object CommentDtoMapper {
             text = commentDetials.text,
             memberId = comment.memberId.stringValue,
             memberNickname = commentDetials.memberDetails.nickName.value,
-            memberPlayerSkin = commentDetials.memberDetails.playerSkin?.skin,
+            playerId = commentDetials.memberDetails.playerId?.stringValue,
             createdAt = commentDetials.createdAt,
             childComments = emptyList(),
             points = commentDetials.points

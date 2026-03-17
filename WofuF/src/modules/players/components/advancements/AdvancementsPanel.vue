@@ -854,7 +854,6 @@ const ungroupedIncompleteAdvancements = computed(() => {
 }
 
 .bf-adv-name {
-  margin-left: 3rem;
   font-size: 1rem;
   color: var(--bf-text-secondary);
 }

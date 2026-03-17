@@ -35,7 +35,7 @@ async function submitReply() {
   // 检查是否已登录
   const userId = getCurrentUserId()
   if (!userId) {
-    router.push('forum/login')
+    router.push('/forum/login')
     return
   }
 
@@ -72,7 +72,7 @@ function cancelReply() {
 // 开始回复
 function startReply() {
   if (!isAuthenticated()) {
-    router.push('forum/login')
+    router.push('/forum/login')
     return
   }
   isReplying.value = true

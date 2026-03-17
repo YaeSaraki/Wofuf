@@ -420,16 +420,22 @@ const getStatsByGroup = (groupId: string) => {
 .bf-stat-items {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem 1rem;
+  gap: 1rem;
+  justify-content: flex-start;
+  align-items: flex-start;
+  align-content: flex-start;
 }
 
 .bf-stat-item {
+  width: 220px;
+  height: 45px;
+  box-sizing: border-box;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem;
   border-radius: var(--bf-radius-sm);
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .bf-stat-item:hover {

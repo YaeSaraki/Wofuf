@@ -11,5 +11,5 @@ import dev.saraki.wofuf.modules.users.dtos.UserDto
 data class MemberDto(
     val nickname: String,
     val reputation: Int,
-    val playerSkin: String?,  // 玩家头像皮肤 (base64)
+    val playerId: String?,  // 玩家UUID，用于获取皮肤
 )
