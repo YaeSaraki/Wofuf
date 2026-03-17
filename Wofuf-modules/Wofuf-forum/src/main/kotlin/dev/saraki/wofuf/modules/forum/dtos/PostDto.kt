@@ -11,6 +11,7 @@ import java.time.LocalDateTime
  *   @description:
  */
 data class PostDto(
+    val postId: String,
     val slug: String,
     val title: String,
     val createdAt: LocalDateTime,

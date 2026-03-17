@@ -98,7 +98,7 @@ async function vote(direction: 'up' | 'down') {
 
   // 检查是否已登录
   if (!isAuthenticated()) {
-    router.push('/login')
+    router.push('/forum/login')
     return
   }
 
@@ -111,11 +111,42 @@ async function vote(direction: 'up' | 'down') {
     : await forumService.downvotePost(postId)
 
   if (result.isSuccess) {
-    // 更新本地投票数
+    // 更新本地投票数和投票状态
     const voteData = result.getValue()
+    const wasUpvoted = post.value.wasUpvotedByMe
+    const wasDownvoted = post.value.wasDownvotedByMe
+
+    // 计算新的投票状态
+    let newUpvoted = false
+    let newDownvoted = false
+
+    if (direction === 'up') {
+      // 点击 upvote
+      if (wasUpvoted) {
+        // 已 upvote，取消
+        newUpvoted = false
+      } else {
+        // 新 upvote 或从 downvote 切换
+        newUpvoted = true
+        newDownvoted = false
+      }
+    } else {
+      // 点击 downvote
+      if (wasDownvoted) {
+        // 已 downvote，取消
+        newDownvoted = false
+      } else {
+        // 新 downvote 或从 upvote 切换
+        newDownvoted = true
+        newUpvoted = false
+      }
+    }
+
     post.value = {
       ...post.value,
-      points: voteData.newPoints || voteData.points
+      points: voteData.newPoints || voteData.points,
+      wasUpvotedByMe: newUpvoted,
+      wasDownvotedByMe: newDownvoted
     }
   } else {
     voteError.value = String(result.error)
@@ -248,13 +279,23 @@ onMounted(() => {
       <div class="bf-post-card">
         <!-- 投票区域 -->
         <div class="bf-vote-section">
-          <button class="bf-vote-btn" @click="vote('up')">
+          <button
+            class="bf-vote-btn"
+            :class="{ 'bf-vote-btn--active': post.wasUpvotedByMe }"
+            @click="vote('up')"
+            :disabled="isVoting"
+          >
             <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
               <path d="M12 4l-8 8h6v8h4v-8h6z"/>
             </svg>
           </button>
           <span class="bf-vote-count">{{ post.points }}</span>
-          <button class="bf-vote-btn bf-vote-btn--down" @click="vote('down')">
+          <button
+            class="bf-vote-btn bf-vote-btn--down"
+            :class="{ 'bf-vote-btn--active-down': post.wasDownvotedByMe }"
+            @click="vote('down')"
+            :disabled="isVoting"
+          >
             <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
               <path d="M12 20l8-8h-6v-8h-4v8h-6z"/>
             </svg>
@@ -472,6 +513,21 @@ onMounted(() => {
 .bf-vote-btn:hover {
   background: rgba(255, 107, 53, 0.1);
   color: var(--bf-primary, #FF6B35);
+}
+
+.bf-vote-btn--active {
+  background: rgba(255, 107, 53, 0.2);
+  color: var(--bf-primary, #FF6B35);
+}
+
+.bf-vote-btn--active-down {
+  background: rgba(100, 149, 237, 0.2);
+  color: #6495ED;
+}
+
+.bf-vote-btn--down:hover {
+  background: rgba(100, 149, 237, 0.1);
+  color: #6495ED;
 }
 
 .bf-vote-btn--small {

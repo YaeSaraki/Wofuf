@@ -20,6 +20,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'upvote', post: PostDto): void
   (e: 'downvote', post: PostDto): void
+  (e: 'unvote', post: PostDto): void
 }>()
 
 const router = useRouter()
@@ -70,7 +71,12 @@ const handleUpvote = (event: Event) => {
     router.push('/forum/login')
     return
   }
-  emit('upvote', props.post)
+  // 如果已经点赞，则取消点赞
+  if (voteState.value === 'upvoted') {
+    emit('unvote', props.post)
+  } else {
+    emit('upvote', props.post)
+  }
 }
 
 const handleDownvote = (event: Event) => {
@@ -79,7 +85,12 @@ const handleDownvote = (event: Event) => {
     router.push('/forum/login')
     return
   }
-  emit('downvote', props.post)
+  // 如果已经点踩，则取消点踩
+  if (voteState.value === 'downvoted') {
+    emit('unvote', props.post)
+  } else {
+    emit('downvote', props.post)
+  }
 }
 
 // 访问链接

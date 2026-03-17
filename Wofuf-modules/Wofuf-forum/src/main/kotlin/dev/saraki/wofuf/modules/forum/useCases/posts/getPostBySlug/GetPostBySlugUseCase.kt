@@ -2,12 +2,17 @@ package dev.saraki.wofuf.modules.forum.useCases.posts.getPostBySlug
 
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetails
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetailsProps
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
+import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
 import dev.saraki.wofuf.modules.forum.mappers.PostDtoMapper
+import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Service
 
 /**
@@ -20,6 +25,7 @@ import org.springframework.stereotype.Service
 class GetPostBySlugUseCase(
     private val postRepo: PostRepo,
     private val memberRepo: MemberRepo,
+    private val postVotesRepo: PostVotesRepo,
 ) : UseCase<GetPostBySlugDto.Request, GetPostBySlugDto.Response> {
 
     override fun execute(request: GetPostBySlugDto.Request): Result<GetPostBySlugDto.Response> {
@@ -59,11 +65,40 @@ class GetPostBySlugUseCase(
         // 6. Get number of comments
         val numComments = postRepo.findNumberOfCommentsByPostId(post.postId) ?: 0
 
-        // 7. Map to DTO
-        // TODO: Implement vote status tracking based on userId
-        val postDto = PostDtoMapper.toDto(post, memberDetails, numComments)
+        // 7. Get current member if userId is provided
+        var currentMemberId: MemberId? = null
+        if (!request.userId.isNullOrBlank()) {
+            val userIdOrError = UserId.create(
+                UniqueEntityId(request.userId)
+            )
+            if (userIdOrError.isSuccess) {
+                val currentUser = memberRepo.findMemberByUserId(userIdOrError.getOrThrow())
+                currentMemberId = currentUser?.memberId
+            }
+        }
 
-        // 8. Return success response
+        // 8. Get vote status if user is logged in
+        val wasUpvotedByMe = currentMemberId?.let { memberId ->
+            postVotesRepo.exists(post.postId, memberId, VoteType.UPVOTE)
+        } ?: false
+
+        val wasDownvotedByMe = currentMemberId?.let { memberId ->
+            postVotesRepo.exists(post.postId, memberId, VoteType.DOWNVOTE)
+        } ?: false
+
+        // 9. Get actual points from database
+        val totalUpvotes = postVotesRepo.countPostUpvotesByPostId(post.postId)
+        val totalDownvotes = postVotesRepo.countPostDownvotesByPostId(post.postId)
+        val actualPoints = totalUpvotes - totalDownvotes
+
+        // 10. Map to DTO with vote status
+        val postDto = if (currentMemberId != null) {
+            PostDtoMapper.toDtoWithVoteStatus(post, memberDetails, numComments, actualPoints, wasUpvotedByMe, wasDownvotedByMe)
+        } else {
+            PostDtoMapper.toDto(post, memberDetails, numComments, actualPoints)
+        }
+
+        // 11. Return success response
         return Result.success(GetPostBySlugDto.Response(postDto))
     }
 }

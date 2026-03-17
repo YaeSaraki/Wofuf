@@ -15,7 +15,15 @@ import java.time.LocalDateTime
 
 @Entity
 @DynamicUpdate
-@Table(name = "post_vote")
+@Table(
+    name = "post_vote",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "UK_post_vote_post_member",
+            columnNames = ["post_id", "member_id"]
+        )
+    ]
+)
 data class PostVoteEntity(
     @Id
     @Column(name = "vote_id", nullable = false)

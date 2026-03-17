@@ -1,7 +1,7 @@
 package dev.saraki.wofuf.modules.forum.domain.events
 
 import dev.saraki.wofuf.modules.forum.domain.Post
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostVote
+import dev.saraki.wofuf.modules.forum.domain.PostVote
 import dev.saraki.wofuf.shared.domain.events.IDomainEvent
 
 /**

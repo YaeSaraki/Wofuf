@@ -3,7 +3,7 @@ package dev.saraki.wofuf.modules.forum.infra.repos
 import dev.saraki.wofuf.modules.forum.domain.*
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostVote
+import dev.saraki.wofuf.modules.forum.domain.PostVote
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 
 /**
@@ -20,4 +20,5 @@ interface PostVotesRepo {
     fun saveBulk(postVotes: PostVotes)
     fun save(postVote: PostVote): PostVote
     fun delete(postVote: PostVote)
+    fun deleteByPostIdAndMemberId(postId: PostId, memberId: MemberId)
 }

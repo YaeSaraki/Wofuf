@@ -19,4 +19,6 @@ interface PostVotesJpaRepo : JpaRepository<PostVoteEntity, String> {
 
     @Query("SELECT COUNT(pv) FROM PostVoteEntity pv WHERE pv.postId = :postId AND pv.voteType = :voteType")
     fun countByPostIdAndVoteType(@Param("postId") postId: String, @Param("voteType") voteType: String): Int
+
+    fun deleteByPostIdAndMemberId(postId: String, memberId: String)
 }

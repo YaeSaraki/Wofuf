@@ -97,11 +97,47 @@ function setCategory(categoryId: string) {
 
 // 处理投票
 async function handleUpvote(post: PostDto) {
-  console.log('Upvote post:', post.slug)
+  if (!post.postId) return
+  
+  const result = await forumService.upvotePost(post.postId)
+  if (result.isSuccess) {
+    const data = result.getValue()
+    // 更新帖子数据
+    const index = posts.value.findIndex(p => p.postId === post.postId)
+    if (index !== -1) {
+      const currentPost = posts.value[index]
+      // toggle 逻辑：如果已经 upvoted，再次点击会取消
+      const wasUpvoted = currentPost.wasUpvotedByMe
+      posts.value[index] = {
+        ...currentPost,
+        points: data.points ?? data.newPoints,
+        wasUpvotedByMe: !wasUpvoted,
+        wasDownvotedByMe: false
+      } as PostDto
+    }
+  }
 }
 
 async function handleDownvote(post: PostDto) {
-  console.log('Downvote post:', post.slug)
+  if (!post.postId) return
+  
+  const result = await forumService.downvotePost(post.postId)
+  if (result.isSuccess) {
+    const data = result.getValue()
+    // 更新帖子数据
+    const index = posts.value.findIndex(p => p.postId === post.postId)
+    if (index !== -1) {
+      const currentPost = posts.value[index]
+      // toggle 逻辑：如果已经 downvoted，再次点击会取消
+      const wasDownvoted = currentPost.wasDownvotedByMe
+      posts.value[index] = {
+        ...currentPost,
+        points: data.points ?? data.newPoints,
+        wasUpvotedByMe: false,
+        wasDownvotedByMe: !wasDownvoted
+      } as PostDto
+    }
+  }
 }
 
 // 跳转到发帖页
@@ -220,6 +256,7 @@ onUnmounted(() => {
         :post="post"
         @upvote="handleUpvote"
         @downvote="handleDownvote"
+        @unvote="handleUnvote"
       />
 
       <!-- 加载更多指示器 -->

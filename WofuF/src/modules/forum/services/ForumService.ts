@@ -37,7 +37,9 @@ export interface IForumService {
   /* ---------------- 投票 ---------------- */
   upvotePost(postId: string, options?: RequestOptions): Promise<Result<VoteResponse>>
   downvotePost(postId: string, options?: RequestOptions): Promise<Result<VoteResponse>>
+  unvotePost(postId: string, options?: RequestOptions): Promise<Result<VoteResponse>>
   upvoteComment(commentId: string, options?: RequestOptions): Promise<Result<VoteResponse>>
+  downvoteComment(commentId: string, options?: RequestOptions): Promise<Result<VoteResponse>>
 
   /* ---------------- 评论 ---------------- */
   getCommentsByPostSlug(postSlug: string, options?: RequestOptions): Promise<Result<GetCommentsResponse>>
@@ -100,9 +102,10 @@ export class ForumService implements IForumService {
    */
   public async getPopularPosts(
     offset: number = 10,
+    category?: PostCategory,
     options?: RequestOptions,
   ): Promise<Result<GetPostsResponse>> {
-    const cacheKey = `popular_posts_${offset}`
+    const cacheKey = `popular_posts_${offset}_${category || 'all'}`
     const cached = cacheService.get<GetPostsResponse>(ForumService.CACHE_MODULE, cacheKey)
     if (cached) {
       return Result.success(cached)
@@ -113,6 +116,9 @@ export class ForumService implements IForumService {
       const params: Record<string, string | number> = { offset }
       if (tokens?.userId) {
         params.userId = tokens.userId
+      }
+      if (category) {
+        params.category = category
       }
 
       const response = await http.get<ApiResponse<GetPostsResponse>>(
@@ -336,6 +342,38 @@ export class ForumService implements IForumService {
         return Result.success(response.data.data)
       }
       return Result.failure(response.data.message || '投票失败')
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+    }
+  }
+
+  /**
+   * 取消帖子投票
+   */
+  public async unvotePost(
+    postId: string,
+    options?: RequestOptions,
+  ): Promise<Result<VoteResponse>> {
+    try {
+      const tokens = authService.getTokens()
+      if (!tokens?.userId) {
+        return Result.failure('请先登录')
+      }
+
+      const response = await http.put<ApiResponse<VoteResponse>>(
+        `/api/v1/forum/posts/${postId}/unvote`,
+        { userId: tokens.userId } as VoteRequest,
+        {
+          signal: options?.signal,
+          headers: authService.getAuthHeaders(),
+        }
+      )
+
+      if (response.data.success) {
+        return Result.success(response.data.data)
+      }
+      return Result.failure(response.data.message || '取消投票失败')
     } catch (error) {
       const err = error as { response?: { data?: { message?: string } }; message?: string }
       return Result.failure(err.response?.data?.message || err.message || '网络请求失败')

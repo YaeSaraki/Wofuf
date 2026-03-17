@@ -2,8 +2,8 @@ package dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers
 
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostVote
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostVoteProps
+import dev.saraki.wofuf.modules.forum.domain.PostVote
+import dev.saraki.wofuf.modules.forum.domain.PostVoteProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.PostVoteEntity
 import dev.saraki.wofuf.shared.domain.UniqueEntityId

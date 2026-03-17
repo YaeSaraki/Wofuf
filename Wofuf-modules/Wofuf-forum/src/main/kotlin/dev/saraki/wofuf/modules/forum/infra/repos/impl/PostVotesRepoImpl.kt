@@ -3,7 +3,7 @@ package dev.saraki.wofuf.modules.forum.infra.repos.impl
 import dev.saraki.wofuf.modules.forum.domain.*
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostVote
+import dev.saraki.wofuf.modules.forum.domain.PostVote
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.PostVotesJpaRepo
@@ -65,5 +65,10 @@ class PostVotesRepoImpl(
     override fun delete(postVote: PostVote) {
         val entity = PostVoteEntityMapper.toEntity(postVote)
         postVotesJpaRepo.deleteById(entity.voteId)
+    }
+
+    @Transactional
+    override fun deleteByPostIdAndMemberId(postId: PostId, memberId: MemberId) {
+        postVotesJpaRepo.deleteByPostIdAndMemberId(postId.stringValue, memberId.stringValue)
     }
 }

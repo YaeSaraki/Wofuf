@@ -58,8 +58,20 @@ object ForumApiConstantV1 {
         /** /api/v1/forum/posts/{postId}/unvote */
         const val UNVOTE = "$BY_ID/unvote"
 
+        /** /api/v1/forum/posts/slug/{postSlug}/upvote */
+        const val UPVOTE_BY_SLUG = "$BY_SLUG/upvote"
+
+        /** /api/v1/forum/posts/slug/{postSlug}/downvote */
+        const val DOWNVOTE_BY_SLUG = "$BY_SLUG/downvote"
+
+        /** /api/v1/forum/posts/slug/{postSlug}/unvote */
+        const val UNVOTE_BY_SLUG = "$BY_SLUG/unvote"
+
         /** /api/v1/forum/posts/{postId}/comments */
         const val COMMENTS = "$BY_ID/comments"
+
+        /** /api/v1/forum/posts/slug/{postSlug}/comments */
+        const val COMMENTS_BY_SLUG = "$BY_SLUG/comments"
 
         /** /api/v1/forum/posts/{postId}/replies */
         const val REPLIES = "$BY_ID/replies"

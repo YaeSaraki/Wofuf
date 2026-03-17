@@ -12,8 +12,9 @@ import dev.saraki.wofuf.modules.forum.dtos.PostDto
  * @description Mapper for converting Post domain objects to PostDto
  */
 object PostDtoMapper {
-    fun toDto(post: Post, memberDetails: MemberDetails, numComments: Int): PostDto =
+    fun toDto(post: Post, memberDetails: MemberDetails, numComments: Int, points: Int): PostDto =
         PostDto(
+            postId = post.postId.stringValue,
             slug = post.slug.value,
             title = post.title.value,
             createdAt = post.dateTimePosted,
@@ -23,23 +24,25 @@ object PostDtoMapper {
                 playerId = memberDetails.playerId?.stringValue
             ),
             numComments = numComments,
-            points = post.points,
+            points = points,
             text = post.text?.value ?: "",
             link = post.link?.value ?: "",
             type = post.type,
             category = post.category,
-            wasUpvotedByMe = null,  // TODO: Implement vote tracking
-            wasDownvotedByMe = null  // TODO: Implement vote tracking
+            wasUpvotedByMe = null,
+            wasDownvotedByMe = null
         )
 
     fun toDtoWithVoteStatus(
         post: Post,
         memberDetails: MemberDetails,
         numComments: Int,
+        points: Int,
         wasUpvotedByMe: Boolean = false,
         wasDownvotedByMe: Boolean = false
     ): PostDto =
         PostDto(
+            postId = post.postId.stringValue,
             slug = post.slug.value,
             title = post.title.value,
             createdAt = post.dateTimePosted,
@@ -49,7 +52,7 @@ object PostDtoMapper {
                 playerId = memberDetails.playerId?.stringValue
             ),
             numComments = numComments,
-            points = post.points,
+            points = points,
             text = post.text?.value ?: "",
             link = post.link?.value ?: "",
             type = post.type,
