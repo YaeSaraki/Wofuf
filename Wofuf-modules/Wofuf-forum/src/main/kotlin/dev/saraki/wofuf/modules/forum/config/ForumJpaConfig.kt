@@ -20,7 +20,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @Configuration
 @ConditionalOnMissingBean(PostJpaRepo::class)
 @EnableJpaRepositories(basePackages = [
-    "dev.saraki.wofuf.modules.forum.infra.repos.jpa",
-    "dev.saraki.wofuf.modules.players.infra.repos.jpa"
+    "dev.saraki.wofuf.modules.forum.infra.repos.jpa"
 ])
 class ForumJpaConfig

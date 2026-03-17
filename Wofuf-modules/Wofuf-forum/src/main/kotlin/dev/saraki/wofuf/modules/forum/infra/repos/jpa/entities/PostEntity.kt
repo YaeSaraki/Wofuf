@@ -33,6 +33,9 @@ data class PostEntity(
     @Column(name = "type", nullable = false)
     val type: String,
 
+    @Column(name = "category", nullable = false)
+    val category: String = "DISCUSSION",
+
     @Column(name = "text", nullable = true)
     val text: String?,
 

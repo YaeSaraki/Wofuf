@@ -2,6 +2,7 @@ package dev.saraki.wofuf.modules.forum.useCases.posts.getRecentPosts
 
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetails
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetailsProps
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.mappers.PostDtoMapper
@@ -30,10 +31,13 @@ class GetRecentPostsUseCase(
             return GetRecentPostsErrors.InvalidOffsetError(request.offset)
         }
 
-        // 2. Find recent posts
-        val posts = postRepo.findRecentPosts(request.offset)
+        // 2. Parse category
+        val category = request.category?.let { PostCategory.fromString(it) }
 
-        // 3. Map posts to DTOs with member details and comment counts
+        // 3. Find recent posts with category filter
+        val posts = postRepo.findRecentPosts(request.offset, category)
+
+        // 4. Map posts to DTOs with member details and comment counts
         val postDtos = posts.map { post ->
             // Get member details
             val member = memberRepo.findMemberById(post.memberId)
@@ -61,11 +65,10 @@ class GetRecentPostsUseCase(
             val numComments = postRepo.findNumberOfCommentsByPostId(post.postId) ?: 0
 
             // Map to DTO
-            // TODO: Implement vote status tracking based on userId
             PostDtoMapper.toDto(post, memberDetails, numComments)
         }
 
-        // 4. Return success response
+        // 5. Return success response
         return Result.success(GetRecentPostsDto.Response(postDtos))
     }
 

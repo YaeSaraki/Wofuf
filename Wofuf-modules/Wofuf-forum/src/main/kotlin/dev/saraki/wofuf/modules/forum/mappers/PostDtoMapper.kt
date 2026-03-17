@@ -27,6 +27,7 @@ object PostDtoMapper {
             text = post.text?.value ?: "",
             link = post.link?.value ?: "",
             type = post.type,
+            category = post.category,
             wasUpvotedByMe = null,  // TODO: Implement vote tracking
             wasDownvotedByMe = null  // TODO: Implement vote tracking
         )
@@ -52,6 +53,7 @@ object PostDtoMapper {
             text = post.text?.value ?: "",
             link = post.link?.value ?: "",
             type = post.type,
+            category = post.category,
             wasUpvotedByMe = wasUpvotedByMe,
             wasDownvotedByMe = wasDownvotedByMe
         )

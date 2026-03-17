@@ -1,5 +1,5 @@
 /**
- * 帖子卡片组件 - Bonfire 风格
+ * 帖子卡片组件 - 增强版
  * 显示单个帖子信息，支持投票、点击跳转
  */
 
@@ -95,7 +95,7 @@ async function loadAvatar() {
   if (!props.post.memberPostBy.playerSkin) return
   try {
     const skinDataUrl = `data:image/png;base64,${props.post.memberPostBy.playerSkin}`
-    avatarUrl.value = await renderAvatar(skinDataUrl, 24)
+    avatarUrl.value = await renderAvatar(skinDataUrl, 32)
   } catch (e) {
     console.warn('Failed to render avatar:', e)
   }
@@ -103,6 +103,14 @@ async function loadAvatar() {
 
 // 监听 post 变化加载头像
 watch(() => props.post, loadAvatar, { immediate: true })
+
+// 生成随机标签颜色（用于演示分类）
+const categoryColors: Record<string, string> = {
+  discussion: 'bg-blue-500',
+  share: 'bg-green-500',
+  question: 'bg-yellow-500',
+  announcement: 'bg-red-500',
+}
 </script>
 
 <template>
@@ -120,7 +128,7 @@ watch(() => props.post, loadAvatar, { immediate: true })
         :title="translate('forum', 'upvote')"
         @click="handleUpvote"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
         </svg>
       </button>
@@ -133,7 +141,7 @@ watch(() => props.post, loadAvatar, { immediate: true })
         :title="translate('forum', 'downvote')"
         @click="handleDownvote"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -153,16 +161,28 @@ watch(() => props.post, loadAvatar, { immediate: true })
           <div v-else class="bf-avatar">
             {{ post.memberPostBy.nickname.charAt(0).toUpperCase() }}
           </div>
-          <span class="bf-author-name">{{ post.memberPostBy.nickname }}</span>
+          <div class="bf-author-info">
+            <span class="bf-author-name">{{ post.memberPostBy.nickname }}</span>
+            <div class="bf-meta-sub">
+              <span class="bf-meta-time">{{ formattedDate }}</span>
+              <span class="bf-meta-dot">·</span>
+              <span class="bf-meta-rep">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+                  <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+                {{ post.memberPostBy.reputation }}
+              </span>
+            </div>
+          </div>
         </div>
-        <span class="bf-meta-dot">·</span>
-        <span class="bf-meta-time">{{ formattedDate }}</span>
-        <span v-if="post.type === 'LINK'" class="bf-badge bf-badge--sm">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="bf-badge__icon">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-          链接
-        </span>
+        <div class="bf-post-card__badges">
+          <span v-if="post.type === 'LINK'" class="bf-badge bf-badge--link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            链接
+          </span>
+        </div>
       </div>
 
       <!-- 标题 -->
@@ -177,29 +197,39 @@ watch(() => props.post, loadAvatar, { immediate: true })
 
       <!-- 链接预览 -->
       <a v-if="post.type === 'LINK' && post.link" class="bf-link-preview" @click="visitLink">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-        </svg>
-        <span class="bf-link-preview__url">{{ post.link }}</span>
+        <div class="bf-link-preview__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+        </div>
+        <div class="bf-link-preview__content">
+          <span class="bf-link-preview__url">{{ post.link }}</span>
+          <span class="bf-link-preview__hint">点击访问</span>
+        </div>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="bf-link-preview__arrow">
           <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
         </svg>
       </a>
 
       <!-- 底部统计 -->
-      <div class="bf-post-card__stats">
-        <span class="bf-stat">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-          {{ post.numComments }}
-        </span>
-        <span class="bf-stat bf-stat--reputation">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
-          {{ post.memberPostBy.reputation }}
-        </span>
+      <div class="bf-post-card__footer">
+        <div class="bf-post-card__stats">
+          <span class="bf-stat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            {{ post.numComments }} 评论
+          </span>
+        </div>
+        <div class="bf-post-card__actions">
+          <button class="bf-action-btn" @click.stop="goToPost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            查看
+          </button>
+        </div>
       </div>
     </div>
   </article>
@@ -209,8 +239,8 @@ watch(() => props.post, loadAvatar, { immediate: true })
 /* === 卡片容器 === */
 .bf-post-card {
   display: flex;
-  gap: var(--bf-space-md, 16px);
-  padding: var(--bf-space-lg, 20px);
+  gap: var(--bf-space-lg, 20px);
+  padding: var(--bf-space-lg, 24px);
   background: var(--bf-card-bg);
   border: 1px solid var(--bf-card-border);
   border-radius: var(--bf-card-radius, 16px);
@@ -219,12 +249,30 @@ watch(() => props.post, loadAvatar, { immediate: true })
   box-shadow: var(--bf-card-shadow);
   cursor: pointer;
   transition: all var(--bf-transition-normal, 0.25s ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.bf-post-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--bf-fire-gradient);
+  opacity: 0;
+  transition: opacity var(--bf-transition-fast, 0.15s ease);
 }
 
 .bf-post-card:hover {
   border-color: var(--bf-border-accent);
   box-shadow: var(--bf-card-shadow-hover);
   transform: translateY(-2px);
+}
+
+.bf-post-card:hover::before {
+  opacity: 1;
 }
 
 .bf-post-card:focus {
@@ -237,17 +285,18 @@ watch(() => props.post, loadAvatar, { immediate: true })
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  min-width: 40px;
+  gap: 2px;
+  min-width: 44px;
+  padding-top: 4px;
 }
 
 .bf-vote-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -256,8 +305,8 @@ watch(() => props.post, loadAvatar, { immediate: true })
 }
 
 .bf-vote-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 .bf-vote-btn:hover {
@@ -279,67 +328,104 @@ watch(() => props.post, loadAvatar, { immediate: true })
 
 .bf-vote-count {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
+  padding: 4px 0;
 }
 
 /* === 内容区 === */
 .bf-post-card__content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* === 元信息 === */
 .bf-post-card__meta {
   display: flex;
-  align-items: center;
-  gap: var(--bf-space-sm, 8px);
-  margin-bottom: 10px;
-  font-size: 13px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--bf-space-md, 12px);
 }
 
 .bf-post-card__author {
   display: flex;
   align-items: center;
-  gap: var(--bf-space-sm, 8px);
+  gap: var(--bf-space-sm, 10px);
 }
 
 .bf-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   background: var(--bf-fire-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: white;
+  flex-shrink: 0;
 }
 
 .bf-avatar--img {
-  background: transparent;
+  background: var(--bf-input-bg);
   image-rendering: pixelated;
+  padding: 2px;
+}
+
+.bf-author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .bf-author-name {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--bf-text-primary);
+  font-size: 14px;
+}
+
+.bf-meta-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bf-meta-time {
+  font-size: 12px;
+  color: var(--bf-text-muted);
 }
 
 .bf-meta-dot {
   color: var(--bf-text-muted);
+  font-size: 10px;
 }
 
-.bf-meta-time {
-  color: var(--bf-text-muted);
+.bf-meta-rep {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: #FFB800;
+}
+
+.bf-meta-rep svg {
+  color: #FFB800;
+}
+
+.bf-post-card__badges {
+  display: flex;
+  gap: 6px;
 }
 
 .bf-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 8px;
+  padding: 4px 10px;
   background: var(--bf-fire-gradient-subtle);
   border: 1px solid var(--bf-border-accent);
   border-radius: 100px;
@@ -348,14 +434,15 @@ watch(() => props.post, loadAvatar, { immediate: true })
   color: var(--bf-primary);
 }
 
-.bf-badge--sm {
-  padding: 2px 6px;
-  font-size: 10px;
-}
-
-.bf-badge__icon {
+.bf-badge svg {
   width: 12px;
   height: 12px;
+}
+
+.bf-badge--link {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3B82F6;
 }
 
 /* === 标题 === */
@@ -363,7 +450,7 @@ watch(() => props.post, loadAvatar, { immediate: true })
   font-size: 17px;
   font-weight: 600;
   color: var(--bf-text-primary);
-  margin: 0 0 var(--bf-space-sm, 8px) 0;
+  margin: 0;
   line-height: 1.4;
   transition: color var(--bf-transition-fast, 0.15s ease);
 }
@@ -377,7 +464,7 @@ watch(() => props.post, loadAvatar, { immediate: true })
   font-size: 14px;
   color: var(--bf-text-secondary);
   line-height: 1.6;
-  margin: 0 0 var(--bf-space-md, 12px) 0;
+  margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -386,24 +473,15 @@ watch(() => props.post, loadAvatar, { immediate: true })
 
 /* === 链接预览 === */
 .bf-link-preview {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: var(--bf-space-sm, 8px);
-  padding: 10px 14px;
+  gap: var(--bf-space-sm, 10px);
+  padding: 12px 16px;
   background: var(--bf-input-bg);
   border: 1px solid var(--bf-border-default);
-  border-radius: var(--bf-input-radius, 10px);
-  font-size: 13px;
-  color: var(--bf-primary);
-  margin-bottom: var(--bf-space-md, 12px);
+  border-radius: var(--bf-input-radius, 12px);
   text-decoration: none;
   transition: all var(--bf-transition-fast, 0.15s ease);
-}
-
-.bf-link-preview svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
 }
 
 .bf-link-preview:hover {
@@ -411,37 +489,83 @@ watch(() => props.post, loadAvatar, { immediate: true })
   border-color: var(--bf-border-accent);
 }
 
+.bf-link-preview__icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.bf-link-preview__icon svg {
+  width: 20px;
+  height: 20px;
+  color: #3B82F6;
+}
+
+.bf-link-preview__content {
+  flex: 1;
+  min-width: 0;
+}
+
 .bf-link-preview__url {
-  max-width: 280px;
+  display: block;
+  font-size: 13px;
+  color: var(--bf-text-primary);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.bf-link-preview__hint {
+  display: block;
+  font-size: 11px;
+  color: var(--bf-text-muted);
+  margin-top: 2px;
+}
+
 .bf-link-preview__arrow {
+  width: 16px;
+  height: 16px;
+  color: var(--bf-text-muted);
   opacity: 0;
   transform: translateX(-4px);
   transition: all var(--bf-transition-fast, 0.15s ease);
+  flex-shrink: 0;
 }
 
 .bf-link-preview:hover .bf-link-preview__arrow {
   opacity: 1;
   transform: translateX(0);
+  color: var(--bf-primary);
 }
 
-/* === 底部统计 === */
+/* === 底部 === */
+.bf-post-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bf-space-md, 12px);
+  padding-top: 8px;
+  border-top: 1px solid var(--bf-border-default);
+}
+
 .bf-post-card__stats {
   display: flex;
   align-items: center;
   gap: var(--bf-space-md, 16px);
-  font-size: 13px;
-  color: var(--bf-text-muted);
 }
 
 .bf-stat {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 13px;
+  color: var(--bf-text-muted);
   transition: color var(--bf-transition-fast, 0.15s ease);
 }
 
@@ -454,29 +578,56 @@ watch(() => props.post, loadAvatar, { immediate: true })
   color: var(--bf-text-secondary);
 }
 
-.bf-stat--reputation {
-  color: #FFB800;
+.bf-post-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.bf-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bf-input-bg);
+  border: 1px solid var(--bf-border-default);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bf-text-secondary);
+  cursor: pointer;
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.bf-action-btn:hover {
+  background: var(--bf-fire-gradient-subtle);
+  border-color: var(--bf-border-accent);
+  color: var(--bf-primary);
 }
 
 /* === 响应式 === */
 @media (max-width: 640px) {
   .bf-post-card {
-    padding: 14px;
-    gap: 12px;
+    padding: 16px;
+    gap: 14px;
   }
 
   .bf-post-card__vote {
-    min-width: 32px;
+    min-width: 36px;
   }
 
   .bf-vote-btn {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
 
   .bf-vote-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
   }
 
   .bf-post-card__title {
@@ -485,16 +636,39 @@ watch(() => props.post, loadAvatar, { immediate: true })
 
   .bf-post-card__preview {
     font-size: 13px;
+    -webkit-line-clamp: 2;
   }
 
-  .bf-link-preview__url {
-    max-width: 180px;
+  .bf-link-preview {
+    padding: 10px 12px;
+  }
+
+  .bf-link-preview__icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .bf-link-preview__icon svg {
+    width: 16px;
+    height: 16px;
   }
 
   .bf-avatar {
-    width: 20px;
-    height: 20px;
-    font-size: 10px;
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .bf-post-card__footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .bf-action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 12px;
   }
 }
 </style>

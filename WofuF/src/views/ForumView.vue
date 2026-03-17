@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import PostList from '@M/forum/components/postList/PostList.vue'
+import ForumSidebar from '@M/forum/components/sidebar/ForumSidebar.vue'
 import { translate } from '@S/services/i18n'
 import PageBackground from '@S/components/PageBackground.vue'
 import { authService } from '@M/auth/services/AuthService.ts'
@@ -39,7 +40,14 @@ function goToCreatePost() {
         </button>
       </div>
     </header>
-    <PostList />
+
+    <!-- 主要内容区域 - 两栏布局 -->
+    <div class="bf-forum-layout">
+      <main class="bf-forum-main">
+        <PostList />
+      </main>
+      <ForumSidebar />
+    </div>
   </PageBackground>
 </template>
 
@@ -70,7 +78,7 @@ function goToCreatePost() {
 }
 
 .bf-header-content {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -165,7 +173,33 @@ function goToCreatePost() {
   height: 18px;
 }
 
+/* === 两栏布局 === */
+.bf-forum-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--bf-space-lg, 24px) var(--bf-space-md, 16px);
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--bf-space-lg, 24px);
+  align-items: start;
+}
+
+.bf-forum-main {
+  min-width: 0;
+}
+
 /* 响应式 */
+@media (max-width: 1024px) {
+  .bf-forum-layout {
+    grid-template-columns: 1fr;
+    max-width: 800px;
+  }
+
+  .bf-header-content {
+    max-width: 800px;
+  }
+}
+
 @media (max-width: 640px) {
   .bf-forum-header {
     padding: 2rem 1rem;
@@ -187,6 +221,10 @@ function goToCreatePost() {
   .bf-create-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .bf-forum-layout {
+    padding: var(--bf-space-md, 16px) 12px;
   }
 }
 </style>

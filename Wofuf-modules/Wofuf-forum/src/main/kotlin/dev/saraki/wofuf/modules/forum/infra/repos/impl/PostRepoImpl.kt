@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.impl
 
 import dev.saraki.wofuf.modules.forum.domain.Post
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
@@ -37,15 +38,23 @@ class PostRepoImpl(
         return PostEntityMapper.toDomain(postEntity)
     }
 
-    override fun findRecentPosts(offset: Int?): List<Post> {
-        val offset = offset ?: 0
-        val postEntities = postJpaRepo.findRecentPosts(offset)
+    override fun findRecentPosts(offset: Int?, category: PostCategory?): List<Post> {
+        val limit = offset ?: 10
+        val postEntities = if (category != null) {
+            postJpaRepo.findRecentPostsByCategory(category, limit)
+        } else {
+            postJpaRepo.findRecentPosts(limit)
+        }
         return postEntities.map(PostEntityMapper::toDomain)
     }
 
-    override fun findPopularPosts(offset: Int?): List<Post> {
-        val offset = offset ?: 0
-        val postEntities = postJpaRepo.findPopularPosts(offset)
+    override fun findPopularPosts(offset: Int?, category: PostCategory?): List<Post> {
+        val limit = offset ?: 10
+        val postEntities = if (category != null) {
+            postJpaRepo.findPopularPostsByCategory(category, limit)
+        } else {
+            postJpaRepo.findPopularPosts(limit)
+        }
         return postEntities.map(PostEntityMapper::toDomain)
     }
 

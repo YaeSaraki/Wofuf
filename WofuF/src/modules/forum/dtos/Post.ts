@@ -9,6 +9,15 @@ export enum PostType {
   LINK = 'LINK',
 }
 
+// 帖子分类枚举
+export enum PostCategory {
+  DISCUSSION = 'DISCUSSION',
+  QUESTION = 'QUESTION',
+  SHOWCASE = 'SHOWCASE',
+  NEWS = 'NEWS',
+  GUIDE = 'GUIDE',
+}
+
 // 成员信息 (在帖子中显示)
 export interface MemberDto {
   memberId: string
@@ -29,6 +38,7 @@ export interface PostDto {
   text: string
   link: string
   type: PostType
+  category: PostCategory
   wasUpvotedByMe: boolean | null
   wasDownvotedByMe: boolean | null
 }

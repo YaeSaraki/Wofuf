@@ -12,6 +12,7 @@ class GetRecentPostsDto {
     data class Request(
         val offset: Int? = 10,
         val userId: String? = null,
+        val category: String? = null,  // 分类筛选参数
     )
 
     data class Response(

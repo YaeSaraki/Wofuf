@@ -1,8 +1,10 @@
 package dev.saraki.wofuf.modules.forum
 
+import dev.saraki.wofuf.modules.players.config.PlayerJpaConfig
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.persistence.autoconfigure.EntityScan
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.Import
 
 /**
  *   @author YaeSaraki
@@ -20,9 +22,11 @@ import org.springframework.boot.runApplication
 @EntityScan(
     basePackages = [
         "dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities",
-        "dev.saraki.wofuf.modules.players.infra.repos.jpa.entities"
+        "dev.saraki.wofuf.modules.players.infra.repos.jpa.entities",
+        "dev.saraki.wofuf.modules.users.infra.repos.jpa.entities"
     ]
 )
+@Import(PlayerJpaConfig::class, dev.saraki.wofuf.modules.users.config.UserJpaConfig::class)
 class ForumApplication
 
 fun main(args: Array<String>) {

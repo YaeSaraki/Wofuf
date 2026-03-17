@@ -23,12 +23,14 @@ class GetRecentPostsController(
     @GetMapping
     fun getRecentPosts(
         @RequestParam(required = false) offset: Int?,
-        @RequestParam(required = false) userId: String?
+        @RequestParam(required = false) userId: String?,
+        @RequestParam(required = false) category: String?
     ): ApiResponse<GetRecentPostsDto.Response> {
         val result = getRecentPostsUseCase.execute(
             GetRecentPostsDto.Request(
                 offset = offset ?: 10,
-                userId = userId
+                userId = userId,
+                category = category
             )
         ).getOrThrow()
         return ApiResponse.success(result)

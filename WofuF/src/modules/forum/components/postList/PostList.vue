@@ -1,5 +1,9 @@
+/**
+ * 帖子列表组件 - 支持分类筛选和无限滚动
+ */
+
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { PostDto } from '@M/forum/dtos/Post'
 import { forumService } from '@M/forum/services/ForumService'
@@ -15,12 +19,30 @@ const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
 const posts = ref<PostDto[]>([])
 const sortMode = ref<'recent' | 'popular'>('recent')
 const currentOffset = ref(10)
+const hasMore = ref(true)
+const isLoadingMore = ref(false)
+
+// 当前选中的分类
+const selectedCategory = ref<string>('all')
+
+// 分类列表
+const categories = [
+  { id: 'all', label: '全部', icon: 'grid' },
+  { id: 'discussion', label: '讨论', icon: 'chat' },
+  { id: 'share', label: '分享', icon: 'share' },
+  { id: 'question', label: '求助', icon: 'question' },
+  { id: 'announcement', label: '公告', icon: 'announcement' },
+]
 
 // 是否已登录
 const isLoggedIn = computed(() => authService.isAuthenticated())
 
 // 获取帖子列表
-async function fetchPosts() {
+async function fetchPosts(append: boolean = false) {
+  if (append) {
+    isLoadingMore.value = true
+  }
+
   const fetchFn = sortMode.value === 'recent'
     ? () => forumService.getRecentPosts(currentOffset.value)
     : () => forumService.getPopularPosts(currentOffset.value)
@@ -28,14 +50,47 @@ async function fetchPosts() {
   const result = await executeAsync(fetchFn, translate('forum', 'error'))
 
   if (result && result.isSuccess) {
-    posts.value = result.getValue().posts
+    const newPosts = result.getValue().posts
+
+    if (append) {
+      posts.value = [...posts.value, ...newPosts]
+      // 如果返回的帖子数量少于请求数量，说明没有更多了
+      if (newPosts.length < currentOffset.value) {
+        hasMore.value = false
+      }
+    } else {
+      posts.value = newPosts
+      hasMore.value = newPosts.length >= currentOffset.value
+    }
   }
+
+  isLoadingMore.value = false
+}
+
+// 加载更多
+async function loadMore() {
+  if (!hasMore.value || isLoadingMore.value) return
+
+  currentOffset.value += 10
+  await fetchPosts(true)
 }
 
 // 切换排序
 function setSortMode(mode: 'recent' | 'popular') {
   if (mode !== sortMode.value) {
     sortMode.value = mode
+    currentOffset.value = 10
+    hasMore.value = true
+    fetchPosts()
+  }
+}
+
+// 切换分类
+function setCategory(categoryId: string) {
+  if (categoryId !== selectedCategory.value) {
+    selectedCategory.value = categoryId
+    currentOffset.value = 10
+    hasMore.value = true
     fetchPosts()
   }
 }
@@ -63,13 +118,45 @@ function retry() {
   fetchPosts()
 }
 
+// 无限滚动处理
+function handleScroll() {
+  if (isLoadingMore.value || !hasMore.value) return
+
+  const scrollHeight = document.documentElement.scrollHeight
+  const scrollTop = window.scrollY
+  const clientHeight = window.innerHeight
+
+  // 距离底部 200px 时触发加载
+  if (scrollTop + clientHeight >= scrollHeight - 200) {
+    loadMore()
+  }
+}
+
 onMounted(() => {
   fetchPosts()
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
 <template>
-  <div class="bf-forum">
+  <div class="bf-post-list-container">
+    <!-- 分类标签 -->
+    <div class="bf-categories">
+      <button
+        v-for="category in categories"
+        :key="category.id"
+        class="bf-category-btn"
+        :class="{ 'bf-category-btn--active': selectedCategory === category.id }"
+        @click="setCategory(category.id)"
+      >
+        {{ category.label }}
+      </button>
+    </div>
+
     <!-- 顶部操作栏 -->
     <div class="bf-forum__header">
       <div class="bf-forum__tabs">
@@ -95,7 +182,7 @@ onMounted(() => {
           {{ translate('forum', 'sortPopular') }}
         </button>
       </div>
-      <button class="bf-btn bf-btn--primary" @click="goToCreatePost">
+      <button class="bf-btn bf-btn--primary bf-btn--create" @click="goToCreatePost">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -134,6 +221,17 @@ onMounted(() => {
         @upvote="handleUpvote"
         @downvote="handleDownvote"
       />
+
+      <!-- 加载更多指示器 -->
+      <div v-if="isLoadingMore" class="bf-load-more">
+        <div class="bf-loading__spinner bf-loading__spinner--sm"></div>
+        <span>加载中...</span>
+      </div>
+
+      <!-- 没有更多提示 -->
+      <div v-else-if="!hasMore" class="bf-no-more">
+        <span>已经到底啦 ~</span>
+      </div>
     </div>
 
     <!-- 空状态 -->
@@ -157,10 +255,46 @@ onMounted(() => {
 
 <style scoped>
 /* === 容器 === */
-.bf-forum {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: var(--bf-space-lg, 24px) var(--bf-space-md, 16px);
+.bf-post-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bf-space-md, 16px);
+}
+
+/* === 分类标签 === */
+.bf-categories {
+  display: flex;
+  gap: var(--bf-space-sm, 8px);
+  flex-wrap: wrap;
+  padding: var(--bf-space-md, 16px) var(--bf-space-lg, 20px);
+  background: var(--bf-card-bg);
+  border: 1px solid var(--bf-card-border);
+  border-radius: var(--bf-card-radius, 16px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.bf-category-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bf-text-secondary);
+  background: var(--bf-input-bg);
+  border: 1px solid transparent;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-category-btn:hover {
+  background: var(--bf-btn-secondary-bg);
+  color: var(--bf-text-primary);
+}
+
+.bf-category-btn--active {
+  background: var(--bf-fire-gradient);
+  color: white;
+  border-color: var(--bf-border-accent);
 }
 
 /* === 顶部操作栏 === */
@@ -168,7 +302,6 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--bf-space-lg, 24px);
   padding: var(--bf-space-md, 16px) var(--bf-space-lg, 20px);
   background: var(--bf-card-bg);
   border: 1px solid var(--bf-card-border);
@@ -255,11 +388,40 @@ onMounted(() => {
   background: var(--bf-btn-secondary-hover);
 }
 
+.bf-btn--create {
+  display: none;
+}
+
 /* === 帖子列表 === */
 .bf-post-list {
   display: flex;
   flex-direction: column;
   gap: var(--bf-space-md, 16px);
+}
+
+/* === 加载更多 === */
+.bf-load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bf-space-sm, 8px);
+  padding: var(--bf-space-lg, 24px);
+  color: var(--bf-text-muted);
+  font-size: 14px;
+}
+
+.bf-loading__spinner--sm {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+/* === 没有更多 === */
+.bf-no-more {
+  text-align: center;
+  padding: var(--bf-space-lg, 24px);
+  color: var(--bf-text-muted);
+  font-size: 13px;
 }
 
 /* === 加载状态 === */
@@ -356,8 +518,13 @@ onMounted(() => {
 
 /* === 响应式 === */
 @media (max-width: 640px) {
-  .bf-forum {
-    padding: var(--bf-space-md, 16px) 12px;
+  .bf-categories {
+    padding: var(--bf-space-sm, 12px);
+  }
+
+  .bf-category-btn {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 
   .bf-forum__header {
@@ -377,7 +544,8 @@ onMounted(() => {
     font-size: 13px;
   }
 
-  .bf-btn--primary {
+  .bf-btn--create {
+    display: inline-flex;
     width: 100%;
   }
 

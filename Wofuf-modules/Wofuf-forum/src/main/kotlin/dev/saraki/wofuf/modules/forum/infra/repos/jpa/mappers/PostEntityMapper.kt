@@ -2,6 +2,7 @@ package dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers
 
 import dev.saraki.wofuf.modules.forum.domain.*
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLink
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLinkProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
@@ -42,6 +43,7 @@ object PostEntityMapper {
                 slug = PostSlug.createFromExisting(entity.slug).getOrThrow(),
                 title = PostTitle.create(entity.title).getOrThrow(),
                 type = PostType.valueOf(entity.type),
+                category = PostCategory.fromString(entity.category) ?: PostCategory.DISCUSSION,
                 text = entity.text?.let { PostText.create(it).getOrThrow() },
                 link = entity.link?.let { PostLink.create(PostLinkProps(it)).getOrThrow() },
                 comments = Comments.create(),
@@ -68,6 +70,7 @@ object PostEntityMapper {
             slug = domain.slug.value,
             title = domain.title.value,
             type = domain.type.toString(),
+            category = domain.category.name,
             text = domain.text?.value,
             link = domain.link?.value,
             totalNumComments = domain.totalNumComments ?: 0,

@@ -16,14 +16,13 @@ import org.springframework.web.bind.annotation.RestController
  *   @description:
  */
 @RestController
-@RequestMapping(ForumApiConstantV1.Comments.REPLIES)
 class ReplyToCommentController(
     private val replyToCommentUseCase: ReplyToCommentUseCase
 ) : BaseController() {
 
-    @PostMapping()
+    @PostMapping(ForumApiConstantV1.Comments.REPLIES)
     fun replyToComment(
-        @PathVariable parentCommentId: String,
+        @PathVariable(ForumApiConstantV1.Param.COMMENT_ID) commentId: String,
         @RequestBody request: ReplyToCommentRequest
     ): ApiResponse<ReplyToCommentDto.Response> {
         val result = replyToCommentUseCase.execute(
@@ -31,7 +30,7 @@ class ReplyToCommentController(
                 postSlug = request.postSlug,
                 userId = request.userId,
                 comment = request.comment,
-                parentCommentId = parentCommentId,
+                parentCommentId = commentId,
             )
         ).getOrThrow()
         return ApiResponse.success(result)

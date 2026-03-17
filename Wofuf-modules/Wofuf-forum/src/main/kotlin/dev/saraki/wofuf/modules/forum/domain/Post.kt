@@ -3,6 +3,7 @@ package dev.saraki.wofuf.modules.forum.domain
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentText
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLink
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
@@ -27,6 +28,7 @@ data class PostProps(
     val slug: PostSlug,
     val title: PostTitle,
     val type: PostType,
+    val category: PostCategory = PostCategory.DISCUSSION,
     val text: PostText?,
     val link: PostLink?,
     val comments: Comments,
@@ -54,6 +56,9 @@ class Post private constructor(
 
     val type: PostType
         get() = props.type
+
+    val category: PostCategory
+        get() = props.category
 
     val text: PostText?
         get() = props.text
@@ -145,13 +150,15 @@ class Post private constructor(
     fun edit(
         title: PostTitle? = null,
         text: PostText? = null,
-        link: PostLink? = null
+        link: PostLink? = null,
+        category: PostCategory? = null
     ): Result<Post> {
         val newProps = PostProps(
             memberId = props.memberId,
             slug = props.slug,
             title = title ?: props.title,
             type = props.type,
+            category = category ?: props.category,
             text = text ?: props.text,
             link = link ?: props.link,
             comments = props.comments,

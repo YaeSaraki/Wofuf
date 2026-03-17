@@ -29,11 +29,10 @@ class LogoutController(
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun logout(@PathVariable userId: String, @RequestHeader("MeoKey") token: JwtToken): ApiResponse<LogoutDto.Response> {
+    fun logout(@RequestHeader("MeoKey") token: JwtToken): ApiResponse<LogoutDto.Response> {
         val jwtClaims = userAuthService.authenticate(token) ?: return ApiResponse.error("Invalid token")
-        if (userId != jwtClaims.userId) { return ApiResponse.error("You are not authorized to logout this user") }
 
-        val result = logoutUseCase.execute(LogoutDto.Request(userId, token))
+        val result = logoutUseCase.execute(LogoutDto.Request(jwtClaims.userId, token))
 
         if (result.isFailure) {
             return ApiResponse.error(result.exceptionOrThrow())

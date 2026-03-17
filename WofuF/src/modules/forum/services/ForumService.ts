@@ -13,6 +13,7 @@ import type {
   VoteResponse,
   ReplyToPostRequest,
   ReplyToCommentRequest,
+  PostCategory,
 } from '@M/forum/dtos/Post.ts'
 import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
 import { Result } from '@S/core/Result.ts'
@@ -22,8 +23,8 @@ import { authService } from '@M/auth/services/AuthService.ts'
 
 export interface IForumService {
   /* ---------------- 帖子列表 ---------------- */
-  getRecentPosts(offset?: number, options?: RequestOptions): Promise<Result<GetPostsResponse>>
-  getPopularPosts(offset?: number, options?: RequestOptions): Promise<Result<GetPostsResponse>>
+  getRecentPosts(offset?: number, category?: PostCategory, options?: RequestOptions): Promise<Result<GetPostsResponse>>
+  getPopularPosts(offset?: number, category?: PostCategory, options?: RequestOptions): Promise<Result<GetPostsResponse>>
 
   /* ---------------- 帖子详情 ---------------- */
   getPostBySlug(slug: string, options?: RequestOptions): Promise<Result<GetPostResponse>>
@@ -55,9 +56,10 @@ export class ForumService implements IForumService {
    */
   public async getRecentPosts(
     offset: number = 10,
+    category?: PostCategory,
     options?: RequestOptions,
   ): Promise<Result<GetPostsResponse>> {
-    const cacheKey = `recent_posts_${offset}`
+    const cacheKey = `recent_posts_${offset}_${category || 'all'}`
     const cached = cacheService.get<GetPostsResponse>(ForumService.CACHE_MODULE, cacheKey)
     if (cached) {
       return Result.success(cached)
@@ -68,6 +70,9 @@ export class ForumService implements IForumService {
       const params: Record<string, string | number> = { offset }
       if (tokens?.userId) {
         params.userId = tokens.userId
+      }
+      if (category) {
+        params.category = category
       }
 
       const response = await http.get<ApiResponse<GetPostsResponse>>(
