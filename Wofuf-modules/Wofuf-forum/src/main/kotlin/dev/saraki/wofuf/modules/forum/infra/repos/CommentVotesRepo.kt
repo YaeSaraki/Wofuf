@@ -17,4 +17,6 @@ interface CommentVotesRepo {
     fun saveBulk(votes: CommentVotes)
     fun save(vote: CommentVote): CommentVote
     fun delete(vote: CommentVote)
+    fun countCommentUpvotesByCommentId(commentId: CommentId): Int
+    fun countCommentDownvotesByCommentId(commentId: CommentId): Int
 }

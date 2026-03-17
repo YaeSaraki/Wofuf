@@ -53,4 +53,12 @@ class CommentVotesRepoImpl(
     override fun delete(vote: CommentVote) {
         commentVotesJpaRepo.deleteById(vote.commentId.stringValue)
     }
+
+    override fun countCommentUpvotesByCommentId(commentId: CommentId): Int {
+        return commentVotesJpaRepo.countUpvotesByCommentId(commentId.stringValue)
+    }
+
+    override fun countCommentDownvotesByCommentId(commentId: CommentId): Int {
+        return commentVotesJpaRepo.countDownvotesByCommentId(commentId.stringValue)
+    }
 }
