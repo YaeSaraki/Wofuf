@@ -1144,7 +1144,7 @@ html.dark .hint-icon {
 }
 
 /* ===== 桌面端子菜单 ===== */
-/* Menubar 组件透明化 - 让液态玻璃效果显示 */
+/* Menubar 组件透明化 */
 :deep(.p-menubar) {
   background: transparent !important;
   border: none !important;
@@ -1164,49 +1164,50 @@ html.dark .hint-icon {
 
 :deep(.p-menubar-item-link) {
   background: transparent !important;
-  transition: all 0.2s ease !important;
+  transition: background 0.2s ease !important;
   border-radius: 10px !important;
-  position: relative;
   padding: 0.5rem 0.875rem !important;
   margin: 3px !important;
-  border: 1px solid transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 :deep(.p-menubar-item-link:hover) {
-  background: rgba(120, 120, 140, 0.12) !important;
-  border-color: transparent !important;
+  background: rgba(120, 120, 140, 0.1) !important;
+}
+
+:deep(.p-menubar-item-content) {
+  background: transparent !important;
 }
 
 :deep(.p-menubar-item-label) {
   background: transparent !important;
   font-weight: 500 !important;
-  letter-spacing: -0.01em !important;
   font-size: 15px !important;
   color: rgba(60, 60, 67, 0.9) !important;
-  transition: transform 0.2s ease, color 0.2s ease !important;
-  display: inline-block !important;
+  transition: transform 0.15s ease !important;
+  transform-origin: center center !important;
 }
 
 :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
-  color: rgba(40, 40, 50, 1) !important;
-  transform: scale(1.05) !important;
+  transform: scale(1.08) !important;
 }
 
 :deep(.p-menubar-item-icon) {
   background: transparent !important;
   color: rgba(100, 100, 115, 0.85) !important;
-  transition: transform 0.2s ease, color 0.2s ease !important;
+  transition: transform 0.15s ease !important;
+  transform-origin: center center !important;
 }
 
 :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
-  background: transparent !important;
-  color: rgba(60, 60, 70, 1) !important;
-  transform: scale(1.1) !important;
+  transform: scale(1.15) !important;
 }
 
-/* 暗色模式 - 放在 :deep() 外部确保优先级 */
+/* 暗色模式 */
 html.dark :deep(.p-menubar-item-link:hover) {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark :deep(.p-menubar-item-label) {
@@ -1215,7 +1216,7 @@ html.dark :deep(.p-menubar-item-label) {
 
 html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
   color: #FFFFFF !important;
-  transform: scale(1.05) !important;
+  transform: scale(1.08) !important;
 }
 
 html.dark :deep(.p-menubar-item-icon) {
@@ -1224,14 +1225,13 @@ html.dark :deep(.p-menubar-item-icon) {
 
 html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
   color: #FFFFFF !important;
-  transform: scale(1.1) !important;
+  transform: scale(1.15) !important;
 }
 
 :deep(.p-menubar-submenu) { margin: 0 4px !important; }
 :deep(.p-menubar-root-list) { min-width: 100px !important; }
 
 :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
-  /* 液态玻璃效果子菜单 */
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.35) 0%,
@@ -1240,13 +1240,10 @@ html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
   ) !important;
   backdrop-filter: blur(24px) saturate(200%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-  border: 1px solid rgba(200, 200, 210, 0.25) !important;
+  border: 1px solid rgba(200, 200, 210, 0.2) !important;
   border-radius: 12px !important;
   padding: 6px !important;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
   margin-top: 8px !important;
 }
 
@@ -1257,11 +1254,8 @@ html.dark :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
     rgba(60, 60, 67, 0.45) 50%,
     rgba(70, 70, 80, 0.5) 100%
   ) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 2px 8px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
 }
 
 :deep(.p-submenu-list .p-menubar-item) { background: transparent !important; margin: 0 !important; }
@@ -1269,7 +1263,7 @@ html.dark :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
   background: transparent !important; 
   margin: 2px 0 !important; 
   border-radius: 8px !important;
-  border: 1px solid transparent !important;
+  border: none !important;
 }
 :deep(.p-submenu-list .p-menubar-item-link:hover) { 
   background: rgba(120, 120, 140, 0.1) !important; 
@@ -1278,8 +1272,8 @@ html.dark :deep(.p-submenu-list .p-menubar-item-link:hover) {
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
-:deep(.p-menubar-submenu-icon) { color: rgba(0, 0, 0, 0.6) !important; font-size: 12px !important; }
-html.dark :deep(.p-menubar-submenu-icon) { color: rgba(255, 255, 255, 0.7) !important; }
+:deep(.p-menubar-submenu-icon) { color: rgba(0, 0, 0, 0.5) !important; font-size: 12px !important; }
+html.dark :deep(.p-menubar-submenu-icon) { color: rgba(255, 255, 255, 0.6) !important; }
 
 :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
   animation: menuSlide 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
