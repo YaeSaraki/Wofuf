@@ -1177,11 +1177,6 @@ html.dark .hint-icon {
   border-color: transparent !important;
 }
 
-html.dark :deep(.p-menubar-item-link:hover) {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: transparent !important;
-}
-
 :deep(.p-menubar-item-label) {
   background: transparent !important;
   font-weight: 500 !important;
@@ -1192,17 +1187,8 @@ html.dark :deep(.p-menubar-item-link:hover) {
   display: inline-block !important;
 }
 
-html.dark :deep(.p-menubar-item-label) {
-  color: #FFFFFF !important;
-}
-
 :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
   color: rgba(40, 40, 50, 1) !important;
-  transform: scale(1.05) !important;
-}
-
-html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
-  color: #FFFFFF !important;
   transform: scale(1.05) !important;
 }
 
@@ -1212,15 +1198,28 @@ html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
   transition: transform 0.2s ease, color 0.2s ease !important;
 }
 
-html.dark :deep(.p-menubar-item-icon) {
-  background: transparent !important;
-  color: #FFFFFF !important;
-}
-
 :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
   background: transparent !important;
   color: rgba(60, 60, 70, 1) !important;
   transform: scale(1.1) !important;
+}
+
+/* 暗色模式 - 放在 :deep() 外部确保优先级 */
+html.dark :deep(.p-menubar-item-link:hover) {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark :deep(.p-menubar-item-label) {
+  color: #FFFFFF !important;
+}
+
+html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
+  color: #FFFFFF !important;
+  transform: scale(1.05) !important;
+}
+
+html.dark :deep(.p-menubar-item-icon) {
+  color: #FFFFFF !important;
 }
 
 html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
