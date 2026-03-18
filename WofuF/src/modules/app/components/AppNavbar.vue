@@ -1164,7 +1164,7 @@ html.dark .hint-icon {
 
 :deep(.p-menubar-item-link) {
   background: transparent !important;
-  transition: all 0.25s ease !important;
+  transition: all 0.2s ease !important;
   border-radius: 10px !important;
   position: relative;
   padding: 0.5rem 0.875rem !important;
@@ -1172,14 +1172,12 @@ html.dark .hint-icon {
 }
 
 :deep(.p-menubar-item-link:hover) {
-  /* 简洁毛玻璃 hover 效果 */
-  background: rgba(0, 0, 0, 0.04) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  /* 现代柔和的 hover 效果 */
+  background: rgba(120, 120, 140, 0.12) !important;
 }
 
 html.dark :deep(.p-menubar-item-link:hover) {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 :deep(.p-menubar-item-label) {
@@ -1187,16 +1185,16 @@ html.dark :deep(.p-menubar-item-link:hover) {
   font-weight: 500 !important;
   letter-spacing: -0.01em !important;
   font-size: 15px !important;
-  color: rgba(0, 0, 0, 0.85) !important;
+  color: rgba(60, 60, 67, 0.9) !important;
   transition: color 0.2s ease !important;
 }
 
 html.dark :deep(.p-menubar-item-label) {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
 }
 
 :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
-  color: rgba(0, 0, 0, 1) !important;
+  color: rgba(40, 40, 50, 1) !important;
 }
 
 html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
@@ -1205,18 +1203,23 @@ html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
 
 :deep(.p-menubar-item-icon) {
   background: transparent !important;
-  color: rgba(0, 0, 0, 0.7) !important;
-  transition: transform 0.2s ease !important;
+  color: rgba(100, 100, 115, 0.85) !important;
+  transition: transform 0.2s ease, color 0.2s ease !important;
 }
 
 html.dark :deep(.p-menubar-item-icon) {
   background: transparent !important;
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
 }
 
 :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
   background: transparent !important;
+  color: rgba(60, 60, 70, 1) !important;
   transform: scale(1.05) !important;
+}
+
+html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
+  color: rgba(255, 255, 255, 0.95) !important;
 }
 
 :deep(.p-menubar-submenu) { margin: 0 4px !important; }
@@ -1232,30 +1235,28 @@ html.dark :deep(.p-menubar-item-icon) {
   ) !important;
   backdrop-filter: blur(24px) saturate(200%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(200, 200, 210, 0.25) !important;
   border-radius: 12px !important;
   padding: 6px !important;
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.2) !important;
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
   margin-top: 8px !important;
 }
 
 html.dark :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
   background: linear-gradient(
     135deg,
-    rgba(70, 70, 80, 0.45) 0%,
-    rgba(60, 60, 67, 0.4) 50%,
-    rgba(70, 70, 80, 0.45) 100%
+    rgba(70, 70, 80, 0.5) 0%,
+    rgba(60, 60, 67, 0.45) 50%,
+    rgba(70, 70, 80, 0.5) 100%
   ) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.35),
-    0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05) !important;
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 :deep(.p-submenu-list .p-menubar-item) { background: transparent !important; margin: 0 !important; }
@@ -1265,10 +1266,10 @@ html.dark :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
   border-radius: 8px !important;
 }
 :deep(.p-submenu-list .p-menubar-item-link:hover) { 
-  background: rgba(0, 0, 0, 0.05) !important; 
+  background: rgba(120, 120, 140, 0.1) !important; 
 }
 html.dark :deep(.p-submenu-list .p-menubar-item-link:hover) { 
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 :deep(.p-menubar-submenu-icon) { color: rgba(0, 0, 0, 0.6) !important; font-size: 12px !important; }
