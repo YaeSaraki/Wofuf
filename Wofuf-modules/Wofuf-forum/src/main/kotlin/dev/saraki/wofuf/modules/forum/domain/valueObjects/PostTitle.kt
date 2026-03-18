@@ -9,8 +9,9 @@ import dev.saraki.wofuf.shared.domain.ValueObject
  *   @author YaeSaraki
  *   @email ikaraswork@iCloud.com
  *   @date 2026/2/6 22:56
- *   @description:
+ *   @description: PostTitle value object
  */
+
 data class PostTitleProps(
     val value: String
 )
@@ -31,14 +32,12 @@ class PostTitle private constructor(
             if (guardResult.isFailure) {
                 return Result.failure(guardResult.exceptionOrThrow())
             }
-            
-            // 检查最小长度 - 文本长度必须至少为 MIN_LENGTH
+
             val minLengthResult = Guard.againstAtLeast(MIN_LENGTH, value)
             if (minLengthResult.isFailure) {
                 return Result.failure(AppError("PostTitle must be at least $MIN_LENGTH characters", "TITLE_TOO_SHORT"))
             }
-            
-            // 检查最大长度 - 文本长度必须最多为 MAX_LENGTH
+
             val maxLengthResult = Guard.againstAtMost(MAX_LENGTH, value)
             if (maxLengthResult.isFailure) {
                 return Result.failure(AppError("PostTitle must be at most $MAX_LENGTH characters", "TITLE_TOO_LONG"))

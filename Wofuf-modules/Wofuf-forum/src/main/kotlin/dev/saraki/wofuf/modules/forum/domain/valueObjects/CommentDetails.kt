@@ -1,6 +1,5 @@
 package dev.saraki.wofuf.modules.forum.domain.valueObjects
 
-import dev.saraki.wofuf.modules.forum.domain.CommentVotes
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.UniqueEntityId

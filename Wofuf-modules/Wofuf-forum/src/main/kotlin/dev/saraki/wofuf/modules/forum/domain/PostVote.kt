@@ -2,18 +2,20 @@ package dev.saraki.wofuf.modules.forum.domain
 
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostVoteId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.core.Result
-import dev.saraki.wofuf.shared.domain.Entity
+import dev.saraki.wofuf.shared.domain.AggregateRoot
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 
 /**
  *   @author YaeSaraki
  *   @email ikaraswork@iCloud.com
  *   @date 2026/2/8 13:39
- *   @description:
+ *   @description: PostVote aggregate root entity
  */
+
 data class PostVoteProps(
     val postId: PostId,
     val memberId: MemberId,
@@ -23,7 +25,11 @@ data class PostVoteProps(
 class PostVote private constructor(
     props: PostVoteProps,
     id: UniqueEntityId?
-) : Entity<PostVoteProps>(props, id) {
+) : AggregateRoot<PostVoteProps>(props, id) {
+
+    val postVoteId: PostVoteId
+        get() = PostVoteId.create(_id).getOrThrow()
+
     val postId: PostId
         get() = props.postId
 
@@ -39,7 +45,13 @@ class PostVote private constructor(
 
     companion object {
         fun create(props: PostVoteProps, id: UniqueEntityId?): Result<PostVote> {
-            val guardResult = Guard.againstNullOrUndefined(props.postId, "PostVote.postId")
+            val guardResult = Guard.againstNullOrUndefinedBulk(
+                listOf(
+                    Guard.GuardArgument(props.postId, "postId"),
+                    Guard.GuardArgument(props.memberId, "memberId"),
+                    Guard.GuardArgument(props.type, "type")
+                )
+            )
             if (guardResult.isFailure) {
                 return Result.failure(guardResult.exceptionOrThrow())
             }
@@ -47,28 +59,10 @@ class PostVote private constructor(
         }
 
         fun createUpvote(postId: PostId, memberId: MemberId): Result<PostVote> {
-            val guardResult = Guard.againstNullOrUndefinedBulk(
-                listOf(
-                    Guard.GuardArgument(postId, "postId"),
-                    Guard.GuardArgument(memberId, "memberId")
-                )
-            )
-            if (guardResult.isFailure) {
-                return Result.failure(guardResult.exceptionOrThrow())
-            }
             return create(PostVoteProps(postId, memberId, VoteType.UPVOTE), null)
         }
 
         fun createDownvote(postId: PostId, memberId: MemberId): Result<PostVote> {
-            val guardResult = Guard.againstNullOrUndefinedBulk(
-                listOf(
-                    Guard.GuardArgument(postId, "postId"),
-                    Guard.GuardArgument(memberId, "memberId")
-                )
-            )
-            if (guardResult.isFailure) {
-                return Result.failure(guardResult.exceptionOrThrow())
-            }
             return create(PostVoteProps(postId, memberId, VoteType.DOWNVOTE), null)
         }
     }
