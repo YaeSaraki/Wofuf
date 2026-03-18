@@ -67,4 +67,12 @@ class EditPostErrors {
             message = "Failed to update post with postId {$postId}"
         )
     )
+
+    /** Too many images */
+    class TooManyImagesError(val count: Int, val max: Int) : Result.Failure<EditPostDto.Response>(
+        exception = UseCaseError(
+            code = "TOO_MANY_IMAGES_ERROR",
+            message = "图片数量超出限制: 最多允许 $max 张图片，当前有 $count 张"
+        )
+    )
 }

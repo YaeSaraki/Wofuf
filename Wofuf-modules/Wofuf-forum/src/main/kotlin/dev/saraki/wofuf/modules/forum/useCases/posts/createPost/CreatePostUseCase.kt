@@ -4,6 +4,7 @@ import dev.saraki.wofuf.modules.forum.domain.Post
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.*
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
+import dev.saraki.wofuf.modules.forum.infra.storage.MarkdownImageUtils
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
@@ -73,6 +74,12 @@ class CreatePostUseCase(
         // Create post text if provided
         var postText: PostText? = null
         if (!request.text.isNullOrBlank()) {
+            // 验证图片数量
+            val (isValid, imageCount) = MarkdownImageUtils.validateImageCount(request.text)
+            if (!isValid) {
+                return CreatePostErrors.TooManyImagesError(imageCount, MarkdownImageUtils.MAX_IMAGES_PER_POST)
+            }
+
             val postTextOrError = PostText.create(request.text)
             if (postTextOrError.isFailure) {
                 return CreatePostErrors.PostCreationFailedError()

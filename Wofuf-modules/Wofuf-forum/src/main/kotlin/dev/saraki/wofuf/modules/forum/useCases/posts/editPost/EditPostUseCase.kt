@@ -6,6 +6,7 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLinkProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostText
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostTitle
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
+import dev.saraki.wofuf.modules.forum.infra.storage.MarkdownImageUtils
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
@@ -60,6 +61,12 @@ class EditPostUseCase(
 
         // Validate text if provided
         if (request.text != null) {
+            // 验证图片数量
+            val (isValid, imageCount) = MarkdownImageUtils.validateImageCount(request.text)
+            if (!isValid) {
+                return EditPostErrors.TooManyImagesError(imageCount, MarkdownImageUtils.MAX_IMAGES_PER_POST)
+            }
+
             val textOrError = PostText.create(request.text)
             if (textOrError.isFailure) {
                 return EditPostErrors.InvalidTextError("Text validation failed")

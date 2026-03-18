@@ -44,4 +44,12 @@ class CreatePostErrors {
             message = "Failed to create post"
         )
     )
+
+    // Too many images
+    class TooManyImagesError(val count: Int, val max: Int) : Result.Failure<CreatePostDto.Response>(
+        exception = UseCaseError(
+            code = "TOO_MANY_IMAGES",
+            message = "图片数量超出限制: 最多允许 $max 张图片，当前有 $count 张"
+        )
+    )
 }

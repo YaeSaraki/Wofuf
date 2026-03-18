@@ -10,6 +10,7 @@ uuid = "4.0.1"
 kotlin = "2.2.21"
 kotlin-logging = "7.0.3"
 lombok = "1.18.34"
+minio = "8.5.10"
 
 [libraries]
 
@@ -44,3 +45,4 @@ kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = 
 mybatis-spring-boot-starter = { module = "org.mybatis.spring.boot:mybatis-spring-boot-starter", version.ref = "mybatis" }
 mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "mysql" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+minio = { module = "io.minio:minio", version.ref = "minio" }

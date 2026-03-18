@@ -32,9 +32,13 @@ class ForumSecurityConfig {
             .csrf { it.disable() }
             .authorizeHttpRequests { auth ->
                 auth
+                    // 图片上传需要认证
+                    .requestMatchers(ForumApiConstantV1.Images.UPLOAD).authenticated()
+                    // 其他接口公开访问
                     .requestMatchers(ForumApiConstantV1.Members.ROOT + "/**").permitAll()
                     .requestMatchers(ForumApiConstantV1.Posts.ROOT + "/**").permitAll()
                     .requestMatchers(ForumApiConstantV1.Comments.ROOT + "/**").permitAll()
+                    .requestMatchers(ForumApiConstantV1.Images.ROOT + "/**").permitAll()
             }
         http.addFilterBefore(jwtUserAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()

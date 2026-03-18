@@ -113,6 +113,15 @@ object ForumApiConstantV1 {
         const val BY_POST_SLUG = "$BASE/posts/slug/{${Param.POST_SLUG}}/comments"
     }
 
+    // ===================== 图片相关路径 =====================
+    object Images {
+        /** /api/v1/forum/images */
+        const val ROOT = "$BASE/images"
+
+        /** /api/v1/forum/images/upload */
+        const val UPLOAD = "$ROOT/upload"
+    }
+
     // ===================== 工具方法 =====================
     /**
      * 构建单个帖子路径

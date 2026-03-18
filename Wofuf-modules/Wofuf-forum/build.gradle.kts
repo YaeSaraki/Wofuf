@@ -109,6 +109,9 @@ dependencies {
 
     // SpringDoc OpenAPI
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
+
+    // MinIO (对象存储，用于图片上传)
+    implementation(libs.minio)
 }
 
 kotlin {
