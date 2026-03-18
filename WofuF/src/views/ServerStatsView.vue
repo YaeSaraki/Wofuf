@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useLocale } from '@S/services/i18n/useLocale.ts'
 import PageBackground from '@S/components/PageBackground.vue'
 import YesterdayOnlineList from '@M/forum/components/yesterdayOnline/YesterdayOnlineList.vue'
@@ -52,26 +52,18 @@ onMounted(() => {
         </div>
       </section>
 
-      <!-- 服务器信息 -->
-      <section class="info-section" :class="{ 'visible': isVisible }">
-        <div class="card">
+      <!-- 服务器信息卡片 -->
+      <section class="info-cards" :class="{ 'visible': isVisible }">
+        <!-- 基本信息 -->
+        <div class="card primary-card">
           <div class="card-header">
             <h2>{{ translate('app', 'status.serverInfo') }}</h2>
           </div>
           <div class="card-content">
             <div class="info-grid">
               <div class="info-item">
-                <span class="info-label">{{ translate('app', 'status.version') }}</span>
-                <span class="info-value">1.21.3</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">{{ translate('app', 'status.uptime') }}</span>
-                <span class="info-value">24/7</span>
-              </div>
-              <div class="info-item">
                 <span class="info-label">{{ translate('app', 'status.totalPlayers') }}</span>
                 <span class="info-value">{{ serverStats?.totalPlayers ?? '1,245' }}</span>
-              </div>
               <div class="info-item">
                 <span class="info-label">{{ translate('app', 'status.founded') }}</span>
                 <span class="info-value">2024-01-01</span>
@@ -180,18 +172,16 @@ onMounted(() => {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--bf-border-subtle, rgba(0, 0, 0, 0.06));
   box-shadow: var(--bf-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
-  overflow: hidden;
-  margin-bottom: 1.5rem;
   transition: all 0.3s ease;
 }
 
 .card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-5px);
   box-shadow: var(--bf-shadow-md, 0 4px 20px rgba(0, 0, 0, 0.08));
 }
 
 .card-header {
-  padding: 1.25rem 1.5rem;
+  padding: 1.5rem;
   border-bottom: 1px solid var(--bf-border-subtle, rgba(0, 0, 0, 0.06));
 }
 
@@ -199,39 +189,51 @@ onMounted(() => {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
-  color: var(--bf-text-primary, #1a1a2e);
 }
 
 .card-content {
   padding: 1.25rem;
 }
 
-/* 区块样式 */
-.yesterday-section,
-.info-section {
+/* 昨日在线 */
+.yesterday-section {
+  margin-bottom: 2rem;
   opacity: 0;
   transform: translateY(30px);
   transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0.2s;
 }
 
-.yesterday-section.visible,
-.info-section.visible {
+.yesterday-section.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-.yesterday-section {
-  transition-delay: 0.2s;
+/* 信息卡片 */
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0.3s;
 }
 
-.info-section {
-  transition-delay: 0.3s;
+.info-cards.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.primary-card {
+  grid-column: span 2;
 }
 
 /* 信息网格 */
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
@@ -252,7 +254,7 @@ onMounted(() => {
   color: var(--bf-text-primary, #1a1a2e);
 }
 
-/* 响应式设计 */
+/* 匼应式设计 */
 @media (max-width: 768px) {
   .status-page {
     padding: 1rem 0.5rem;
@@ -262,11 +264,19 @@ onMounted(() => {
     padding: 2rem 1rem;
   }
 
-  .server-name {
+  .hero-content h1 {
     font-size: 2.5rem;
   }
 
-  .info-grid {
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
+
+  .info-cards {
     grid-template-columns: 1fr;
   }
 }
