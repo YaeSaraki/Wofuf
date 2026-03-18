@@ -66,15 +66,19 @@ onMounted(() => {
 
 <template>
   <PageBackground variant="default" :show-pattern="true">
-    <div class="about-page">
-      <!-- 英雄区域 -->
-      <section class="hero-section" :class="{ 'visible': isVisible }">
-        <div class="hero-content">
-          <h1>{{ translate('app', 'nav.about') }}</h1>
-          <p>{{ translate('app', 'about.description') }}</p>
+    <!-- 页面头部 - 与论坛风格一致 -->
+    <header class="bf-page-header">
+      <div class="bf-header-content">
+        <div class="bf-header-text">
+          <h1 class="bf-page-title">
+            <span class="bf-title-gradient">{{ translate('app', 'nav.about') }}</span>
+          </h1>
+          <p class="bf-page-subtitle">{{ translate('app', 'about.description') }}</p>
         </div>
-      </section>
+      </div>
+    </header>
 
+    <div class="about-page">
       <!-- 服务器介绍 -->
       <section class="intro-section" :class="{ 'visible': isVisible }">
         <div class="container">
@@ -153,48 +157,91 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* 头部 - 与论坛风格一致的橙色渐变 */
+.bf-page-header {
+  background: var(--bf-fire-gradient, linear-gradient(135deg, #FF6B35 0%, #FF9F1C 50%, #FFBE0B 100%));
+  padding: 3rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.bf-page-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.1) 100%);
+  pointer-events: none;
+}
+
+/* 暗色模式 */
+:global(.dark) .bf-page-header {
+  background: linear-gradient(135deg, #E55A25 0%, #E88A1C 30%, #FF6B35 60%, #FF9F1C 100%);
+}
+
+:global(.dark) .bf-page-header::before {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 100%);
+}
+
+.bf-header-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.bf-header-text {
+  flex: 1;
+}
+
+.bf-page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.bf-title-gradient {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF5EB 50%, #FFE4CC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 暗色模式 - 标题更亮 */
+:global(.dark) .bf-title-gradient {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 50%, #FFF5EB 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+}
+
+.bf-page-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 暗色模式 - 副标题 */
+:global(.dark) .bf-page-subtitle {
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* 页面内容 */
 .about-page {
-  min-height: 80vh;
+  min-height: 60vh;
   padding: 2rem 1rem;
   max-width: 1000px;
   margin: 0 auto;
   position: relative;
   z-index: 1;
-}
-
-/* 英雄区域 */
-.hero-section {
-  text-align: center;
-  margin-bottom: 2.5rem;
-  padding: 3.5rem 2rem;
-  border-radius: var(--bf-radius-xl, 24px);
-  background: var(--bf-surface, rgba(255, 255, 255, 0.8));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--bf-border-subtle, rgba(0, 0, 0, 0.06));
-  box-shadow: var(--bf-shadow-md, 0 4px 20px rgba(0, 0, 0, 0.08));
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hero-section.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.hero-content h1 {
-  font-size: 2.8rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--bf-text-primary, #1a1a2e);
-}
-
-.hero-content p {
-  font-size: 1.2rem;
-  max-width: 800px;
-  margin: 0 auto;
-  color: var(--bf-text-secondary, #4a4a68);
 }
 
 /* 通用容器 */
@@ -496,20 +543,20 @@ onMounted(() => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .about-page {
-    padding: 1rem 0.5rem;
-  }
-
-  .hero-section {
+  .bf-page-header {
     padding: 2rem 1rem;
   }
 
-  .hero-content h1 {
-    font-size: 2.5rem;
+  .bf-page-title {
+    font-size: 1.75rem;
   }
 
-  .hero-content p {
-    font-size: 1rem;
+  .bf-page-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .about-page {
+    padding: 1rem 0.5rem;
   }
 
   .container {

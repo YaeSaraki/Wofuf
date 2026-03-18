@@ -1161,16 +1161,36 @@ html.dark .hint-icon {
 
 :deep(.p-menubar-item-link) {
   background: transparent !important;
-  transition: all 0.2s ease !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: 10px !important;
+  position: relative;
 }
 
 :deep(.p-menubar-item-link:hover) {
-  background: rgba(0, 0, 0, 0.05) !important;
-  border-radius: 8px !important;
+  /* 毛玻璃 hover 效果 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.25) 100%
+  ) !important;
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
 html.dark :deep(.p-menubar-item-link:hover) {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.12) 100%
+  ) !important;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 :deep(.p-menubar-item-label) {
