@@ -31,26 +31,12 @@ const translations = {
 
   // 通用
   'common.close': {zh: '关闭', en: 'Close'},
-
-  'page.home': {zh: '首页', en: 'Home Page'},
-
-  // 操作按钮
-  'actions.retry': {zh: '重试', en: 'Retry'},
-  'actions.view': {zh: '查看', en: 'View'},
-  'actions.join': {zh: '加入', en: 'Join'},
-
-  // 设置
-  'settings.language': {zh: '语言', en: 'Language'},
-  'settings.theme': {zh: '主题', en: 'Theme'},
-  'settings.themeFollowSystem': {zh: '主题跟随系统', en: 'Theme follows system'},
-
-  // 通用
-  'common.close': {zh: '关闭', en: 'Close'},
   'common.loading': {zh: '加载中...', en: 'Loading...'},
   'common.error': {zh: '出错了', en: 'Error'},
   'common.success': {zh: '成功', en: 'Success'},
 
   // 状态页
+  'status.yesterdayOnline': {zh: '昨日在线', en: 'Yesterday Online'},
   'status.description': {zh: '欢迎来到 WofuF 服务器状态页面', en: 'Welcome to WofuF Server Status Page'},
   'status.serverOnline': {zh: '服务器在线', en: 'Server Online'},
   'status.serverOffline': {zh: '服务器离线', en: 'Server Offline'},

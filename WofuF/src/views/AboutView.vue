@@ -1,10 +1,9 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useLocale } from '@S/services/i18n/useLocale.ts'
-import { useTheme } from '@S/composables/useTheme.ts'
+import PageBackground from '@S/components/PageBackground.vue'
 
 const { translate } = useLocale()
-const { isDark } = useTheme()
 
 // 团队成员
 const teamMembers = ref([
@@ -50,16 +49,15 @@ const features = ref([
 
 // 服务器统计
 const stats = ref([
-  { label: '总玩家数', value: '1,245' },
-  { label: '在线时间', value: '24/7' },
-  { label: '服务器版本', value: '1.21.3' },
-  { label: '创建时间', value: '2024-01-01' }
+  { label: translate('app', 'about.stats.totalPlayers'), value: '1,245' },
+  { label: translate('app', 'about.stats.uptime'), value: '24/7' },
+  { label: translate('app', 'about.stats.version'), value: '1.21.3' },
+  { label: translate('app', 'about.stats.founded'), value: '2024-01-01' }
 ])
 
 // 动画效果
 const isVisible = ref(false)
 onMounted(() => {
-  // 触发动画
   setTimeout(() => {
     isVisible.value = true
   }, 100)
@@ -67,89 +65,91 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="about-page">
-    <!-- 英雄区域 -->
-    <section class="hero-section" :class="{ 'visible': isVisible }">
-      <div class="hero-content">
-        <h1>{{ translate('app', 'nav.about') }}</h1>
-        <p>{{ translate('app', 'about.description') }}</p>
-      </div>
-    </section>
-
-    <!-- 服务器介绍 -->
-    <section class="intro-section" :class="{ 'visible': isVisible }">
-      <div class="container">
-        <h2>{{ translate('app', 'about.serverIntro') }}</h2>
-        <div class="intro-content">
-          <p>{{ translate('app', 'about.serverDesc1') }}</p>
-          <p>{{ translate('app', 'about.serverDesc2') }}</p>
-          <p>{{ translate('app', 'about.serverDesc3') }}</p>
+  <PageBackground variant="default" :show-pattern="true">
+    <div class="about-page">
+      <!-- 英雄区域 -->
+      <section class="hero-section" :class="{ 'visible': isVisible }">
+        <div class="hero-content">
+          <h1>{{ translate('app', 'nav.about') }}</h1>
+          <p>{{ translate('app', 'about.description') }}</p>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 服务器特点 -->
-    <section class="features-section" :class="{ 'visible': isVisible }">
-      <div class="container">
-        <h2>{{ translate('app', 'about.features.title') }}</h2>
-        <div class="features-grid">
-          <div v-for="(feature, index) in features" :key="index" class="feature-card">
-            <div class="feature-icon">{{ feature.icon }}</div>
-            <h3>{{ feature.title }}</h3>
-            <p>{{ feature.description }}</p>
+      <!-- 服务器介绍 -->
+      <section class="intro-section" :class="{ 'visible': isVisible }">
+        <div class="container">
+          <h2>{{ translate('app', 'about.serverIntro') }}</h2>
+          <div class="intro-content">
+            <p>{{ translate('app', 'about.serverDesc1') }}</p>
+            <p>{{ translate('app', 'about.serverDesc2') }}</p>
+            <p>{{ translate('app', 'about.serverDesc3') }}</p>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 服务器统计 -->
-    <section class="stats-section" :class="{ 'visible': isVisible }">
-      <div class="container">
-        <h2>{{ translate('app', 'about.stats.title') }}</h2>
-        <div class="stats-grid">
-          <div v-for="(stat, index) in stats" :key="index" class="stat-card">
-            <span class="stat-value">{{ stat.value }}</span>
-            <span class="stat-label">{{ stat.label }}</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 团队成员 -->
-    <section class="team-section" :class="{ 'visible': isVisible }">
-      <div class="container">
-        <h2>{{ translate('app', 'about.team.title') }}</h2>
-        <div class="team-grid">
-          <div v-for="(member, index) in teamMembers" :key="index" class="team-card">
-            <div class="member-avatar">
-              <img :src="member.avatar" :alt="member.name" />
+      <!-- 服务器特点 -->
+      <section class="features-section" :class="{ 'visible': isVisible }">
+        <div class="container">
+          <h2>{{ translate('app', 'about.features.title') }}</h2>
+          <div class="features-grid">
+            <div v-for="(feature, index) in features" :key="index" class="feature-card">
+              <div class="feature-icon">{{ feature.icon }}</div>
+              <h3>{{ feature.title }}</h3>
+              <p>{{ feature.description }}</p>
             </div>
-            <h3>{{ member.name }}</h3>
-            <p>{{ member.role }}</p>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 联系我们 -->
-    <section class="contact-section" :class="{ 'visible': isVisible }">
-      <div class="container">
-        <h2>{{ translate('app', 'about.contact.title') }}</h2>
-        <div class="contact-content">
-          <p>{{ translate('app', 'about.contact.description') }}</p>
-          <div class="contact-links">
-            <a href="mailto:contact@wofuf.com" class="contact-link email">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
-              <span>联系我们</span>
-            </a>
+      <!-- 服务器统计 -->
+      <section class="stats-section" :class="{ 'visible': isVisible }">
+        <div class="container">
+          <h2>{{ translate('app', 'about.stats.title') }}</h2>
+          <div class="stats-grid">
+            <div v-for="(stat, index) in stats" :key="index" class="stat-card">
+              <span class="stat-value">{{ stat.value }}</span>
+              <span class="stat-label">{{ stat.label }}</span>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
-  </div>
+      </section>
+
+      <!-- 团队成员 -->
+      <section class="team-section" :class="{ 'visible': isVisible }">
+        <div class="container">
+          <h2>{{ translate('app', 'about.team.title') }}</h2>
+          <div class="team-grid">
+            <div v-for="(member, index) in teamMembers" :key="index" class="team-card">
+              <div class="member-avatar">
+                <img :src="member.avatar" :alt="member.name" />
+              </div>
+              <h3>{{ member.name }}</h3>
+              <p>{{ member.role }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 联系我们 -->
+      <section class="contact-section" :class="{ 'visible': isVisible }">
+        <div class="container">
+          <h2>{{ translate('app', 'about.contact.title') }}</h2>
+          <div class="contact-content">
+            <p>{{ translate('app', 'about.contact.description') }}</p>
+            <div class="contact-links">
+              <a href="mailto:contact@wofuf.com" class="contact-link email">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+                <span>{{ translate('app', 'about.contact.email') }}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </PageBackground>
 </template>
 
 <style scoped>
@@ -158,6 +158,8 @@ onMounted(() => {
   padding: 2rem 1rem;
   max-width: 1000px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 /* 英雄区域 */
@@ -165,39 +167,15 @@ onMounted(() => {
   text-align: center;
   margin-bottom: 2.5rem;
   padding: 3.5rem 2rem;
-  border-radius: 24px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.35) 0%,
-    rgba(255, 255, 255, 0.25) 50%,
-    rgba(255, 255, 255, 0.35) 100%
-  );
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+  border-radius: var(--bf-radius-xl, 24px);
+  background: var(--bf-surface, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--bf-border-subtle, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--bf-shadow-md, 0 4px 20px rgba(0, 0, 0, 0.08));
   opacity: 0;
   transform: translateY(30px);
   transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-html.dark .hero-section {
-  background: linear-gradient(
-    135deg,
-    rgba(70, 70, 80, 0.45) 0%,
-    rgba(60, 60, 67, 0.4) 50%,
-    rgba(70, 70, 80, 0.45) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.35),
-    0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .hero-section.visible {
@@ -209,21 +187,14 @@ html.dark .hero-section {
   font-size: 2.8rem;
   font-weight: 700;
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, #4361ee, #3a0ca3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--bf-text-primary, #1a1a2e);
 }
 
 .hero-content p {
   font-size: 1.2rem;
   max-width: 800px;
   margin: 0 auto;
-  color: rgba(0, 0, 0, 0.7);
-}
-
-html.dark .hero-content p {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--bf-text-secondary, #4a4a68);
 }
 
 /* 通用容器 */
@@ -252,15 +223,12 @@ html.dark .hero-content p {
   font-weight: 600;
   margin-bottom: 2rem;
   text-align: center;
+  color: var(--bf-text-primary, #1a1a2e);
 }
 
 .intro-content {
   line-height: 1.6;
-  color: rgba(0, 0, 0, 0.8);
-}
-
-html.dark .intro-content {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--bf-text-secondary, #4a4a68);
 }
 
 .intro-content p {
@@ -287,6 +255,7 @@ html.dark .intro-content {
   font-weight: 600;
   margin-bottom: 2rem;
   text-align: center;
+  color: var(--bf-text-primary, #1a1a2e);
 }
 
 .features-grid {
@@ -297,79 +266,19 @@ html.dark .intro-content {
 
 .feature-card {
   padding: 1.75rem;
-  border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 0.2) 100%
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.1),
-    0 1px 4px rgba(0, 0, 0, 0.06);
+  border-radius: var(--bf-radius-lg, 16px);
+  background: var(--bf-surface, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--bf-border-subtle, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--bf-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
   transition: all 0.3s ease;
   text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transform: rotate(45deg);
-  animation: shimmer 3s infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.feature-card:hover::before {
-  opacity: 1;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  }
-  100% {
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-  }
-}
-
-html.dark .feature-card {
-  background: linear-gradient(
-    135deg,
-    rgba(70, 70, 80, 0.4) 0%,
-    rgba(60, 60, 67, 0.35) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
 .feature-card:hover {
   transform: translateY(-5px);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-html.dark .feature-card:hover {
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--bf-shadow-md, 0 4px 20px rgba(0, 0, 0, 0.08));
 }
 
 .feature-icon {
@@ -381,15 +290,12 @@ html.dark .feature-card:hover {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  color: var(--bf-text-primary, #1a1a2e);
 }
 
 .feature-card p {
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--bf-text-secondary, #4a4a68);
   line-height: 1.5;
-}
-
-html.dark .feature-card p {
-  color: rgba(255, 255, 255, 0.7);
 }
 
 /* 统计区域 */
@@ -411,6 +317,7 @@ html.dark .feature-card p {
   font-weight: 600;
   margin-bottom: 2rem;
   text-align: center;
+  color: var(--bf-text-primary, #1a1a2e);
 }
 
 .stats-grid {
@@ -421,70 +328,19 @@ html.dark .feature-card p {
 
 .stat-card {
   padding: 1.75rem;
-  border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 0.2) 100%
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.1),
-    0 1px 4px rgba(0, 0, 0, 0.06);
+  border-radius: var(--bf-radius-lg, 16px);
+  background: var(--bf-surface, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--bf-border-subtle, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--bf-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
   text-align: center;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transform: rotate(45deg);
-  animation: shimmer 3s infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.stat-card:hover::before {
-  opacity: 1;
-}
-
-html.dark .stat-card {
-  background: linear-gradient(
-    135deg,
-    rgba(70, 70, 80, 0.4) 0%,
-    rgba(60, 60, 67, 0.35) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-html.dark .stat-card:hover {
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--bf-shadow-md, 0 4px 20px rgba(0, 0, 0, 0.08));
 }
 
 .stat-value {
@@ -492,19 +348,12 @@ html.dark .stat-card:hover {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #4361ee, #3a0ca3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--bf-primary, #FF6B35);
 }
 
 .stat-label {
   font-size: 1rem;
-  color: rgba(0, 0, 0, 0.7);
-}
-
-html.dark .stat-label {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--bf-text-secondary, #4a4a68);
 }
 
 /* 团队区域 */
@@ -526,6 +375,7 @@ html.dark .stat-label {
   font-weight: 600;
   margin-bottom: 2rem;
   text-align: center;
+  color: var(--bf-text-primary, #1a1a2e);
 }
 
 .team-grid {
@@ -536,70 +386,19 @@ html.dark .stat-label {
 
 .team-card {
   padding: 1.75rem;
-  border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 0.2) 100%
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.1),
-    0 1px 4px rgba(0, 0, 0, 0.06);
+  border-radius: var(--bf-radius-lg, 16px);
+  background: var(--bf-surface, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--bf-border-subtle, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--bf-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
   text-align: center;
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.team-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transform: rotate(45deg);
-  animation: shimmer 3s infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.team-card:hover::before {
-  opacity: 1;
-}
-
-html.dark .team-card {
-  background: linear-gradient(
-    135deg,
-    rgba(70, 70, 80, 0.4) 0%,
-    rgba(60, 60, 67, 0.35) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
 .team-card:hover {
   transform: translateY(-5px);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.15),
-    0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-html.dark .team-card:hover {
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--bf-shadow-md, 0 4px 20px rgba(0, 0, 0, 0.08));
 }
 
 .member-avatar {
@@ -608,7 +407,8 @@ html.dark .team-card:hover {
   border-radius: 50%;
   overflow: hidden;
   margin: 0 auto 1rem;
-  border: 3px solid rgba(67, 97, 238, 0.3);
+  border: 3px solid var(--bf-primary, #FF6B35);
+  opacity: 0.3;
 }
 
 .member-avatar img {
@@ -621,15 +421,12 @@ html.dark .team-card:hover {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: var(--bf-text-primary, #1a1a2e);
 }
 
 .team-card p {
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--bf-text-secondary, #4a4a68);
   font-size: 0.875rem;
-}
-
-html.dark .team-card p {
-  color: rgba(255, 255, 255, 0.7);
 }
 
 /* 联系区域 */
@@ -651,6 +448,7 @@ html.dark .team-card p {
   font-weight: 600;
   margin-bottom: 2rem;
   text-align: center;
+  color: var(--bf-text-primary, #1a1a2e);
 }
 
 .contact-content {
@@ -659,12 +457,8 @@ html.dark .team-card p {
 
 .contact-content p {
   margin-bottom: 2rem;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--bf-text-secondary, #4a4a68);
   font-size: 1.1rem;
-}
-
-html.dark .contact-content p {
-  color: rgba(255, 255, 255, 0.7);
 }
 
 .contact-links {
@@ -679,34 +473,20 @@ html.dark .contact-content p {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-radius: 12px;
+  border-radius: var(--bf-radius-md, 12px);
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s ease;
   border: 1px solid transparent;
-  background: linear-gradient(
-    135deg,
-    rgba(67, 97, 238, 0.1) 0%,
-    rgba(58, 12, 163, 0.1) 100%
-  );
-  color: #4361ee;
-  border-color: rgba(67, 97, 238, 0.3);
-  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.1);
+  background: var(--bf-surface, rgba(255, 255, 255, 0.8));
+  color: var(--bf-primary, #FF6B35);
+  border-color: var(--bf-border-subtle, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--bf-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
 }
 
 .contact-link:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(67, 97, 238, 0.2);
-  background: linear-gradient(
-    135deg,
-    rgba(67, 97, 238, 0.15) 0%,
-    rgba(58, 12, 163, 0.15) 100%
-  );
-}
-
-.contact-link:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--bf-shadow-md, 0 4px 20px rgba(0, 0, 0, 0.08));
 }
 
 .contact-link svg {
@@ -757,8 +537,6 @@ html.dark .contact-content p {
 
   .contact-link {
     width: 90%;
-    max-width: 300px;
-    justify-content: center;
   }
 }
 </style>
