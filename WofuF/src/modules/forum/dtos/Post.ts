@@ -57,6 +57,8 @@ export interface CommentDto {
   createdAt: string
   childComments: CommentDto[]
   points: number
+  wasUpvotedByMe: boolean  // 当前用户是否点赞
+  wasDownvotedByMe: boolean  // 当前用户是否点踩
 }
 
 // ========== 请求/响应类型 ==========

@@ -62,39 +62,39 @@ export class ForumService implements IForumService {
     options?: RequestOptions,
   ): Promise<Result<GetPostsResponse>> {
     const cacheKey = `recent_posts_${offset}_${category || 'all'}`
-    const cached = cacheService.get<GetPostsResponse>(ForumService.CACHE_MODULE, cacheKey)
-    if (cached) {
-      return Result.success(cached)
-    }
 
-    try {
-      const tokens = authService.getTokens()
-      const params: Record<string, string | number> = { offset }
-      if (tokens?.userId) {
-        params.userId = tokens.userId
-      }
-      if (category) {
-        params.category = category
-      }
+    return cacheService.withCacheAndDeduplication<Result<GetPostsResponse>>(
+      ForumService.CACHE_MODULE,
+      cacheKey,
+      async () => {
+        try {
+          const tokens = authService.getTokens()
+          const params: Record<string, string | number> = { offset }
+          if (tokens?.userId) {
+            params.userId = tokens.userId
+          }
+          if (category) {
+            params.category = category
+          }
 
-      const response = await http.get<ApiResponse<GetPostsResponse>>(
-        '/api/v1/forum/posts/recent',
-        {
-          signal: options?.signal,
-          params,
+          const response = await http.get<ApiResponse<GetPostsResponse>>(
+            '/api/v1/forum/posts/recent',
+            {
+              signal: options?.signal,
+              params,
+            }
+          )
+
+          if (response.data.success) {
+            return Result.success(response.data.data)
+          }
+          return Result.failure(response.data.message || '获取帖子失败')
+        } catch (error) {
+          const err = error as { response?: { data?: { message?: string } }; message?: string }
+          return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
         }
-      )
-
-      if (response.data.success) {
-        const result = response.data.data
-        cacheService.set(ForumService.CACHE_MODULE, cacheKey, result)
-        return Result.success(result)
       }
-      return Result.failure(response.data.message || '获取帖子失败')
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string }
-      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
-    }
+    )
   }
 
   /**
@@ -106,39 +106,39 @@ export class ForumService implements IForumService {
     options?: RequestOptions,
   ): Promise<Result<GetPostsResponse>> {
     const cacheKey = `popular_posts_${offset}_${category || 'all'}`
-    const cached = cacheService.get<GetPostsResponse>(ForumService.CACHE_MODULE, cacheKey)
-    if (cached) {
-      return Result.success(cached)
-    }
 
-    try {
-      const tokens = authService.getTokens()
-      const params: Record<string, string | number> = { offset }
-      if (tokens?.userId) {
-        params.userId = tokens.userId
-      }
-      if (category) {
-        params.category = category
-      }
+    return cacheService.withCacheAndDeduplication<Result<GetPostsResponse>>(
+      ForumService.CACHE_MODULE,
+      cacheKey,
+      async () => {
+        try {
+          const tokens = authService.getTokens()
+          const params: Record<string, string | number> = { offset }
+          if (tokens?.userId) {
+            params.userId = tokens.userId
+          }
+          if (category) {
+            params.category = category
+          }
 
-      const response = await http.get<ApiResponse<GetPostsResponse>>(
-        '/api/v1/forum/posts/popular',
-        {
-          signal: options?.signal,
-          params,
+          const response = await http.get<ApiResponse<GetPostsResponse>>(
+            '/api/v1/forum/posts/popular',
+            {
+              signal: options?.signal,
+              params,
+            }
+          )
+
+          if (response.data.success) {
+            return Result.success(response.data.data)
+          }
+          return Result.failure(response.data.message || '获取帖子失败')
+        } catch (error) {
+          const err = error as { response?: { data?: { message?: string } }; message?: string }
+          return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
         }
-      )
-
-      if (response.data.success) {
-        const result = response.data.data
-        cacheService.set(ForumService.CACHE_MODULE, cacheKey, result)
-        return Result.success(result)
       }
-      return Result.failure(response.data.message || '获取帖子失败')
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string }
-      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
-    }
+    )
   }
 
   /* ==================== 帖子详情 ==================== */
@@ -151,49 +151,41 @@ export class ForumService implements IForumService {
     options?: RequestOptions,
   ): Promise<Result<GetPostResponse>> {
     const cacheKey = `post_slug_${slug}`
-    const cached = cacheService.get<GetPostResponse>(ForumService.CACHE_MODULE, cacheKey)
-    if (cached) {
-      // 验证缓存数据有效性
-      if (cached.post && cached.post.slug === slug) {
-        console.debug('[ForumService] 使用缓存的帖子数据:', slug)
-        return Result.success(cached)
-      } else {
-        // 缓存数据无效，清除
-        console.warn('[ForumService] 缓存数据无效，清除:', slug)
-        cacheService.delete(ForumService.CACHE_MODULE, cacheKey)
-      }
-    }
 
-    try {
-      const tokens = authService.getTokens()
-      const params: Record<string, string> | undefined = tokens?.userId
-        ? { userId: tokens.userId }
-        : undefined
+    return cacheService.withCacheAndDeduplication<Result<GetPostResponse>>(
+      ForumService.CACHE_MODULE,
+      cacheKey,
+      async () => {
+        try {
+          const tokens = authService.getTokens()
+          const params: Record<string, string> | undefined = tokens?.userId
+            ? { userId: tokens.userId }
+            : undefined
 
-      console.debug('[ForumService] 请求帖子详情:', slug, 'params:', params)
+          console.debug('[ForumService] 请求帖子详情:', slug, 'params:', params)
 
-      const response = await http.get<ApiResponse<GetPostResponse>>(
-        `/api/v1/forum/posts/slug/${slug}`,
-        {
-          signal: options?.signal,
-          params,
+          const response = await http.get<ApiResponse<GetPostResponse>>(
+            `/api/v1/forum/posts/slug/${slug}`,
+            {
+              signal: options?.signal,
+              params,
+            }
+          )
+
+          console.debug('[ForumService] 帖子响应:', response.data)
+
+          if (response.data.success) {
+            return Result.success(response.data.data)
+          }
+          console.error('[ForumService] API 返回失败:', response.data.message)
+          return Result.failure(response.data.message || '获取帖子失败')
+        } catch (error) {
+          const err = error as { response?: { data?: { message?: string }; status?: number }; message?: string }
+          console.error('[ForumService] 请求异常:', err.response?.status, err.message, err.response?.data)
+          return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
         }
-      )
-
-      console.debug('[ForumService] 帖子响应:', response.data)
-
-      if (response.data.success) {
-        const result = response.data.data
-        cacheService.set(ForumService.CACHE_MODULE, cacheKey, result)
-        return Result.success(result)
       }
-      console.error('[ForumService] API 返回失败:', response.data.message)
-      return Result.failure(response.data.message || '获取帖子失败')
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string }; status?: number }; message?: string }
-      console.error('[ForumService] 请求异常:', err.response?.status, err.message, err.response?.data)
-      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
-    }
+    )
   }
 
   /* ==================== 帖子操作 ==================== */
@@ -454,35 +446,35 @@ export class ForumService implements IForumService {
     options?: RequestOptions,
   ): Promise<Result<GetCommentsResponse>> {
     const cacheKey = `comments_${postSlug}`
-    const cached = cacheService.get<GetCommentsResponse>(ForumService.CACHE_MODULE, cacheKey)
-    if (cached) {
-      return Result.success(cached)
-    }
 
-    try {
-      const tokens = authService.getTokens()
-      const params: Record<string, string> | undefined = tokens?.userId
-        ? { userId: tokens.userId }
-        : undefined
+    return cacheService.withCacheAndDeduplication<Result<GetCommentsResponse>>(
+      ForumService.CACHE_MODULE,
+      cacheKey,
+      async () => {
+        try {
+          const tokens = authService.getTokens()
+          const params: Record<string, string> | undefined = tokens?.userId
+            ? { userId: tokens.userId }
+            : undefined
 
-      const response = await http.get<ApiResponse<GetCommentsResponse>>(
-        `/api/v1/forum/posts/slug/${postSlug}/comments`,
-        {
-          signal: options?.signal,
-          params,
+          const response = await http.get<ApiResponse<GetCommentsResponse>>(
+            `/api/v1/forum/posts/slug/${postSlug}/comments`,
+            {
+              signal: options?.signal,
+              params,
+            }
+          )
+
+          if (response.data.success) {
+            return Result.success(response.data.data)
+          }
+          return Result.failure(response.data.message || '获取评论失败')
+        } catch (error) {
+          const err = error as { response?: { data?: { message?: string } }; message?: string }
+          return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
         }
-      )
-
-      if (response.data.success) {
-        const result = response.data.data
-        cacheService.set(ForumService.CACHE_MODULE, cacheKey, result)
-        return Result.success(result)
       }
-      return Result.failure(response.data.message || '获取评论失败')
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string }
-      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
-    }
+    )
   }
 
   /**

@@ -5,7 +5,6 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
-import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.PostJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.PostEntityMapper
 import org.springframework.stereotype.Repository
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Repository
 @Repository
 class PostRepoImpl(
     private val postJpaRepo: PostJpaRepo,
-    private val postVotesRepo: PostVotesRepo,
 ) : PostRepo {
 
     override fun findPostByPostId(postId: PostId): Post? =
@@ -29,7 +27,7 @@ class PostRepoImpl(
 
     override fun findNumberOfCommentsByPostId(postId: PostId): Int {
         val postEntity = postJpaRepo.findById(postId.stringValue).orElse(null)
-        return postEntity.comments.size
+        return postEntity?.comments?.size ?: 0
     }
 
     override fun findPostBySlug(postSlug: PostSlug): Post? {
@@ -63,7 +61,6 @@ class PostRepoImpl(
 
     override fun save(post: Post): Post {
         val entity = PostEntityMapper.toEntity(post)
-        post.votes?.let { postVotesRepo.saveBulk(it) }
         return PostEntityMapper.toDomain(postJpaRepo.save(entity))
     }
 

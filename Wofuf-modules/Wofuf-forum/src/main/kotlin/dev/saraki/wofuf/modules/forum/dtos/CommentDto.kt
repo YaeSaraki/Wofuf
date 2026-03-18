@@ -21,4 +21,6 @@ data class CommentDto(
     val createdAt: LocalDateTime,
     val childComments: List<CommentDto>,
     val points: Int,
+    val wasUpvotedByMe: Boolean = false,
+    val wasDownvotedByMe: Boolean = false,
 )

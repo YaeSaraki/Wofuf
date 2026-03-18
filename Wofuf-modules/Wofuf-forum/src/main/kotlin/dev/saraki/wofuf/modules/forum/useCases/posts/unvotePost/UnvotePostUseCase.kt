@@ -59,15 +59,20 @@ class UnvotePostUseCase(
             return UnvotePostErrors.NoVoteToRemoveError(request.postId, request.userId)
         }
 
-        // 6. Remove the vote from post and repo
+        // 6. Remove the vote from repo and update post score
         val existingVote = existingVotes.first()
-        post.removeVote(existingVote)
         postVotesRepo.delete(existingVote)
 
-        // 7. Save the updated post
+        // 7. Update post score
+        post.updateScore(
+            postVotesRepo.countPostUpvotesByPostId(postId),
+            postVotesRepo.countPostDownvotesByPostId(postId)
+        )
+
+        // 8. Save the updated post
         val updatedPost = postRepo.save(post)
 
-        // 8. Return success response
+        // 9. Return success response
         return Result.success(UnvotePostDto.Response(newPoints = updatedPost.points))
     }
 }

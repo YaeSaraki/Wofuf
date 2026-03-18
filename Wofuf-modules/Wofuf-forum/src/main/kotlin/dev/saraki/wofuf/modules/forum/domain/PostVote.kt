@@ -19,7 +19,7 @@ import dev.saraki.wofuf.shared.domain.UniqueEntityId
 data class PostVoteProps(
     val postId: PostId,
     val memberId: MemberId,
-    val type: VoteType
+    var type: VoteType
 )
 
 class PostVote private constructor(
@@ -36,12 +36,24 @@ class PostVote private constructor(
     val memberId: MemberId
         get() = props.memberId
 
-    val type: VoteType
+    var type: VoteType
         get() = props.type
+        set(value) {
+            props.type = value
+        }
+
+    fun changeToUpVote() {
+        this.type = VoteType.UPVOTE
+    }
+
+    fun changeToDownVote() {
+        this.type = VoteType.DOWNVOTE
+    }
 
     fun isUpVote(): Boolean = type == VoteType.UPVOTE
 
     fun isDownVote(): Boolean = type == VoteType.DOWNVOTE
+
 
     companion object {
         fun create(props: PostVoteProps, id: UniqueEntityId?): Result<PostVote> {

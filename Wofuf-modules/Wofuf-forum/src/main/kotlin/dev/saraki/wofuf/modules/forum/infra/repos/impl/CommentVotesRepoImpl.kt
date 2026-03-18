@@ -1,6 +1,6 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.impl
 
-import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.CommentVote
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
@@ -20,12 +20,12 @@ import org.springframework.transaction.annotation.Transactional
 class CommentVotesRepoImpl(
     private val commentVotesJpaRepo: CommentVotesJpaRepo
 ) : CommentVotesRepo {
+
     override fun exists(commentId: CommentId, memberId: MemberId, voteType: VoteType): Boolean {
-        val voteType = voteType.name
         return commentVotesJpaRepo.existsByCommentIdAndMemberIdAndVoteType(
             commentId.stringValue,
             memberId.stringValue,
-            voteType
+            voteType.name
         )
     }
 
@@ -37,13 +37,6 @@ class CommentVotesRepoImpl(
     }
 
     @Transactional
-    override fun saveBulk(votes: CommentVotes) {
-        commentVotesJpaRepo.saveAll(
-            votes.getItems().map(CommentVoteEntityMapper::toEntity)
-        )
-    }
-
-    @Transactional
     override fun save(vote: CommentVote): CommentVote {
         val entity = CommentVoteEntityMapper.toEntity(vote)
         return CommentVoteEntityMapper.toDomain(commentVotesJpaRepo.save(entity))
@@ -51,7 +44,7 @@ class CommentVotesRepoImpl(
 
     @Transactional
     override fun delete(vote: CommentVote) {
-        commentVotesJpaRepo.deleteById(vote.commentId.stringValue)
+        commentVotesJpaRepo.deleteById(vote.commentVoteId.stringValue)
     }
 
     override fun countCommentUpvotesByCommentId(commentId: CommentId): Int {
@@ -60,5 +53,15 @@ class CommentVotesRepoImpl(
 
     override fun countCommentDownvotesByCommentId(commentId: CommentId): Int {
         return commentVotesJpaRepo.countDownvotesByCommentId(commentId.stringValue)
+    }
+
+    override fun findByCommentIdsAndMemberId(commentIds: List<String>, memberId: String): List<CommentVote> {
+        if (commentIds.isEmpty()) return emptyList()
+        return commentVotesJpaRepo.findByCommentIdInAndMemberId(commentIds, memberId)
+            .map(CommentVoteEntityMapper::toDomain)
+    }
+
+    override fun flush() {
+        commentVotesJpaRepo.flush()
     }
 }

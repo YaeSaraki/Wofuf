@@ -243,8 +243,9 @@ watch(() => post.value?.memberPostBy?.playerId, loadPostAuthorAvatar)
 
 // 监听评论变化加载头像
 watch(comments, (newComments) => {
+  // 只处理新评论，避免重复加载
   newComments.forEach(comment => {
-    if (comment.playerId) {
+    if (comment.playerId && !commentAvatars.has(comment.playerId)) {
       loadCommentAvatar(comment.playerId)
     }
   })

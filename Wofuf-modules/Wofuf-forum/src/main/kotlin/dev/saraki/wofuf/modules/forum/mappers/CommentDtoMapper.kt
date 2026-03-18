@@ -11,7 +11,12 @@ import dev.saraki.wofuf.modules.forum.dtos.CommentDto
  *   @description:
  */
 object CommentDtoMapper {
-    fun toDto(comment: Comment, commentDetials: CommentDetails): CommentDto =
+    fun toDto(
+        comment: Comment,
+        commentDetials: CommentDetails,
+        wasUpvotedByMe: Boolean = false,
+        wasDownvotedByMe: Boolean = false
+    ): CommentDto =
         CommentDto(
             postSlug = commentDetials.postSlug.value,
             postTitle = commentDetials.postTitle.value,
@@ -23,6 +28,8 @@ object CommentDtoMapper {
             playerId = commentDetials.memberDetails.playerId?.stringValue,
             createdAt = commentDetials.createdAt,
             childComments = emptyList(),
-            points = commentDetials.points
+            points = commentDetials.points,
+            wasUpvotedByMe = wasUpvotedByMe,
+            wasDownvotedByMe = wasDownvotedByMe
         )
 }

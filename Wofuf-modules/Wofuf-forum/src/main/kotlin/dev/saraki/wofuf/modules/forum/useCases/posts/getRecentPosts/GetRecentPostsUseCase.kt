@@ -1,10 +1,7 @@
 package dev.saraki.wofuf.modules.forum.useCases.posts.getRecentPosts
 
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetails
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetailsProps
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
+import dev.saraki.wofuf.modules.forum.domain.services.PostVoteDomainService
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.*
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
@@ -18,13 +15,14 @@ import org.springframework.stereotype.Service
  * @author YaeSaraki
  * @email ikaraswork@iCloud.com
  * @date 2026/3/15
- * @description Use case for getting recent posts
+ * @description Use case for getting recent posts (uses domain service for vote status)
  */
 @Service
 class GetRecentPostsUseCase(
     private val postRepo: PostRepo,
     private val memberRepo: MemberRepo,
     private val postVotesRepo: PostVotesRepo,
+    private val postVoteDomainService: PostVoteDomainService,
 ) : UseCase<GetRecentPostsDto.Request, GetRecentPostsDto.Response> {
 
     override fun execute(request: GetRecentPostsDto.Request): Result<GetRecentPostsDto.Response> {
@@ -50,7 +48,12 @@ class GetRecentPostsUseCase(
         // 4. Find recent posts with category filter
         val posts = postRepo.findRecentPosts(request.offset, category)
 
-        // 5. Map posts to DTOs with member details and comment counts
+        // 5. Batch get vote statuses (避免 N+1 查询)
+        val voteStatusMap = currentMemberId?.let { memberId ->
+            postVoteDomainService.getVoteStatuses(posts.map { it.postId }, memberId)
+        } ?: emptyMap()
+
+        // 6. Map posts to DTOs with member details and comment counts
         val postDtos = posts.map { post ->
             // Get member details
             val member = memberRepo.findMemberById(post.memberId)
@@ -63,10 +66,9 @@ class GetRecentPostsUseCase(
                     )
                 ).getOrThrow()
             } else {
-                // Fallback to unknown member
                 MemberDetails.create(
                     MemberDetailsProps(
-                        nickName = dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName.create("Unknown").getOrThrow(),
+                        nickName = NickName.create("Unknown").getOrThrow(),
                         reputation = 0,
                         playerId = null
                     )
@@ -81,14 +83,10 @@ class GetRecentPostsUseCase(
             val totalDownvotes = postVotesRepo.countPostDownvotesByPostId(post.postId)
             val actualPoints = totalUpvotes - totalDownvotes
 
-            // Get vote status if user is logged in
-            val wasUpvotedByMe = currentMemberId?.let { memberId ->
-                postVotesRepo.exists(post.postId, memberId, VoteType.UPVOTE)
-            } ?: false
-
-            val wasDownvotedByMe = currentMemberId?.let { memberId ->
-                postVotesRepo.exists(post.postId, memberId, VoteType.DOWNVOTE)
-            } ?: false
+            // Get vote status from map
+            val voteStatus = voteStatusMap[post.postId]
+            val wasUpvotedByMe = voteStatus?.wasUpvotedByMe ?: false
+            val wasDownvotedByMe = voteStatus?.wasDownvotedByMe ?: false
 
             // Map to DTO with vote status
             if (currentMemberId != null) {
@@ -98,7 +96,7 @@ class GetRecentPostsUseCase(
             }
         }
 
-        // 6. Return success response
+        // 7. Return success response
         return Result.success(GetRecentPostsDto.Response(postDtos))
     }
 }

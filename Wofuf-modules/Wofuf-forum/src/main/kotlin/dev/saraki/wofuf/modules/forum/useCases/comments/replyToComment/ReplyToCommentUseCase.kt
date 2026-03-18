@@ -1,5 +1,7 @@
 package dev.saraki.wofuf.modules.forum.useCases.comments.replyToComment
 
+import dev.saraki.wofuf.modules.forum.domain.Comment
+import dev.saraki.wofuf.modules.forum.domain.CommentProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.*
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
@@ -64,14 +66,21 @@ class ReplyToCommentUseCase(
         }
         val commentText = commentTextOrError.getOrThrow()
 
-        // Add comment to post
-        val updatedPost = post.addComment(member.memberId, post.postId, commentText, parentCommentId)
-        if (updatedPost.isFailure) {
-            return Result.failure(updatedPost.exceptionOrThrow())
+        // Create comment as a reply
+        val commentProps = CommentProps(
+            memberId = member.memberId,
+            text = commentText,
+            postId = post.postId,
+            parentCommentId = parentCommentId,
+            points = 0
+        )
+        val commentOrError = Comment.create(commentProps)
+        if (commentOrError.isFailure) {
+            return Result.failure(commentOrError.exceptionOrThrow())
         }
 
-        // Save the updated post
-        postRepo.save(updatedPost.getOrThrow())
+        // Save the comment
+        commentRepo.save(commentOrError.getOrThrow())
 
         return Result.success(ReplyToCommentDto.Response())
     }

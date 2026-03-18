@@ -1,10 +1,10 @@
 package dev.saraki.wofuf.modules.forum.useCases.posts.getPopularPosts
 
+import dev.saraki.wofuf.modules.forum.domain.services.PostVoteDomainService
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetails
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetailsProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
@@ -18,13 +18,14 @@ import org.springframework.stereotype.Service
  * @author YaeSaraki
  * @email ikaraswork@iCloud.com
  * @date 2026/3/15
- * @description Use case for getting popular posts
+ * @description Use case for getting popular posts (uses domain service for vote status)
  */
 @Service
 class GetPopularPostsUseCase(
     private val postRepo: PostRepo,
     private val memberRepo: MemberRepo,
     private val postVotesRepo: PostVotesRepo,
+    private val postVoteDomainService: PostVoteDomainService,
 ) : UseCase<GetPopularPostsDto.Request, GetPopularPostsDto.Response> {
 
     override fun execute(request: GetPopularPostsDto.Request): Result<GetPopularPostsDto.Response> {
@@ -47,7 +48,12 @@ class GetPopularPostsUseCase(
         // 3. Find popular posts
         val posts = postRepo.findPopularPosts(request.offset)
 
-        // 4. Map posts to DTOs with member details and comment counts
+        // 4. Batch get vote statuses (避免 N+1 查询)
+        val voteStatusMap = currentMemberId?.let { memberId ->
+            postVoteDomainService.getVoteStatuses(posts.map { it.postId }, memberId)
+        } ?: emptyMap()
+
+        // 5. Map posts to DTOs with member details and comment counts
         val postDtos = posts.map { post ->
             // Get member details
             val member = memberRepo.findMemberById(post.memberId)
@@ -60,7 +66,6 @@ class GetPopularPostsUseCase(
                     )
                 ).getOrThrow()
             } else {
-                // Fallback to unknown member
                 MemberDetails.create(
                     MemberDetailsProps(
                         nickName = NickName.create("Unknown").getOrThrow(),
@@ -78,14 +83,10 @@ class GetPopularPostsUseCase(
             val totalDownvotes = postVotesRepo.countPostDownvotesByPostId(post.postId)
             val actualPoints = totalUpvotes - totalDownvotes
 
-            // Get vote status if user is logged in
-            val wasUpvotedByMe = currentMemberId?.let { memberId ->
-                postVotesRepo.exists(post.postId, memberId, VoteType.UPVOTE)
-            } ?: false
-
-            val wasDownvotedByMe = currentMemberId?.let { memberId ->
-                postVotesRepo.exists(post.postId, memberId, VoteType.DOWNVOTE)
-            } ?: false
+            // Get vote status from map
+            val voteStatus = voteStatusMap[post.postId]
+            val wasUpvotedByMe = voteStatus?.wasUpvotedByMe ?: false
+            val wasDownvotedByMe = voteStatus?.wasDownvotedByMe ?: false
 
             // Map to DTO with vote status
             if (currentMemberId != null) {
@@ -95,7 +96,7 @@ class GetPopularPostsUseCase(
             }
         }
 
-        // 5. Return success response
+        // 6. Return success response
         return Result.success(GetPopularPostsDto.Response(postDtos))
     }
 }

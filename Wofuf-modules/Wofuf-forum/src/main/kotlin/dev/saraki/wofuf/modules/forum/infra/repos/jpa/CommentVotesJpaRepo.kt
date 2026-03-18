@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface CommentVotesJpaRepo : JpaRepository<CommentVoteEntity, String> {
     fun existsByCommentIdAndMemberIdAndVoteType(commentId: String, memberId: String, voteType: String): Boolean
     fun findByCommentIdAndMemberId(commentId: String, memberId: String): CommentVoteEntity?
+    fun findByCommentIdInAndMemberId(commentIds: List<String>, memberId: String): List<CommentVoteEntity>
 
     @org.springframework.data.jpa.repository.Query("SELECT COUNT(v) FROM CommentVoteEntity v WHERE v.commentId = :commentId AND v.voteType = 'UPVOTE'")
     fun countUpvotesByCommentId(commentId: String): Int

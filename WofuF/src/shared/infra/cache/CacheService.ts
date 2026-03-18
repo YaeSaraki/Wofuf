@@ -19,6 +19,9 @@ export class CacheService {
   // 存储结构：Map<模块名, Map<缓存key, 最后访问时间戳>>
   private moduleAccessTime = new Map<string, Map<CacheKey, number>>()
 
+  // 存储正在进行的请求：Map<模块名, Map<请求key, Promise>>
+  private pendingRequests = new Map<string, Map<CacheKey, Promise<unknown>>>()
+
   /**
    * 设置单个模块的缓存上限（不强制业务调用，使用全局默认也可）
    * @param module 功能模块名称
@@ -338,5 +341,54 @@ export class CacheService {
       moduleCache.delete(item.key)
       accessTimeMap?.delete(item.key)
     })
+  }
+
+  /**
+   * 执行带有缓存和请求去重的异步操作
+   * @param module 功能模块名称
+   * @param key 缓存键
+   * @param fetcher 异步获取数据的函数
+   * @returns 操作结果
+   */
+  async withCacheAndDeduplication<V>(module: string, key: CacheKey, fetcher: () => Promise<V>): Promise<V> {
+    // 1. 尝试从缓存获取
+    const cached = this.get<V>(module, key)
+    if (cached !== undefined) {
+      return cached
+    }
+
+    // 2. 获取或创建模块的请求Map
+    let moduleRequests = this.pendingRequests.get(module)
+    if (!moduleRequests) {
+      moduleRequests = new Map<CacheKey, Promise<unknown>>()
+      this.pendingRequests.set(module, moduleRequests)
+    }
+
+    // 3. 检查是否已有相同的请求正在进行
+    if (moduleRequests.has(key)) {
+      // 如果有，等待该请求完成
+      return moduleRequests.get(key) as Promise<V>
+    }
+
+    // 4. 创建新的请求
+    const request = fetcher()
+
+    // 5. 存储正在进行的请求
+    moduleRequests.set(key, request)
+
+    try {
+      // 6. 执行请求
+      const result = await request
+      // 7. 缓存结果
+      this.set(module, key, result)
+      return result
+    } finally {
+      // 8. 无论成功失败，都移除正在进行的请求
+      moduleRequests.delete(key)
+      // 如果模块的请求Map为空，清理掉
+      if (moduleRequests.size === 0) {
+        this.pendingRequests.delete(module)
+      }
+    }
   }
 }

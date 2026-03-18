@@ -1,9 +1,8 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.impl
 
-import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.PostVote
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
-import dev.saraki.wofuf.modules.forum.domain.PostVote
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.PostVotesJpaRepo
@@ -48,14 +47,6 @@ class PostVotesRepoImpl(
         )
 
     @Transactional
-    override fun saveBulk(postVotes: PostVotes) {
-        val newVoteEntities = postVotes.getNewItems().map(PostVoteEntityMapper::toEntity)
-        val removedVoteEntities = postVotes.getRemovedItems().map(PostVoteEntityMapper::toEntity)
-        postVotesJpaRepo.saveAll(newVoteEntities)
-        postVotesJpaRepo.deleteAll(removedVoteEntities)
-    }
-
-    @Transactional
     override fun save(postVote: PostVote): PostVote {
         val entity = PostVoteEntityMapper.toEntity(postVote)
         return PostVoteEntityMapper.toDomain(postVotesJpaRepo.save(entity))
@@ -70,5 +61,12 @@ class PostVotesRepoImpl(
     @Transactional
     override fun deleteByPostIdAndMemberId(postId: PostId, memberId: MemberId) {
         postVotesJpaRepo.deleteByPostIdAndMemberId(postId.stringValue, memberId.stringValue)
+    }
+
+    override fun findByPostIdsAndMemberId(postIds: List<String>, memberId: String): List<PostVote> =
+        postVotesJpaRepo.findByPostIdInAndMemberId(postIds, memberId).map(PostVoteEntityMapper::toDomain)
+
+    override fun flush() {
+        postVotesJpaRepo.flush()
     }
 }

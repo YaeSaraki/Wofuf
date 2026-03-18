@@ -1,8 +1,6 @@
 package dev.saraki.wofuf.modules.forum.useCases.posts.createPost
 
-import dev.saraki.wofuf.modules.forum.domain.Comments
 import dev.saraki.wofuf.modules.forum.domain.Post
-import dev.saraki.wofuf.modules.forum.domain.PostVotes
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.*
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
@@ -33,7 +31,7 @@ class CreatePostUseCase(
         println("text: '${request.text}'")
         println("link: '${request.link}'")
         println("========================")
-        
+
         if (request.userId.isBlank()) {
             return CreatePostErrors.UserIdEmptyError()
         }
@@ -92,7 +90,7 @@ class CreatePostUseCase(
             postLink = postLinkOrError.getOrThrow()
         }
 
-        // Create post props
+        // Create post props (不再需要 comments 和 votes)
         val postProps = dev.saraki.wofuf.modules.forum.domain.PostProps(
             memberId = member.memberId,
             slug = postSlug,
@@ -100,8 +98,6 @@ class CreatePostUseCase(
             type = postType,
             text = postText,
             link = postLink,
-            comments = Comments.create(),
-            votes = PostVotes.create(),
             totalNumComments = 0,
             points = 0,
             dateTimePosted = LocalDateTime.now()

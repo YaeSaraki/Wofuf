@@ -29,8 +29,7 @@ object CommentEntityMapper {
                 text = CommentText.create(entity.text).getOrThrow(),
                 postId = PostId.create(UniqueEntityId(entity.postId)).getOrThrow(),
                 parentCommentId = entity.parentCommentId?.let { CommentId.create(UniqueEntityId(it)).getOrThrow() },
-                points = entity.points,
-                votes = CommentVotes.create()
+                points = entity.points
             ),
             id = UniqueEntityId(entity.commentId)
         )

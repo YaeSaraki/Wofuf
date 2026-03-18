@@ -1,10 +1,10 @@
 package dev.saraki.wofuf.modules.forum.useCases.posts.getPostBySlug
 
+import dev.saraki.wofuf.modules.forum.domain.services.PostVoteDomainService
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetails
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetailsProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.VoteType
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
@@ -19,13 +19,14 @@ import org.springframework.stereotype.Service
  * @author YaeSaraki
  * @email ikaraswork@iCloud.com
  * @date 2026/3/15
- * @description Use case for getting a post by slug
+ * @description Use case for getting a post by slug (uses domain service for vote status)
  */
 @Service
 class GetPostBySlugUseCase(
     private val postRepo: PostRepo,
     private val memberRepo: MemberRepo,
     private val postVotesRepo: PostVotesRepo,
+    private val postVoteDomainService: PostVoteDomainService,
 ) : UseCase<GetPostBySlugDto.Request, GetPostBySlugDto.Response> {
 
     override fun execute(request: GetPostBySlugDto.Request): Result<GetPostBySlugDto.Response> {
@@ -77,14 +78,10 @@ class GetPostBySlugUseCase(
             }
         }
 
-        // 8. Get vote status if user is logged in
-        val wasUpvotedByMe = currentMemberId?.let { memberId ->
-            postVotesRepo.exists(post.postId, memberId, VoteType.UPVOTE)
-        } ?: false
-
-        val wasDownvotedByMe = currentMemberId?.let { memberId ->
-            postVotesRepo.exists(post.postId, memberId, VoteType.DOWNVOTE)
-        } ?: false
+        // 8. Get vote status using domain service
+        val voteStatus = currentMemberId?.let { memberId ->
+            postVoteDomainService.getVoteStatus(post.postId, memberId)
+        }
 
         // 9. Get actual points from database
         val totalUpvotes = postVotesRepo.countPostUpvotesByPostId(post.postId)
@@ -92,8 +89,11 @@ class GetPostBySlugUseCase(
         val actualPoints = totalUpvotes - totalDownvotes
 
         // 10. Map to DTO with vote status
-        val postDto = if (currentMemberId != null) {
-            PostDtoMapper.toDtoWithVoteStatus(post, memberDetails, numComments, actualPoints, wasUpvotedByMe, wasDownvotedByMe)
+        val postDto = if (voteStatus != null) {
+            PostDtoMapper.toDtoWithVoteStatus(
+                post, memberDetails, numComments, actualPoints,
+                voteStatus.wasUpvotedByMe, voteStatus.wasDownvotedByMe
+            )
         } else {
             PostDtoMapper.toDto(post, memberDetails, numComments, actualPoints)
         }

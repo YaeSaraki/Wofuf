@@ -106,6 +106,7 @@ async function handleUpvote(post: PostDto) {
     const index = posts.value.findIndex(p => p.postId === post.postId)
     if (index !== -1) {
       const currentPost = posts.value[index]
+      if (!currentPost) return
       // toggle 逻辑：如果已经 upvoted，再次点击会取消
       const wasUpvoted = currentPost.wasUpvotedByMe
       posts.value[index] = {
@@ -128,6 +129,7 @@ async function handleDownvote(post: PostDto) {
     const index = posts.value.findIndex(p => p.postId === post.postId)
     if (index !== -1) {
       const currentPost = posts.value[index]
+      if (!currentPost) return
       // toggle 逻辑：如果已经 downvoted，再次点击会取消
       const wasDownvoted = currentPost.wasDownvotedByMe
       posts.value[index] = {
@@ -256,7 +258,6 @@ onUnmounted(() => {
         :post="post"
         @upvote="handleUpvote"
         @downvote="handleDownvote"
-        @unvote="handleUnvote"
       />
 
       <!-- 加载更多指示器 -->

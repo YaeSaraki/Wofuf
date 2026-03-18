@@ -46,8 +46,6 @@ object PostEntityMapper {
                 category = PostCategory.fromString(entity.category) ?: PostCategory.DISCUSSION,
                 text = entity.text?.let { PostText.create(it).getOrThrow() },
                 link = entity.link?.let { PostLink.create(PostLinkProps(it)).getOrThrow() },
-                comments = Comments.create(),
-                votes = PostVotes.create(),
                 totalNumComments = entity.totalNumComments,
                 points = entity.points,
                 dateTimePosted = entity.dateTimePosted

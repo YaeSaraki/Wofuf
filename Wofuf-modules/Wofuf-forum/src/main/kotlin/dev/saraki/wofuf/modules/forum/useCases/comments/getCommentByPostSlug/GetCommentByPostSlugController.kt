@@ -3,10 +3,11 @@ package dev.saraki.wofuf.modules.forum.useCases.comments.getCommentByPostSlug
 import dev.saraki.wofuf.modules.forum.config.ForumApiConstantV1
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 /**
@@ -24,12 +25,12 @@ class GetCommentByPostSlugController(
     @GetMapping()
     fun getCommentByPostSlug(
         @PathVariable postSlug: String,
-        @RequestParam(required = false) userId: String?
+        @AuthenticationPrincipal userDetails: UserDetails?
     ): ApiResponse<GetCommentByPostSlugDto.Response> {
         val result = getCommentByPostSlugUseCase.execute(
             GetCommentByPostSlugDto.Request(
                 postSlug = postSlug,
-                userId = userId,
+                userId = userDetails?.username,
             )
         ).getOrThrow()
         return ApiResponse.success(result)
