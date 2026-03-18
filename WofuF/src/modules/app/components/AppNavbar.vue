@@ -1240,22 +1240,30 @@ html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
   ) !important;
   backdrop-filter: blur(24px) saturate(200%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-  border: 1px solid rgba(200, 200, 210, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
   border-radius: 12px !important;
-  padding: 6px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+  padding: 8px !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2) !important;
   margin-top: 8px !important;
 }
 
 html.dark :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
   background: linear-gradient(
     135deg,
-    rgba(70, 70, 80, 0.5) 0%,
-    rgba(60, 60, 67, 0.45) 50%,
-    rgba(70, 70, 80, 0.5) 100%
+    rgba(70, 70, 80, 0.45) 0%,
+    rgba(60, 60, 67, 0.4) 50%,
+    rgba(70, 70, 80, 0.45) 100%
   ) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 :deep(.p-submenu-list .p-menubar-item) { background: transparent !important; margin: 0 !important; }
