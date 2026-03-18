@@ -1153,7 +1153,7 @@ html.dark .hint-icon {
 
 :deep(.p-menubar-root-list) {
   background: transparent !important;
-  gap: 4px !important;
+  gap: 2px !important;
   padding-right: 8px !important;
 }
 
@@ -1164,110 +1164,22 @@ html.dark .hint-icon {
 
 :deep(.p-menubar-item-link) {
   background: transparent !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  border-radius: 12px !important;
+  transition: all 0.25s ease !important;
+  border-radius: 10px !important;
   position: relative;
-  padding: 0.625rem 1rem !important;
-  margin: 4px !important;
-  overflow: hidden;
-}
-
-/* 炫酷光效背景 */
-:deep(.p-menubar-item-link::before) {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  border-radius: 12px !important;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 107, 53, 0) 0%,
-    rgba(255, 159, 28, 0) 50%,
-    rgba(255, 190, 11, 0) 100%
-  ) !important;
-  opacity: 0 !important;
-  transition: opacity 0.3s ease !important;
-  z-index: -1 !important;
-}
-
-/* 发光边框效果 */
-:deep(.p-menubar-item-link::after) {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  border-radius: 12px !important;
-  padding: 1px !important;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 107, 53, 0.5) 0%,
-    rgba(255, 159, 28, 0.3) 50%,
-    rgba(255, 190, 11, 0.5) 100%
-  ) !important;
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0) !important;
-  mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0) !important;
-  -webkit-mask-composite: xor !important;
-  mask-composite: exclude !important;
-  opacity: 0 !important;
-  transition: opacity 0.3s ease !important;
-  z-index: 0 !important;
+  padding: 0.5rem 0.875rem !important;
+  margin: 3px !important;
 }
 
 :deep(.p-menubar-item-link:hover) {
-  /* 毛玻璃 hover 效果 - 增强版 */
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.35) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0.35) 100%
-  ) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  box-shadow: 
-    0 4px 16px rgba(255, 107, 53, 0.15),
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
-  transform: translateY(-1px) !important;
-}
-
-/* hover时显示光效 */
-:deep(.p-menubar-item-link:hover::before) {
-  opacity: 0.15 !important;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 107, 53, 0.3) 0%,
-    rgba(255, 159, 28, 0.2) 50%,
-    rgba(255, 190, 11, 0.3) 100%
-  ) !important;
-}
-
-:deep(.p-menubar-item-link:hover::after) {
-  opacity: 1 !important;
+  /* 简洁毛玻璃 hover 效果 */
+  background: rgba(0, 0, 0, 0.04) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
 }
 
 html.dark :deep(.p-menubar-item-link:hover) {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 140, 90, 0.15) 0%,
-    rgba(255, 107, 53, 0.1) 50%,
-    rgba(255, 140, 90, 0.15) 100%
-  ) !important;
-  box-shadow: 
-    0 4px 16px rgba(255, 140, 90, 0.2),
-    0 2px 8px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
-}
-
-html.dark :deep(.p-menubar-item-link:hover::after) {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 140, 90, 0.6) 0%,
-    rgba(255, 107, 53, 0.4) 50%,
-    rgba(255, 140, 90, 0.6) 100%
-  ) !important;
-  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 :deep(.p-menubar-item-label) {
@@ -1276,9 +1188,7 @@ html.dark :deep(.p-menubar-item-link:hover::after) {
   letter-spacing: -0.01em !important;
   font-size: 15px !important;
   color: rgba(0, 0, 0, 0.85) !important;
-  position: relative;
-  z-index: 1;
-  transition: all 0.3s ease !important;
+  transition: color 0.2s ease !important;
 }
 
 html.dark :deep(.p-menubar-item-label) {
@@ -1286,21 +1196,17 @@ html.dark :deep(.p-menubar-item-label) {
 }
 
 :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
-  color: #FF6B35 !important;
-  text-shadow: 0 0 20px rgba(255, 107, 53, 0.3) !important;
+  color: rgba(0, 0, 0, 1) !important;
 }
 
 html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
-  color: #FF8C5A !important;
-  text-shadow: 0 0 20px rgba(255, 140, 90, 0.4) !important;
+  color: rgba(255, 255, 255, 1) !important;
 }
 
 :deep(.p-menubar-item-icon) {
   background: transparent !important;
   color: rgba(0, 0, 0, 0.7) !important;
-  transition: all 0.3s ease !important;
-  position: relative;
-  z-index: 1;
+  transition: transform 0.2s ease !important;
 }
 
 html.dark :deep(.p-menubar-item-icon) {
@@ -1310,36 +1216,29 @@ html.dark :deep(.p-menubar-item-icon) {
 
 :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
   background: transparent !important;
-  color: #FF6B35 !important;
-  transform: scale(1.1) !important;
-  filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.5)) !important;
-}
-
-html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
-  color: #FF8C5A !important;
-  filter: drop-shadow(0 0 8px rgba(255, 140, 90, 0.6)) !important;
+  transform: scale(1.05) !important;
 }
 
 :deep(.p-menubar-submenu) { margin: 0 4px !important; }
 :deep(.p-menubar-root-list) { min-width: 100px !important; }
 
 :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
-  /* 液态玻璃效果子菜单 - 增强版 */
+  /* 液态玻璃效果子菜单 */
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.35) 0%,
     rgba(255, 255, 255, 0.25) 50%,
-    rgba(255, 255, 255, 0.4) 100%
+    rgba(255, 255, 255, 0.35) 100%
   ) !important;
   backdrop-filter: blur(24px) saturate(200%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-  border: 1px solid rgba(255, 107, 53, 0.2) !important;
-  border-radius: 16px !important;
-  padding: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 12px !important;
+  padding: 6px !important;
   box-shadow: 
-    0 8px 32px rgba(255, 107, 53, 0.15),
-    0 4px 16px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
     inset 0 -1px 0 rgba(255, 255, 255, 0.2) !important;
   margin-top: 8px !important;
 }
@@ -1347,15 +1246,15 @@ html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
 html.dark :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
   background: linear-gradient(
     135deg,
-    rgba(70, 70, 80, 0.5) 0%,
-    rgba(60, 60, 67, 0.45) 50%,
-    rgba(70, 70, 80, 0.5) 100%
+    rgba(70, 70, 80, 0.45) 0%,
+    rgba(60, 60, 67, 0.4) 50%,
+    rgba(70, 70, 80, 0.45) 100%
   ) !important;
-  border: 1px solid rgba(255, 140, 90, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 4px 16px rgba(255, 140, 90, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
     inset 0 -1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
@@ -1363,21 +1262,13 @@ html.dark :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
 :deep(.p-submenu-list .p-menubar-item-link) { 
   background: transparent !important; 
   margin: 2px 0 !important; 
-  border-radius: 10px !important;
+  border-radius: 8px !important;
 }
 :deep(.p-submenu-list .p-menubar-item-link:hover) { 
-  background: linear-gradient(
-    135deg,
-    rgba(255, 107, 53, 0.15) 0%,
-    rgba(255, 159, 28, 0.1) 100%
-  ) !important; 
+  background: rgba(0, 0, 0, 0.05) !important; 
 }
 html.dark :deep(.p-submenu-list .p-menubar-item-link:hover) { 
-  background: linear-gradient(
-    135deg,
-    rgba(255, 140, 90, 0.2) 0%,
-    rgba(255, 107, 53, 0.15) 100%
-  ) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 :deep(.p-menubar-submenu-icon) { color: rgba(0, 0, 0, 0.6) !important; font-size: 12px !important; }
