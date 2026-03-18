@@ -1228,6 +1228,22 @@ html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
   transform: scale(1.15) !important;
 }
 
+html.dark :deep(.p-menubar-item-content) {
+  color: #FFFFFF !important;
+}
+
+html.dark :deep(.p-menubar-item) {
+  color: #FFFFFF !important;
+}
+
+html.dark :deep(.p-menubar-root-list) {
+  color: #FFFFFF !important;
+}
+
+html.dark :deep(span.p-menubar-item-label) {
+  color: #FFFFFF !important;
+}
+
 :deep(.p-menubar-submenu) { margin: 0 4px !important; }
 :deep(.p-menubar-root-list) { min-width: 100px !important; }
 
