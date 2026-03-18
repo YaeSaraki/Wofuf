@@ -64,6 +64,7 @@ onMounted(() => {
               <div class="info-item">
                 <span class="info-label">{{ translate('app', 'status.totalPlayers') }}</span>
                 <span class="info-value">{{ serverStats?.totalPlayers ?? '1,245' }}</span>
+              </div>
               <div class="info-item">
                 <span class="info-label">{{ translate('app', 'status.founded') }}</span>
                 <span class="info-value">2024-01-01</span>
