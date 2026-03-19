@@ -42,5 +42,8 @@ object PlayerApiConstantV1 {
 
         /** /api/v1/players/yesterday */
         const val YESTERDAY_ONLINE = "$BASE/yesterday"
+
+        /** /api/v1/players/search */
+        const val SEARCH = "$BASE/search"
     }
 }

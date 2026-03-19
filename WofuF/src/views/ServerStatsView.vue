@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useLocale } from '@S/services/i18n/useLocale.ts'
 import PageBackground from '@S/components/PageBackground.vue'
 import YesterdayOnlineList from '@M/players/components/yesterdayOnlineList/YesterdayOnlineList.vue'
+import PlayerSearch from '@M/players/components/playerSearch/PlayerSearch.vue'
 
 const { translate } = useLocale()
 
@@ -43,6 +44,18 @@ onMounted(() => {
     </header>
 
     <div class="status-page">
+      <!-- 玩家搜索 -->
+      <section class="search-section" :class="{ 'visible': isVisible }">
+        <div class="card">
+          <div class="card-header">
+            <h2>{{ translate('app', 'status.playerSearch') }}</h2>
+          </div>
+          <div class="card-content">
+            <PlayerSearch />
+          </div>
+        </div>
+      </section>
+
       <!-- 昨日在线玩家 -->
       <section class="yesterday-section" :class="{ 'visible': isVisible }">
         <div class="card">
@@ -246,6 +259,20 @@ onMounted(() => {
 
 .card-content {
   padding: 1.25rem;
+}
+
+/* 玩家搜索 */
+.search-section {
+  margin-bottom: 2rem;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0.1s;
+}
+
+.search-section.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* 昨日在线 */

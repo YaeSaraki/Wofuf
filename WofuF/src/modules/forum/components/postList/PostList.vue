@@ -251,14 +251,22 @@ onUnmounted(() => {
     </div>
 
     <!-- 帖子列表 -->
-    <div v-else-if="posts.length > 0" class="bf-post-list">
-      <PostCard
-        v-for="post in posts"
-        :key="post.slug"
-        :post="post"
-        @upvote="handleUpvote"
-        @downvote="handleDownvote"
-      />
+    <template v-else-if="posts.length > 0">
+      <TransitionGroup
+        name="bf-post-item"
+        tag="div"
+        class="bf-post-list"
+        appear
+      >
+        <PostCard
+          v-for="(post, index) in posts"
+          :key="post.slug"
+          :post="post"
+          :style="{ '--index': index }"
+          @upvote="handleUpvote"
+          @downvote="handleDownvote"
+        />
+      </TransitionGroup>
 
       <!-- 加载更多指示器 -->
       <div v-if="isLoadingMore" class="bf-load-more">
@@ -270,7 +278,7 @@ onUnmounted(() => {
       <div v-else-if="!hasMore" class="bf-no-more">
         <span>已经到底啦 ~</span>
       </div>
-    </div>
+    </template>
 
     <!-- 空状态 -->
     <div v-else class="bf-empty">
@@ -435,6 +443,22 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--bf-space-md, 16px);
+}
+
+/* 帖子卡片淡入动画 */
+.bf-post-item-enter-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: calc(var(--index, 0) * 0.08s);
+}
+
+.bf-post-item-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.bf-post-item-enter-to {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* === 加载更多 === */

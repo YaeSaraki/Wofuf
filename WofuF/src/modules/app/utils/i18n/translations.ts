@@ -38,6 +38,7 @@ const translations = {
   // 状态页
   'status.yesterdayOnline': {zh: '昨日在线', en: 'Yesterday Online'},
   'status.description': {zh: '欢迎来到 WofuF 服务器状态页面', en: 'Welcome to WofuF Server Status Page'},
+  'status.playerSearch': {zh: '玩家搜索', en: 'Player Search'},
   'status.serverOnline': {zh: '服务器在线', en: 'Server Online'},
   'status.serverOffline': {zh: '服务器离线', en: 'Server Offline'},
   'status.online': {zh: '在线', en: 'Online'},

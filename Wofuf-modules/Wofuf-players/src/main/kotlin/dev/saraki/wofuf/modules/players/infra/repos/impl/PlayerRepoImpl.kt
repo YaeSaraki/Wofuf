@@ -5,6 +5,7 @@ import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerId
 import dev.saraki.wofuf.modules.players.infra.repos.PlayerRepo
 import dev.saraki.wofuf.modules.players.infra.repos.jpa.PlayerJpaRepo
 import dev.saraki.wofuf.modules.players.infra.repos.jpa.mappers.PlayerEntityMapper
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -37,5 +38,11 @@ class PlayerRepoImpl(
     override fun save(player: Player): Player {
         val entity = PlayerEntityMapper.toEntity(player)
         return PlayerEntityMapper.toDomain(playerJpaRepo.save(entity))
+    }
+
+    override fun searchByQuery(query: String, limit: Int): List<Player> {
+        val pageable = PageRequest.of(0, limit)
+        return playerJpaRepo.searchByQuery(query, pageable)
+            .map(PlayerEntityMapper::toDomain)
     }
 }

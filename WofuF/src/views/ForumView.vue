@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { ref, onMounted } from 'vue'
 import PostList from '@M/forum/components/postList/PostList.vue'
 import ForumSidebar from '@M/forum/components/sidebar/ForumSidebar.vue'
 import { translate } from '@S/services/i18n'
@@ -18,6 +19,14 @@ function goToCreatePost() {
   }
   router.push('/forum/create')
 }
+
+// 动画效果
+const isVisible = ref(false)
+onMounted(() => {
+  setTimeout(() => {
+    isVisible.value = true
+  }, 100)
+})
 </script>
 
 <template>
@@ -42,11 +51,13 @@ function goToCreatePost() {
     </header>
 
     <!-- 主要内容区域 - 两栏布局 -->
-    <div class="bf-forum-layout">
+    <div class="bf-forum-layout" :class="{ 'visible': isVisible }">
       <main class="bf-forum-main">
         <PostList />
       </main>
-      <ForumSidebar />
+      <aside class="bf-forum-sidebar" :class="{ 'visible': isVisible }">
+        <ForumSidebar />
+      </aside>
     </div>
   </PageBackground>
 </template>
@@ -182,10 +193,32 @@ function goToCreatePost() {
   grid-template-columns: 1fr 300px;
   gap: var(--bf-space-lg, 24px);
   align-items: start;
+  
+  /* 淡入动画 */
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bf-forum-layout.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .bf-forum-main {
   min-width: 0;
+}
+
+.bf-forum-sidebar {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0.2s;
+}
+
+.bf-forum-sidebar.visible {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* 响应式 */
@@ -197,6 +230,10 @@ function goToCreatePost() {
 
   .bf-header-content {
     max-width: 800px;
+  }
+
+  .bf-forum-sidebar {
+    display: none;
   }
 }
 

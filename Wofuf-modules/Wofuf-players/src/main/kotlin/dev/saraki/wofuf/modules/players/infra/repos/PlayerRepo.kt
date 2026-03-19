@@ -10,4 +10,12 @@ interface PlayerRepo {
     fun findYesterdayOnline(from: Long, to: Long): List<Player>
     fun countAll(): Long
     fun save(player: Player): Player
+    
+    /**
+     * Search players by name (fuzzy match) or UUID (prefix match)
+     * @param query Search query string
+     * @param limit Maximum number of results
+     * @return List of matching players
+     */
+    fun searchByQuery(query: String, limit: Int): List<Player>
 }

@@ -3,6 +3,7 @@ import type {Player} from '@M/players/dtos/Player.ts'
 import type {PlayerSkin} from '@M/players/dtos/PlayerSkin.ts'
 import type {PlayerUuid} from '@M/players/dtos/PlayerUuid.ts'
 import type {PlayerNameList} from '@M/players/dtos/PlayerName.ts'
+import type {PlayerSearchResponse} from '@M/players/dtos/PlayerSearch.ts'
 import type {ApiResponse} from '@S/infra/api/v1/models/ApiResponse.ts'
 import {Result} from '@S/core/Result.ts'
 import {http} from '@S/infra/api/http.ts'
@@ -25,6 +26,9 @@ export interface IPlayerService {
 
   /* ---------------- 获取玩家皮肤 ---------------- */
   getPlayerSkin(playerUuid: PlayerUuid, options?: RequestOptions): Promise<Result<PlayerSkin>>
+
+  /* ---------------- 搜索玩家 ---------------- */
+  searchPlayers(query: string, limit?: number, options?: RequestOptions): Promise<Result<PlayerSearchResponse>>
 }
 
 export class PlayerService implements IPlayerService {
@@ -149,6 +153,30 @@ export class PlayerService implements IPlayerService {
         }
       }
     )
+  }
+
+  /* ---------------- 搜索玩家 ---------------- */
+  public async searchPlayers(
+    query: string,
+    limit: number = 20,
+    options?: RequestOptions,
+  ): Promise<Result<PlayerSearchResponse>> {
+    // 不缓存搜索结果，每次都是实时搜索
+    try {
+      const response = await http.get<ApiResponse<PlayerSearchResponse>>('/api/v1/players/search', {
+        signal: options?.signal,
+        params: { query, limit },
+      })
+
+      if (response.data.success) {
+        return Result.success<PlayerSearchResponse>(response.data.data)
+      }
+      return Result.failure<PlayerSearchResponse>(response.data.message)
+    } catch (error) {
+      return Result.failure<PlayerSearchResponse>(
+        error instanceof Error ? error.message : '搜索玩家失败'
+      )
+    }
   }
 
   public async renderAvatar(skinBase64: string, size: number): Promise<string> {
