@@ -88,7 +88,10 @@ class CollectPlayerDataScheduler(
                 return@forEach
             }
 
-            val playerSkin = pluginApiClient.fetchPlayerSkin(player.uuid) ?: return@forEach
+            val playerSkin = pluginApiClient.fetchPlayerSkin(player.uuid)
+            val type = playerSkin?.type ?: "type"
+            val skin = playerSkin?.skin ?: "skin"
+            val cape = playerSkin?.cape ?: "cape"
 
             val result = collectPlayerDataUseCase.execute(
                 CollectPlayerDataCommand(
@@ -100,9 +103,9 @@ class CollectPlayerDataScheduler(
                     statistics = playerStatistics,
                     advancements = playerAdvancements,
                     playerSkin = PlayerSkin.create(
-                        type = playerSkin.type,
-                        skin = playerSkin.skin,
-                        cape = playerSkin.cape
+                        type = type,
+                        skin = skin,
+                        cape = cape
                     ).getOrThrow()
                 )
             )

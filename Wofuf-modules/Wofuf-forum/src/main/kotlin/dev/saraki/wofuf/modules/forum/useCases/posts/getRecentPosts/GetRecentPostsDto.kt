@@ -10,7 +10,8 @@ import dev.saraki.wofuf.modules.forum.dtos.PostDto
  */
 class GetRecentPostsDto {
     data class Request(
-        val offset: Int? = 10,
+        val page: Int = 0,      // 页码，从 0 开始
+        val size: Int = 10,     // 每页数量
         val userId: String? = null,
         val category: String? = null,  // 分类筛选参数
     )

@@ -1,11 +1,7 @@
-/**
- * 帖子列表组件 - 支持分类筛选和无限滚动
- */
-
 <script lang="ts" setup>
 import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import type { PostDto } from '@M/forum/dtos/Post'
+import { PostCategory, type PostDto } from '@M/forum/dtos/Post'
 import { forumService } from '@M/forum/services/ForumService'
 import { authService } from '@M/auth/services/AuthService'
 import { useAsyncLoader } from '@SU/async/useAsyncLoader'
@@ -13,148 +9,171 @@ import { translate } from '@S/services/i18n'
 import PostCard from '@M/forum/components/postCard/PostCard.vue'
 
 const router = useRouter()
-const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
+const { isLoading, errorMsg } = useAsyncLoader()
 
-// 帖子数据和排序
+// 帖子列表数据
 const posts = ref<PostDto[]>([])
+
+// 当前排序模式：最新 / 热门
 const sortMode = ref<'recent' | 'popular'>('recent')
-const currentOffset = ref(10)
-const hasMore = ref(true)
+
+// 独立分页管理：最新和热门分开计数
+const pageInfo = ref({
+  recent: { current: 0, hasMore: true },
+  popular: { current: 0, hasMore: true },
+})
+
+// 每页加载数量
+const pageSize = ref(10)
+
+// 加载更多状态
 const isLoadingMore = ref(false)
 
-// 当前选中的分类
-const selectedCategory = ref<string>('all')
+// 虚拟分类：全部（不在枚举内）
+const ALL_CATEGORY = 'ALL' as const
+type CategoryValue = PostCategory | typeof ALL_CATEGORY
 
-// 分类列表
+// 当前选中的分类，默认全部
+const selectedCategory = ref<CategoryValue>(ALL_CATEGORY)
+
+// 分类展示列表
 const categories = [
-  { id: 'all', label: '全部', icon: 'grid' },
-  { id: 'discussion', label: '讨论', icon: 'chat' },
-  { id: 'share', label: '分享', icon: 'share' },
-  { id: 'question', label: '求助', icon: 'question' },
-  { id: 'announcement', label: '公告', icon: 'announcement' },
+  { id: ALL_CATEGORY, label: '全部', icon: 'grid' },
+  { id: PostCategory.DISCUSSION, label: '讨论', icon: 'chat' },
+  { id: PostCategory.QUESTION, label: '求助', icon: 'question' },
+  { id: PostCategory.SHOWCASE, label: '展示', icon: 'image' },
+  { id: PostCategory.NEWS, label: '新闻', icon: 'news' },
+  { id: PostCategory.GUIDE, label: '指南', icon: 'book' },
 ]
 
-// 是否已登录
+// 登录状态计算属性
 const isLoggedIn = computed(() => authService.isAuthenticated())
 
-// 获取帖子列表
+// 当前是否还有更多数据可加载
+const hasMore = computed(() => pageInfo.value[sortMode.value].hasMore)
+
+// 获取帖子列表核心方法
 async function fetchPosts(append: boolean = false) {
-  // 加载更多时，使用独立的加载状态，不触发全局 isLoading
-  if (append) {
-    isLoadingMore.value = true
-    try {
-      const fetchFn = sortMode.value === 'recent'
-        ? () => forumService.getRecentPosts(currentOffset.value)
-        : () => forumService.getPopularPosts(currentOffset.value)
+  const mode = sortMode.value
 
-      const result = await fetchFn()
+  // 如果不是加载更多，则重置到第一页（page=0）
+  const page = append ? pageInfo.value[mode].current : 0
 
-      if (result && result.isSuccess) {
-        const newPosts = result.getValue().posts
-        posts.value = [...posts.value, ...newPosts]
-        // 如果返回的帖子数量少于请求数量，说明没有更多了
-        if (newPosts.length < currentOffset.value) {
-          hasMore.value = false
-        }
-      }
-    } catch (err) {
-      console.error('加载更多失败:', err)
-    } finally {
-      isLoadingMore.value = false
-    }
-    return
+  // 非加载更多时清空数据并重置状态
+  if (!append) {
+    posts.value = []
+    pageInfo.value[mode].hasMore = true
   }
 
-  // 首次加载使用 executeAsync
-  const fetchFn = sortMode.value === 'recent'
-    ? () => forumService.getRecentPosts(currentOffset.value)
-    : () => forumService.getPopularPosts(currentOffset.value)
+  // 标记加载更多状态
+  if (append) {
+    isLoadingMore.value = true
+  }
 
-  const result = await executeAsync(fetchFn, translate('forum', 'error'))
+  try {
+    // 全部分类传 null，后端查询所有
+    const category = selectedCategory.value === ALL_CATEGORY ? null : selectedCategory.value
 
-  if (result && result.isSuccess) {
-    const newPosts = result.getValue().posts
-    posts.value = newPosts
-    hasMore.value = newPosts.length >= currentOffset.value
+    // 根据排序模式调用对应接口
+    const result = await (mode === 'recent'
+      ? forumService.getRecentPosts(page, pageSize.value, category)
+      : forumService.getPopularPosts(page, pageSize.value, category))
+
+    if (result?.isSuccess) {
+      const newPosts = result.getValue().posts
+
+      // 加载更多则追加，否则覆盖
+      if (append) {
+        posts.value.push(...newPosts)
+      } else {
+        posts.value = newPosts
+      }
+
+      // 如果返回数量不足一页，表示没有更多数据
+      if (newPosts.length < pageSize.value) {
+        pageInfo.value[mode].hasMore = false
+      }
+
+      // 有数据才翻页
+      if (newPosts.length > 0) {
+        pageInfo.value[mode].current += 1
+      }
+    }
+  } catch (err) {
+    console.error('加载帖子失败:', err)
+  } finally {
+    // 结束加载更多状态
+    if (append) {
+      isLoadingMore.value = false
+    }
   }
 }
 
-// 加载更多
+// 滚动到底加载下一页
 async function loadMore() {
-  if (!hasMore.value || isLoadingMore.value) return
-
-  currentOffset.value += 10
+  // 防重复触发
+  if (!hasMore.value || isLoadingMore.value || isLoading.value) return
   await fetchPosts(true)
 }
 
-// 切换排序
+// 切换最新/热门排序
 function setSortMode(mode: 'recent' | 'popular') {
-  if (mode !== sortMode.value) {
-    sortMode.value = mode
-    currentOffset.value = 10
-    hasMore.value = true
-    fetchPosts()
-  }
+  if (mode === sortMode.value) return
+  sortMode.value = mode
+  fetchPosts(false)
 }
 
 // 切换分类
-function setCategory(categoryId: string) {
-  if (categoryId !== selectedCategory.value) {
-    selectedCategory.value = categoryId
-    currentOffset.value = 10
-    hasMore.value = true
-    fetchPosts()
-  }
+function setCategory(categoryId: CategoryValue) {
+  if (categoryId === selectedCategory.value) return
+  selectedCategory.value = categoryId
+
+  // 切换分类后，两个排序的分页都重置
+  pageInfo.value.recent = { current: 0, hasMore: true }
+  pageInfo.value.popular = { current: 0, hasMore: true }
+
+  fetchPosts(false)
 }
 
-// 处理投票
+// 点赞
 async function handleUpvote(post: PostDto) {
   if (!post.postId) return
-  
   const result = await forumService.upvotePost(post.postId)
   if (result.isSuccess) {
     const data = result.getValue()
-    // 更新帖子数据
-    const index = posts.value.findIndex(p => p.postId === post.postId)
+    const index = posts.value.findIndex((p) => p.postId === post.postId)
     if (index !== -1) {
-      const currentPost = posts.value[index]
-      if (!currentPost) return
-      // toggle 逻辑：如果已经 upvoted，再次点击会取消
-      const wasUpvoted = currentPost.wasUpvotedByMe
+      const item = posts.value[index]!
       posts.value[index] = {
-        ...currentPost,
+        ...item,
         points: data.points ?? data.newPoints,
-        wasUpvotedByMe: !wasUpvoted,
-        wasDownvotedByMe: false
+        wasUpvotedByMe: !item.wasUpvotedByMe,
+        wasDownvotedByMe: false,
       } as PostDto
     }
   }
 }
 
+// 点踩
 async function handleDownvote(post: PostDto) {
   if (!post.postId) return
-  
   const result = await forumService.downvotePost(post.postId)
   if (result.isSuccess) {
     const data = result.getValue()
-    // 更新帖子数据
-    const index = posts.value.findIndex(p => p.postId === post.postId)
+    const index = posts.value.findIndex((p) => p.postId === post.postId)
     if (index !== -1) {
-      const currentPost = posts.value[index]
-      if (!currentPost) return
-      // toggle 逻辑：如果已经 downvoted，再次点击会取消
-      const wasDownvoted = currentPost.wasDownvotedByMe
+      const item = posts.value[index]!
       posts.value[index] = {
-        ...currentPost,
+        ...item,
         points: data.points ?? data.newPoints,
         wasUpvotedByMe: false,
-        wasDownvotedByMe: !wasDownvoted
+        wasDownvotedByMe: !item.wasDownvotedByMe,
       } as PostDto
     }
   }
 }
 
-// 跳转到发帖页
+// 前往发帖页面
 function goToCreatePost() {
   if (!isLoggedIn.value) {
     router.push('/forum/login')
@@ -163,21 +182,15 @@ function goToCreatePost() {
   router.push('/forum/create')
 }
 
-// 重试
+// 重试加载
 function retry() {
-  fetchPosts()
+  fetchPosts(false)
 }
 
-// 无限滚动处理
+// 滚动监听
 function handleScroll() {
-  if (isLoadingMore.value || !hasMore.value) return
-
-  const scrollHeight = document.documentElement.scrollHeight
-  const scrollTop = window.scrollY
-  const clientHeight = window.innerHeight
-
-  // 距离底部 200px 时触发加载
-  if (scrollTop + clientHeight >= scrollHeight - 200) {
+  const { scrollTop, scrollHeight, clientHeight } = document.documentElement
+  if (scrollTop + clientHeight >= scrollHeight - 300) {
     loadMore()
   }
 }
@@ -194,7 +207,6 @@ onUnmounted(() => {
 
 <template>
   <div class="bf-post-list-container">
-    <!-- 分类标签 -->
     <div class="bf-categories">
       <button
         v-for="category in categories"
@@ -207,7 +219,6 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <!-- 顶部操作栏 -->
     <div class="bf-forum__header">
       <div class="bf-forum__tabs">
         <button
@@ -216,7 +227,11 @@ onUnmounted(() => {
           @click="setSortMode('recent')"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           {{ translate('forum', 'sortRecent') }}
         </button>
@@ -226,13 +241,21 @@ onUnmounted(() => {
           @click="setSortMode('popular')"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343a7.975 7.975 0 010 11.314z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343a7.975 7.975 0 010 11.314z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"
+            />
           </svg>
           {{ translate('forum', 'sortPopular') }}
         </button>
       </div>
-      <button class="bf-btn bf-btn--primary bf-btn--create" @click="goToCreatePost">
+      <button class="bf-btn bf-btn--primary bf-btn-create" @click="goToCreatePost">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -240,30 +263,35 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <!-- 加载状态 -->
     <div v-if="isLoading" class="bf-loading">
       <div class="bf-loading__spinner"></div>
       <span class="bf-loading__text">{{ translate('forum', 'loading') }}</span>
     </div>
 
-    <!-- 错误状态 -->
     <div v-else-if="errorMsg" class="bf-error">
       <div class="bf-error__icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
         </svg>
       </div>
       <p class="bf-error__text">{{ errorMsg }}</p>
       <button class="bf-btn bf-btn--secondary" @click="retry">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
         </svg>
         {{ translate('forum', 'retry') }}
       </button>
     </div>
 
-    <!-- 帖子列表 -->
-    <template v-else-if="posts.length > 0">
+    <template v-else>
       <div class="bf-post-list">
         <PostCard
           v-for="post in posts"
@@ -274,34 +302,35 @@ onUnmounted(() => {
         />
       </div>
 
-      <!-- 加载更多指示器 -->
       <div v-if="isLoadingMore" class="bf-load-more">
         <div class="bf-loading__spinner bf-loading__spinner--sm"></div>
         <span>加载中...</span>
       </div>
 
-      <!-- 没有更多提示 -->
-      <div v-else-if="!hasMore" class="bf-no-more">
+      <div v-else-if="!hasMore && posts.length > 0" class="bf-no-more">
         <span>已经到底啦 ~</span>
       </div>
-    </template>
 
-    <!-- 空状态 -->
-    <div v-else class="bf-empty">
-      <div class="bf-empty__icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
+      <div v-if="posts.length === 0" class="bf-empty">
+        <div class="bf-empty__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
+          </svg>
+        </div>
+        <h3 class="bf-empty__title">{{ translate('forum', 'noPosts') }}</h3>
+        <p class="bf-empty__desc">{{ translate('forum', 'noPostsDesc') }}</p>
+        <button class="bf-btn bf-btn--primary" @click="goToCreatePost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          {{ translate('forum', 'create_post') }}
+        </button>
       </div>
-      <h3 class="bf-empty__title">{{ translate('forum', 'noPosts') }}</h3>
-      <p class="bf-empty__desc">{{ translate('forum', 'noPostsDesc') }}</p>
-      <button class="bf-btn bf-btn--primary" @click="goToCreatePost">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-        </svg>
-        {{ translate('forum', 'create_post') }}
-      </button>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -496,7 +525,9 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .bf-loading__text {
@@ -517,7 +548,7 @@ onUnmounted(() => {
 .bf-error__icon {
   width: 48px;
   height: 48px;
-  color: #EF4444;
+  color: #ef4444;
   margin-bottom: var(--bf-space-md, 16px);
 }
 

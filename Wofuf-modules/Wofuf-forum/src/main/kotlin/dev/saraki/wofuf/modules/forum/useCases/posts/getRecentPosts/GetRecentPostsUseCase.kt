@@ -6,6 +6,7 @@ import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostVotesRepo
 import dev.saraki.wofuf.modules.forum.mappers.PostDtoMapper
+import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
@@ -26,9 +27,9 @@ class GetRecentPostsUseCase(
 ) : UseCase<GetRecentPostsDto.Request, GetRecentPostsDto.Response> {
 
     override fun execute(request: GetRecentPostsDto.Request): Result<GetRecentPostsDto.Response> {
-        // 1. Validate offset
-        if (request.offset != null && request.offset <= 0) {
-            return GetRecentPostsErrors.InvalidOffsetError(request.offset)
+        // 1. Validate page
+        if (request.page < 0) {
+            return GetRecentPostsErrors.InvalidPageError(request.page)
         }
 
         // 2. Parse category
@@ -38,7 +39,7 @@ class GetRecentPostsUseCase(
         var currentMemberId: MemberId? = null
         if (!request.userId.isNullOrBlank()) {
             val member = memberRepo.findMemberByUserId(
-                dev.saraki.wofuf.modules.users.domain.valueObjects.UserId.create(
+                UserId.create(
                     UniqueEntityId(request.userId)
                 ).getOrNull() ?: return Result.success(GetRecentPostsDto.Response(emptyList()))
             )
@@ -46,7 +47,7 @@ class GetRecentPostsUseCase(
         }
 
         // 4. Find recent posts with category filter
-        val posts = postRepo.findRecentPosts(request.offset, category)
+        val posts = postRepo.findRecentPosts(request.page, request.size, category)
 
         // 5. Batch get vote statuses (避免 N+1 查询)
         val voteStatusMap = currentMemberId?.let { memberId ->

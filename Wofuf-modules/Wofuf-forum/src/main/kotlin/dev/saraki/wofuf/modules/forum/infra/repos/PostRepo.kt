@@ -14,8 +14,8 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 interface PostRepo {
     fun findPostByPostId(postId: PostId): Post?
     fun findPostBySlug(postSlug: PostSlug): Post?
-    fun findRecentPosts(offset: Int? = null, category: PostCategory? = null): List<Post>
-    fun findPopularPosts(offset: Int? = null, category: PostCategory? = null): List<Post>
+    fun findRecentPosts(page: Int, size: Int, category: PostCategory?): List<Post>
+    fun findPopularPosts(page: Int, size: Int, category: PostCategory?): List<Post>
     fun findNumberOfCommentsByPostId(postId: PostId): Int?
     fun exists(postId: PostId): Boolean
     fun save(post: Post): Post

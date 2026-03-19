@@ -1,95 +1,109 @@
 erDiagram
-%% 用户表
+%% ============================================================
+%%  Wofuf 数据库 E-R 图
+%%  架构：数据库-per-service（每个微服务独立数据库）
+%% ============================================================
+
+%% -------------------- users_db --------------------
+
     users {
         string id PK "用户ID (UUID)"
         string email UK "用户邮箱"
         string username UK "用户名"
-        string password "加密后的密码"
+        string password "BCrypt加密密码"
         boolean is_email_verified "邮箱是否已验证"
         boolean is_admin_user "是否为管理员"
-        boolean is_deleted "是否已删除"
+        string access_token "JWT访问令牌"
+        string refresh_token "JWT刷新令牌"
+        boolean is_deleted "软删除标记"
         datetime last_login "最后登录时间"
         datetime created_at "创建时间"
         datetime updated_at "更新时间"
     }
 
-%% 玩家表
+%% -------------------- players_db --------------------
+
     players {
-        string uuid PK "玩家UUID"
-        string name "玩家名称"
-        long first_login "首次登录时间戳"
-        long last_login "最后登录时间戳"
-        long total_playtime "总游戏时长(秒)"
-        long update_time "数据更新时间戳"
-        longtext advancements_json "成就数据(JSON格式)"
-        longtext statistics_json "统计数据(JSON格式)"
+        string player_uuid PK "玩家UUID"
+        string player_name UK "玩家名称"
+        bigint first_login "首次登录时间戳"
+        bigint last_login "最后登录时间戳"
+        bigint total_playtime_seconds "总游戏时长(秒)"
+        bigint update_time "数据更新时间戳"
+        text statistics_json "统计数据JSON Map(String, PlayerStatistic)"
+        text advancements_json "成就数据JSON Map(String, PlayerAdvancement)"
+        string skin_type "皮肤类型"
+        string skin_url "皮肤URL"
+        string cape_url "披风URL"
     }
 
-%% 用户-玩家关联表
-    user_player_links {
-        string user_id PK, FK "用户ID"
-        string player_uuid PK, FK "玩家UUID"
-        datetime linked_at "关联时间"
-    }
+%% -------------------- forum_db --------------------
 
-%% 论坛主题表
-    forum_topics {
-        string id PK "主题ID (UUID)"
-        string title "主题标题"
-        string content "主题内容"
-        string user_id FK "发布用户ID"
-        string player_uuid FK "发布玩家UUID"
-        int view_count "浏览次数"
-        int reply_count "回复次数"
-        datetime created_at "创建时间"
-        datetime updated_at "更新时间"
-        boolean is_pinned "是否置顶"
-        boolean is_locked "是否锁定"
-    }
-
-%% 论坛回复表
-    forum_replies {
-        string id PK "回复ID (UUID)"
-        string topic_id FK "主题ID"
-        string content "回复内容"
-        string user_id FK "回复用户ID"
-        string player_uuid FK "回复玩家UUID"
-        string parent_reply_id FK "父回复ID (用于多级回复)"
+    members {
+        string id PK "成员ID (UUID)"
+        string user_id UK "关联用户ID (跨域, 无FK约束)"
+        string player_id UK "关联玩家UUID (跨域, 无FK约束)"
+        string nick_name "昵称"
+        int reputation "声望值"
         datetime created_at "创建时间"
         datetime updated_at "更新时间"
     }
 
-%% 论坛分类表
-    forum_categories {
-        string id PK "分类ID (UUID)"
-        string name "分类名称"
-        string description "分类描述"
-        int sort_order "排序顺序"
+    posts {
+        string id PK "帖子ID (UUID)"
+        string member_id FK "发布者成员ID"
+        string slug UK "URL友好标识(标题-随机数字)"
+        string title "帖子标题"
+        string type "类型(TEXT/LINK)"
+        string category "分类(DISCUSSION/SHARE/QUESTION/ANNOUNCEMENT)"
+        text text "Markdown正文(最大50000字符)"
+        string link "链接URL(可选)"
+        int total_num_comments "评论总数"
+        int points "投票分数(upvotes - downvotes)"
+        datetime date_time_posted "发布时间"
         datetime created_at "创建时间"
         datetime updated_at "更新时间"
     }
 
-%% 主题-分类关联表
-    topic_categories {
-        string topic_id PK, FK "主题ID"
-        string category_id PK, FK "分类ID"
+    comments {
+        string id PK "评论ID (UUID)"
+        string member_id FK "评论者成员ID"
+        string post_id FK "所属帖子ID"
+        string parent_comment_id FK "父评论ID(null=顶层评论)"
+        text text "评论内容(最大20000字符)"
+        int points "投票分数"
+        datetime created_at "创建时间"
+        datetime updated_at "更新时间"
     }
 
-%% 用户与玩家的关联
-    users ||--o{ user_player_links: "关联"
-    players ||--o{ user_player_links: "被关联"
-%% 用户与论坛主题的关系
-    users ||--o{ forum_topics: "发布"
-%% 玩家与论坛主题的关系
-    players ||--o{ forum_topics: "发布"
-%% 用户与论坛回复的关系
-    users ||--o{ forum_replies: "发布"
-%% 玩家与论坛回复的关系
-    players ||--o{ forum_replies: "发布"
-%% 论坛主题与回复的关系
-    forum_topics ||--o{ forum_replies: "包含"
-%% 回复之间的父子关系
-    forum_replies ||--o{ forum_replies: "回复"
-%% 分类与主题的关系
-    forum_categories ||--o{ topic_categories: "包含"
-    forum_topics ||--o{ topic_categories: "属于"
+    post_votes {
+        string id PK "投票ID (UUID)"
+        string post_id FK "帖子ID"
+        string member_id FK "投票者成员ID"
+        string vote_type "投票类型(UPVOTE/DOWNVOTE)"
+        datetime created_at "创建时间"
+    }
+
+    comment_votes {
+        string id PK "投票ID (UUID)"
+        string comment_id FK "评论ID"
+        string member_id FK "投票者成员ID"
+        string vote_type "投票类型(UPVOTE/DOWNVOTE)"
+        datetime created_at "创建时间"
+    }
+
+%% -------------------- 论坛子域内部关系 --------------------
+
+    members ||--o{ posts : "发布"
+    members ||--o{ comments : "发布"
+    posts ||--o{ comments : "包含"
+    comments ||--o{ comments : "子回复(自引用)"
+    posts ||--o{ post_votes : "被投票"
+    comments ||--o{ comment_votes : "被投票"
+    members ||--o{ post_votes : "投票"
+    members ||--o{ comment_votes : "投票"
+
+%% -------------------- 跨域关系(应用层, 非数据库外键) --------------------
+
+    %% users_db.users  1---1  forum_db.members (通过 user_id, 应用层API校验)
+    %% players_db.players  1---1  forum_db.members (通过 player_id, 应用层API校验)

@@ -23,8 +23,8 @@ import { authService } from '@M/auth/services/AuthService.ts'
 
 export interface IForumService {
   /* ---------------- 帖子列表 ---------------- */
-  getRecentPosts(offset?: number, category?: PostCategory, options?: RequestOptions): Promise<Result<GetPostsResponse>>
-  getPopularPosts(offset?: number, category?: PostCategory, options?: RequestOptions): Promise<Result<GetPostsResponse>>
+  getRecentPosts(page: number, size: number, category?: PostCategory, options?: RequestOptions): Promise<Result<GetPostsResponse>>
+  getPopularPosts(page: number, size: number, category?: PostCategory, options?: RequestOptions): Promise<Result<GetPostsResponse>>
 
   /* ---------------- 帖子详情 ---------------- */
   getPostBySlug(slug: string, options?: RequestOptions): Promise<Result<GetPostResponse>>
@@ -57,11 +57,12 @@ export class ForumService implements IForumService {
    * 获取最新帖子
    */
   public async getRecentPosts(
-    offset: number = 10,
+    page: number = 0,       // 页码 1 开始
+    size: number = 10,      // 每页条数
     category?: PostCategory,
     options?: RequestOptions,
   ): Promise<Result<GetPostsResponse>> {
-    const cacheKey = `recent_posts_${offset}_${category || 'all'}`
+    const cacheKey = `recent_posts_${page}_${size}_${category || 'all'}`
 
     return cacheService.withCacheAndDeduplication<Result<GetPostsResponse>>(
       ForumService.CACHE_MODULE,
@@ -69,7 +70,8 @@ export class ForumService implements IForumService {
       async () => {
         try {
           const tokens = authService.getTokens()
-          const params: Record<string, string | number> = { offset }
+          const params: Record<string, string | number> = { page, size }
+
           if (tokens?.userId) {
             params.userId = tokens.userId
           }
@@ -101,11 +103,12 @@ export class ForumService implements IForumService {
    * 获取热门帖子
    */
   public async getPopularPosts(
-    offset: number = 10,
+    page: number = 0,
+    size: number = 10,
     category?: PostCategory,
     options?: RequestOptions,
   ): Promise<Result<GetPostsResponse>> {
-    const cacheKey = `popular_posts_${offset}_${category || 'all'}`
+    const cacheKey = `popular_posts_${page}_${size}_${category || 'all'}`
 
     return cacheService.withCacheAndDeduplication<Result<GetPostsResponse>>(
       ForumService.CACHE_MODULE,
@@ -113,7 +116,8 @@ export class ForumService implements IForumService {
       async () => {
         try {
           const tokens = authService.getTokens()
-          const params: Record<string, string | number> = { offset }
+          const params: Record<string, string | number> = { page, size }
+
           if (tokens?.userId) {
             params.userId = tokens.userId
           }
@@ -142,6 +146,7 @@ export class ForumService implements IForumService {
   }
 
   /* ==================== 帖子详情 ==================== */
+
 
   /**
    * 根据 Slug 获取帖子

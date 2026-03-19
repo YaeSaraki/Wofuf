@@ -12,12 +12,8 @@ enum class PostCategory {
     ANNOUNCEMENT;  // 公告
 
     companion object {
-        fun fromString(value: String): PostCategory? {
-            return try {
-                valueOf(value.uppercase())
-            } catch (e: IllegalArgumentException) {
-                null
-            }
+        fun fromString(value: String): PostCategory {
+            return valueOf(value.uppercase())
         }
     }
 }

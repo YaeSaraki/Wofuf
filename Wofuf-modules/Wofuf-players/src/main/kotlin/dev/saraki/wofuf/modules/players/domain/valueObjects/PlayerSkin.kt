@@ -43,5 +43,13 @@ class PlayerSkin private constructor(
                 )
             )
         }
+
+        val defaultProps = PlayerSkin(
+            PlayerSkinProps(
+                type = "default",
+                skin = "",
+                cape = "",
+            )
+        )
     }
 }

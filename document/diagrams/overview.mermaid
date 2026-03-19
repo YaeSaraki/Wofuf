@@ -1,0 +1,76 @@
+usecaseDiagram overview
+actor Visitor as "访客（未登录）"
+actor User as "注册用户"
+actor System as "系统（定时任务）"
+actor Plugin as "MC 插件 API"
+
+package "用户模块\nUsers Module" {
+UC_Register 注册
+UC_Login 登录
+UC_Logout 登出
+UC_RefreshToken 刷新令牌
+UC_GetCurrentUser 获取当前用户
+UC_GetUserByUsername 按用户名查询
+UC_DeleteUser 删除账户
+}
+
+package "玩家模块\nPlayers Module" {
+UC_GetPlayer 查询玩家资料
+UC_RandomPlayer 随机发现玩家
+UC_PlayerStats 查询玩家统计
+UC_PlayerAdvs 查询玩家成就
+UC_PlayerSkin 查询玩家皮肤
+UC_YesterdayOnline 昨日在线玩家
+UC_SearchPlayer 搜索玩家
+UC_CollectData 采集玩家数据
+}
+
+package "论坛模块\nForum Module" {
+UC_CreatePost 发布帖子
+UC_GetPost 查看帖子
+UC_EditPost 编辑帖子
+UC_DeletePost 删除帖子
+UC_VotePost 帖子投票
+UC_RecentPosts 最新帖子列表
+UC_PopularPosts 热门帖子列表
+UC_ReplyPost 回复帖子
+UC_ReplyComment 回复评论
+UC_GetComments 查看评论
+UC_VoteComment 评论投票
+UC_CreateMember 创建论坛成员
+UC_GetMember 查询论坛成员
+UC_UploadImage 上传图片
+}
+
+Visitor --> UC_Register
+Visitor --> UC_Login
+Visitor --> UC_GetPlayer
+Visitor --> UC_RandomPlayer
+Visitor --> UC_PlayerStats
+Visitor --> UC_PlayerAdvs
+Visitor --> UC_PlayerSkin
+Visitor --> UC_YesterdayOnline
+Visitor --> UC_SearchPlayer
+Visitor --> UC_RecentPosts
+Visitor --> UC_PopularPosts
+Visitor --> UC_GetPost
+Visitor --> UC_GetComments
+
+User --> UC_Logout
+User --> UC_RefreshToken
+User --> UC_GetCurrentUser
+User --> UC_DeleteUser
+User --> UC_CreatePost
+User --> UC_EditPost
+User --> UC_DeletePost
+User --> UC_VotePost
+User --> UC_ReplyPost
+User --> UC_ReplyComment
+User --> UC_VoteComment
+User --> UC_CreateMember
+User --> UC_GetMember
+User --> UC_UploadImage
+
+Plugin --> UC_CollectData
+System --> UC_CollectData
+System --> UC_YesterdayOnline

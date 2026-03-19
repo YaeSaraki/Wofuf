@@ -18,4 +18,12 @@ class GetPopularPostsErrors {
             message = "Offset must be a positive number, got: $offset"
         )
     )
+
+    /** Invalid page value */
+    class InvalidPageError(val page: Int?) : Result.Failure<GetPopularPostsDto.Response>(
+        exception = UseCaseError(
+            code = "INVALID_PAGE_ERROR",
+            message = "Page must be a positive number, got: $page"
+        )
+    )
 }

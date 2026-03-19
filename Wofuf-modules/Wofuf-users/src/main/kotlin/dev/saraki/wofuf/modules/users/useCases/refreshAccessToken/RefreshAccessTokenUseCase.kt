@@ -22,29 +22,28 @@ class RefreshAccessTokenUseCase(
 ) : UseCase<RefreshAccessTokenDto.Request, RefreshAccessTokenDto.Response> {
     override fun execute(request: RefreshAccessTokenDto.Request): Result<RefreshAccessTokenDto.Response> {
 
-        // 验证访问令牌
-        val authSession = userAuthService.authenticate(request.accessToken)
-        if (authSession == null || authSession.userId != request.id) {
-            return RefreshAccessTokenErrors.InvalidTokenError()
-        }
+        // 使用 refreshToken 刷新会话
+        val refreshAuthSession = userAuthService.refresh(request.refreshToken)
+            ?: return RefreshAccessTokenErrors.InvalidTokenError()
+
+        // 从新的 JWT 中获取用户信息
+        val jwtClaims = userAuthService.decodeJWT(refreshAuthSession.accessToken)
+            ?: return RefreshAccessTokenErrors.InvalidTokenError()
 
         // 检测UserId是否有效
-        val userIdOrError = UserId.create(UniqueEntityId(request.id))
+        val userIdOrError = UserId.create(UniqueEntityId(jwtClaims.userId))
         if (userIdOrError.isFailure) {
             return Result.failure(userIdOrError.exceptionOrThrow())
         }
         val userId = userIdOrError.getOrThrow()
 
-
         // 查找用户实体
-        val user = userRepo.findUserByUserId(userId) ?: return RefreshAccessTokenErrors.UserNotFoundError(request.id)
-
-        // service 生成新的访问令牌和刷新令牌
-        val refreshAuthSession =
-            userAuthService.refresh(request.refreshToken) ?: return RefreshAccessTokenErrors.InvalidTokenError()
+        val user = userRepo.findUserByUserId(userId)
+            ?: return RefreshAccessTokenErrors.UserNotFoundError(jwtClaims.userId)
 
         // 返回刷新令牌响应
         val refreshAccessTokenResponseDto = RefreshAccessTokenDto.Response(
+            userId = user.userId.stringValue,
             accessToken = refreshAuthSession.accessToken,
             refreshToken = refreshAuthSession.refreshToken,
         )

@@ -22,13 +22,17 @@ class GetPopularPostsController(
 
     @GetMapping
     fun getPopularPosts(
-        @RequestParam(required = false) offset: Int?,
-        @RequestParam(required = false) userId: String?
+        @RequestParam(required = false) page: Int?,
+        @RequestParam(required = false) size: Int?,
+        @RequestParam(required = false) userId: String?,
+        @RequestParam(required = false) category: String?
     ): ApiResponse<GetPopularPostsDto.Response> {
         val result = getPopularPostsUseCase.execute(
             GetPopularPostsDto.Request(
-                offset = offset ?: 10,
-                userId = userId
+                page = page ?: 1,
+                size = size ?: 10,
+                userId = userId,
+                category = category
             )
         ).getOrThrow()
         return ApiResponse.success(result)

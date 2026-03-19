@@ -27,7 +27,6 @@ class GetUserByUsernameController : BaseController() {
         val resultOrError = getUserByUsernameUseCase.execute(GetUserByUsernameDto.Request(username))
         if (resultOrError.isFailure) {
             return ApiResponse.error(resultOrError.exceptionOrThrow())
-
         }
         val result = resultOrError.getOrThrow()
         return ApiResponse.success(result)

@@ -36,24 +36,32 @@ class PostRepoImpl(
         return PostEntityMapper.toDomain(postEntity)
     }
 
-    override fun findRecentPosts(offset: Int?, category: PostCategory?): List<Post> {
-        val limit = offset ?: 10
-        val postEntities = if (category != null) {
-            postJpaRepo.findRecentPostsByCategory(category, limit)
-        } else {
-            postJpaRepo.findRecentPosts(limit)
+    override fun findRecentPosts(page: Int, size: Int, category: PostCategory?): List<Post> {
+        val safeSize = size.coerceAtLeast(1)
+
+        // 不传分类 → 查询全部
+        if (category == null) {
+            return postJpaRepo.findRecentPosts(page, safeSize)
+                .map(PostEntityMapper::toDomain)
         }
-        return postEntities.map(PostEntityMapper::toDomain)
+
+        // 传分类 → 只查该分类
+        return postJpaRepo.findRecentPostsByCategory(category, page, safeSize)
+            .map(PostEntityMapper::toDomain)
     }
 
-    override fun findPopularPosts(offset: Int?, category: PostCategory?): List<Post> {
-        val limit = offset ?: 10
-        val postEntities = if (category != null) {
-            postJpaRepo.findPopularPostsByCategory(category, limit)
-        } else {
-            postJpaRepo.findPopularPosts(limit)
+    override fun findPopularPosts(page: Int, size: Int, category: PostCategory?): List<Post> {
+        val safeSize = size.coerceAtLeast(1)
+
+        // 不传分类 → 查询全部
+        if (category == null) {
+            return postJpaRepo.findPopularPosts(page, safeSize)
+                .map(PostEntityMapper::toDomain)
         }
-        return postEntities.map(PostEntityMapper::toDomain)
+
+        // 传分类 → 只查该分类
+        return postJpaRepo.findPopularPostsByCategory(category, page, safeSize)
+            .map(PostEntityMapper::toDomain)
     }
 
     override fun exists(postId: PostId): Boolean =

@@ -1,47 +1,94 @@
+%% Wofuf 总体架构图
+%% 基于 Domain-Driven Design (DDD) 微服务架构
+
 flowchart TB
 %% ===== Client Layer =====
     subgraph CL["客户端层 (Client Layer)"]
-        Browser["浏览器客户端"]
-        MCPlugin["Minecraft 插件"]
-        Admin["管理控制台"]
+        Browser["浏览器客户端\nVue 3 + Vite + PrimeVue + Tailwind"]
+        MCPlugin["Minecraft 插件\nMeovo 数据采集"]
     end
 
 %% ===== API Gateway =====
-    subgraph GW["API 网关层 (API Gateway Layer)"]
-        Gateway["Spring Cloud Gateway"]
+    subgraph GW["API 网关层 (Gateway Layer)"]
+        Gateway["Spring Cloud Gateway\n- 路由转发\n- 限流熔断\n- CORS 处理"]
     end
 
-%% ===== Services =====
+%% ===== Backend Services (DDD) =====
     subgraph PS["玩家服务 (Players Service)"]
-        PS_Domain["领域层"]
-        PS_Infra["基础设施层"]
+        direction TB
+        PS_Domain["领域层\n- Player 实体\n- PlayerId/PlayerName 值对象\n- 领域事件"]
+        PS_UseCases["用例层\n- GetPlayerUseCase\n- GetPlayerStatisticsUseCase\n- GetRandomPlayersUseCase"]
+        PS_Infra["基础设施层\n- PlayerRepository\n- PlayerJpaRepository\n- PlayerEntityMapper"]
+        PS_DTOs["DTO层\n- 请求/响应对象\n- DtoMap 映射"]
+        PS_Config["配置层\n- PlayerApiPathConfig\n- 端点配置"]
+        
+        PS_Domain --> PS_UseCases
+        PS_UseCases --> PS_DTOs
+        PS_Infra --> PS_Domain
+        PS_UseCases --> PS_Infra
     end
 
     subgraph US["用户服务 (Users Service)"]
-        US_Domain["领域层"]
-        US_Infra["基础设施层"]
+        direction TB
+        US_Domain["领域层\n- User 实体\n- 值对象\n- JWT Token"]
+        US_UseCases["用例层\n- LoginUseCase\n- RegisterUseCase\n- RefreshTokenUseCase"]
+        US_Infra["基础设施层\n- UserRepository\n- JWT 服务"]
+        US_DTOs["DTO层\n- 请求/响应对象"]
+        
+        US_Domain --> US_UseCases
+        US_UseCases --> US_DTOs
+        US_Infra --> US_Domain
     end
 
     subgraph FS["论坛服务 (Forum Service)"]
-        FS_Domain["领域层"]
-        FS_Infra["基础设施层"]
+        direction TB
+        FS_Domain["领域层\n- Post 实体\n- Comment 实体\n- 值对象"]
+        FS_UseCases["用例层\n- CreatePostUseCase\n- AddCommentUseCase\n- GetPostUseCase"]
+        FS_Infra["基础设施层\n- PostRepository\n- CommentRepository"]
+        FS_DTOs["DTO层\n- 请求/响应对象"]
+        
+        FS_Domain --> FS_UseCases
+        FS_UseCases --> FS_DTOs
+        FS_Infra --> FS_Domain
+    end
+
+%% ===== Shared Modules =====
+    subgraph Shared["共享模块"]
+        SharedCore["shared\n- Result, UseCase, Guard\n- AggregateRoot, ValueObject\n- UniqueEntityId"]
+        SharedAuth["shared-auth\n- JWT 工具类\n- 认证过滤器"]
     end
 
 %% ===== Infrastructure =====
-    Redis["Redis 缓存"]
-    MySQL_Player["MySQL 玩家库"]
-    MySQL_Forum["MySQL 论坛库"]
+    subgraph MQ["消息队列"]
+        Kafka["Kafka\n- Eventuate Tram\n- 领域事件发布\n- 跨服务通信"]
+    end
+
+    Redis["Redis 缓存\n- Database 0: 认证令牌\n- Database 1: 玩家数据"]
+    MySQL_Player["MySQL 玩家库\n- players 数据库"]
+    MySQL_Forum["MySQL 论坛库\n- forum 数据库"]
+    MySQL_User["MySQL 用户库\n- users 数据库"]
+
 %% ===== Connections =====
     Browser --> Gateway
     MCPlugin --> Gateway
-    Admin --> Gateway
     Gateway --> PS
     Gateway --> US
     Gateway --> FS
-    PS_Domain --> PS_Infra
+    
+    PS_UseCases --> Redis
     PS_Infra --> Redis
     PS_Infra --> MySQL_Player
-    US_Domain --> US_Infra
-    US_Infra --> MySQL_Player
-    FS_Domain --> FS_Infra
+    PS_Infra --> Kafka
+    
+    US_Infra --> Redis
+    US_Infra --> MySQL_User
+    US_Infra --> Kafka
+    
     FS_Infra --> MySQL_Forum
+    FS_Infra --> Kafka
+    
+    PS --> SharedCore
+    PS --> SharedAuth
+    US --> SharedCore
+    US --> SharedAuth
+    FS --> SharedCore

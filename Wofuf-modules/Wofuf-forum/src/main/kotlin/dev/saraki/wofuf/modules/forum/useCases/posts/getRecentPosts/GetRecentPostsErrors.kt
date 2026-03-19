@@ -18,4 +18,11 @@ class GetRecentPostsErrors {
             message = "Offset must be a positive number, got: $offset"
         )
     )
+
+    class InvalidPageError(val page: Int?) : Result.Failure<GetRecentPostsDto.Response>(
+        exception = UseCaseError(
+            code = "INVALID_PAGE_ERROR",
+            message = "Page must be a positive number, got: $page"
+        )
+    )
 }
