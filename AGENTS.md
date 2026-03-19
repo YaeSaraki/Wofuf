@@ -1,4 +1,4 @@
-# Wofuf AI Agent Guidelines
+**********# Wofuf AI Agent Guidelines
 
 ## 🚀 Quick Start for AI Agents
 
@@ -672,4 +672,4 @@ abstract class {UseCaseName}DtoMap {
 - Monitor changes to shared libraries and frameworks
 - Stay current with Kotlin and Spring Boot best practices
 - Learn from community patterns and standards
-- Incorporate lessons from code reviews and testing
+- Incorporate lessons from code reviews and testing**********

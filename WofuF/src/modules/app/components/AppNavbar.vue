@@ -133,9 +133,9 @@ const drawerStyle = computed(() => ({
 // 抽屉拖拽处理
 const handleDrawerDragStart = (event: MouseEvent | TouchEvent) => {
   event.preventDefault()
-  
+
   const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0]?.clientY || 0
-  
+
   drawerDragState.value = {
     isDragging: true,
     startY: clientY,
@@ -156,7 +156,7 @@ const handleDrawerDragMove = (event: MouseEvent | TouchEvent) => {
 
   const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0]?.clientY || 0
   const deltaY = drawerDragState.value.startY - clientY // 向上拖动为正
-  
+
   drawerDragState.value.currentHeight = drawerDragState.value.startHeight + deltaY
 }
 
@@ -172,7 +172,7 @@ const handleDrawerDragEnd = () => {
   // 根据拖动后的高度判断展开还是收起
   const threshold = (drawerMaxHeight.value + drawerMinHeight) / 2
   drawerExpanded.value = drawerDragState.value.currentHeight >= threshold
-  
+
   drawerDragState.value.isDragging = false
 }
 
@@ -375,18 +375,18 @@ const handleSettingsBallClick = () => {
 
 onMounted(() => {
   checkMobile()
-  
+
   // 计算抽屉最大高度
   if (isMobile.value) {
     drawerMaxHeight.value = 130
   }
-  
+
   // 初始化设置按钮位置 - 右下角20%处
   if (!settingsBallPositionInitialized.value) {
     settingsBallPosition.value.y = Math.floor(window.innerHeight * 0.2)
     settingsBallPositionInitialized.value = true
   }
-  
+
   window.addEventListener('resize', () => {
     checkMobile()
     resetMenuPosition()
@@ -455,14 +455,14 @@ onUnmounted(() => {
     <div class="drawer-blur" />
     <div class="drawer-content">
       <!-- 拖拽手柄 -->
-      <div 
+      <div
         class="drawer-handle-wrapper"
         @mousedown="handleDrawerDragStart"
         @touchstart="handleDrawerDragStart"
       >
         <div class="drawer-handle" />
       </div>
-      
+
       <!-- 导航项 (只在展开时显示) -->
       <div v-show="drawerExpanded || drawerDragState.isDragging" class="nav-items">
         <router-link
@@ -549,9 +549,9 @@ onUnmounted(() => {
         <div class="settings-section">
           <div class="section-label">{{ translate('app', 'settings.theme') }}</div>
           <div class="theme-options">
-            <button 
-              class="theme-btn" 
-              :class="{ active: currentTheme === 'light' }" 
+            <button
+              class="theme-btn"
+              :class="{ active: currentTheme === 'light' }"
               @click="toggleThemeMode('light')"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -559,9 +559,9 @@ onUnmounted(() => {
               </svg>
               <span>{{ translate('app', 'settings.themeLight') }}</span>
             </button>
-            <button 
-              class="theme-btn" 
-              :class="{ active: currentTheme === 'dark' }" 
+            <button
+              class="theme-btn"
+              :class="{ active: currentTheme === 'dark' }"
               @click="toggleThemeMode('dark')"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -569,9 +569,9 @@ onUnmounted(() => {
               </svg>
               <span>{{ translate('app', 'settings.themeDark') }}</span>
             </button>
-            <button 
-              class="theme-btn" 
-              :class="{ active: currentTheme === 'system' }" 
+            <button
+              class="theme-btn"
+              :class="{ active: currentTheme === 'system' }"
               @click="toggleThemeMode('system')"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -594,7 +594,7 @@ onUnmounted(() => {
 /* ===== 桌面端浮动菜单 - 液态玻璃效果 ===== */
 .floating-menu {
   border-radius: 1rem;
-  /* 液态玻璃效果 - 增强版 */
+  /* 液态玻璃效果 - 使用全局变量 */
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.35) 0%,
@@ -603,8 +603,8 @@ onUnmounted(() => {
   ) !important;
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 
+  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.4));
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.12),
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
@@ -618,8 +618,8 @@ html.dark .floating-menu {
     rgba(60, 60, 67, 0.4) 50%,
     rgba(70, 70, 80, 0.45) 100%
   ) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 
+  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.18));
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.35),
     0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
@@ -628,20 +628,28 @@ html.dark .floating-menu {
 
 .reset-btn {
   border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--bf-surface, rgba(255, 255, 255, 0.25));
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.3));
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 html.dark .reset-btn {
-  background: rgba(60, 60, 67, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--bf-surface, rgba(60, 60, 67, 0.4));
+  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.15));
 }
 
 .cursor-move { cursor: move; }
 .cursor-move:active { cursor: grabbing; }
+
+/* Logo 样式 */
+.logo {
+  background: var(--bf-fire-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 /* ===== 移动端抽屉导航栏 - 液态玻璃效果 ===== */
 .drawer-nav {
@@ -652,7 +660,7 @@ html.dark .reset-btn {
 .drawer-blur {
   position: absolute;
   inset: 0;
-  /* 液态玻璃效果 - 增强版 */
+  /* 液态玻璃效果 - 使用全局变量 */
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.35) 0%,
@@ -662,9 +670,9 @@ html.dark .reset-btn {
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-top: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.4));
   border-radius: 24px 24px 0 0;
-  box-shadow: 
+  box-shadow:
     0 -8px 32px rgba(0, 0, 0, 0.12),
     0 -2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -679,8 +687,8 @@ html.dark .drawer-blur {
     rgba(60, 60, 67, 0.4) 50%,
     rgba(70, 70, 80, 0.45) 100%
   );
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 
+  border-top: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.18));
+  box-shadow:
     0 -8px 32px rgba(0, 0, 0, 0.35),
     0 -2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
@@ -707,7 +715,7 @@ html.dark .drawer-blur {
 .drawer-handle {
   width: 36px;
   height: 5px;
-  background: rgba(60, 60, 67, 0.25);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 2.5px;
 }
 
@@ -731,23 +739,18 @@ html.dark .drawer-handle {
   padding: 8px 16px;
   border-radius: 16px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--bf-text-secondary);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 html.dark .nav-item {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--bf-text-secondary);
 }
 
 .nav-item.active {
-  color: #007AFF;
-  background: rgba(0, 122, 255, 0.12);
-}
-
-html.dark .nav-item.active {
-  color: #0A84FF;
-  background: rgba(10, 132, 255, 0.24);
+  color: var(--bf-primary);
+  background: var(--bf-fire-gradient-subtle);
 }
 
 .nav-item:active {
@@ -772,6 +775,11 @@ html.dark .nav-item.active {
   font-weight: 500;
   letter-spacing: -0.01em;
   margin-top: 4px;
+  color: var(--bf-text-secondary);
+}
+
+.nav-item.active .nav-label {
+  color: var(--bf-primary);
 }
 
 /* ===== 设置浮动按钮 - 液态玻璃效果 ===== */
@@ -788,8 +796,8 @@ html.dark .nav-item.active {
   z-index: 10000;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   touch-action: none;
-  
-  /* 液态玻璃效果 - 增强版 */
+
+  /* 液态玻璃效果 - 使用全局变量 */
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.35) 0%,
@@ -799,8 +807,8 @@ html.dark .nav-item.active {
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
   -webkit-appearance: none;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 
+  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.4));
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.12),
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
@@ -814,8 +822,8 @@ html.dark .settings-fab {
     rgba(60, 60, 67, 0.4) 50%,
     rgba(70, 70, 80, 0.45) 100%
   );
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 
+  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.18));
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.35),
     0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
@@ -824,7 +832,7 @@ html.dark .settings-fab {
 
 .settings-fab:hover {
   transform: scale(1.08);
-  box-shadow: 
+  box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.18),
     0 4px 12px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
@@ -832,7 +840,7 @@ html.dark .settings-fab {
 }
 
 html.dark .settings-fab:hover {
-  box-shadow: 
+  box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.45),
     0 4px 12px rgba(0, 0, 0, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
@@ -846,12 +854,8 @@ html.dark .settings-fab:hover {
 .fab-inner {
   width: 24px;
   height: 24px;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--bf-text-primary);
   transition: color 0.2s ease;
-}
-
-html.dark .fab-inner {
-  color: rgba(255, 255, 255, 0.85);
 }
 
 .fab-inner svg {
@@ -879,12 +883,12 @@ html.dark .fab-inner {
 .popup-drag-handle {
   width: 36px;
   height: 5px;
-  background: rgba(60, 60, 67, 0.3);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 2.5px;
 }
 
 html.dark .popup-drag-handle {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .popup-title {
@@ -892,14 +896,9 @@ html.dark .popup-drag-handle {
   padding: 0 16px 12px;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1c1c1e;
-  border-bottom: 0.5px solid rgba(60, 60, 67, 0.12);
+  color: var(--bf-text-primary);
+  border-bottom: 0.5px solid var(--bf-border-default);
   margin: 0 16px;
-}
-
-html.dark .popup-title {
-  color: #ffffff;
-  border-bottom-color: rgba(84, 84, 88, 0.6);
 }
 
 .settings-section {
@@ -909,15 +908,11 @@ html.dark .popup-title {
 .section-label {
   font-size: 0.75rem;
   font-weight: 500;
-  color: rgba(60, 60, 67, 0.6);
+  color: var(--bf-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.02em;
   margin-bottom: 8px;
   padding-left: 4px;
-}
-
-html.dark .section-label {
-  color: rgba(235, 235, 245, 0.6);
 }
 
 .options-grid {
@@ -931,7 +926,7 @@ html.dark .section-label {
   flex-direction: column;
   align-items: center;
   padding: 12px 8px;
-  background: rgba(118, 118, 128, 0.08);
+  background: var(--bf-surface-active);
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -940,20 +935,13 @@ html.dark .section-label {
   position: relative;
 }
 
-html.dark .option-btn {
-  background: rgba(118, 118, 128, 0.24);
-}
-
 .option-btn:active {
   transform: scale(0.96);
 }
 
 .option-btn.active {
-  background: rgba(0, 122, 255, 0.12);
-}
-
-html.dark .option-btn.active {
-  background: rgba(10, 132, 255, 0.24);
+  background: var(--bf-fire-gradient-subtle);
+  border: 1px solid var(--bf-border-accent);
 }
 
 .option-flag {
@@ -964,50 +952,16 @@ html.dark .option-btn.active {
 .option-text {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #1c1c1e;
-}
-
-html.dark .option-text {
-  color: #ffffff;
+  color: var(--bf-text-primary);
 }
 
 .check-icon {
   position: absolute;
   top: 6px;
   right: 6px;
-  color: #007AFF;
+  color: var(--bf-primary);
   font-size: 0.75rem;
   font-weight: 600;
-}
-
-html.dark .check-icon {
-  color: #0A84FF;
-}
-
-.theme-icon {
-  width: 28px;
-  height: 28px;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.theme-icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.theme-icon.light {
-  color: #FF9500;
-}
-
-.theme-icon.dark {
-  color: #8E8E93;
-}
-
-html.dark .theme-icon.dark {
-  color: #BF5AF2;
 }
 
 /* 主题选择按钮 */
@@ -1022,16 +976,12 @@ html.dark .theme-icon.dark {
   flex-direction: column;
   align-items: center;
   padding: 10px 6px;
-  background: rgba(118, 118, 128, 0.08);
-  border: none;
+  background: var(--bf-surface-active);
+  border: 1px solid transparent;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
-}
-
-html.dark .theme-btn {
-  background: rgba(118, 118, 128, 0.24);
 }
 
 .theme-btn:active {
@@ -1039,108 +989,48 @@ html.dark .theme-btn {
 }
 
 .theme-btn.active {
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 159, 28, 0.15) 100%);
-  border: 1px solid rgba(255, 107, 53, 0.3);
-}
-
-html.dark .theme-btn.active {
-  background: linear-gradient(135deg, rgba(255, 140, 90, 0.2) 0%, rgba(255, 190, 11, 0.2) 100%);
-  border: 1px solid rgba(255, 140, 90, 0.4);
+  background: var(--bf-fire-gradient-subtle);
+  border: 1px solid var(--bf-border-accent);
 }
 
 .theme-btn svg {
   width: 20px;
   height: 20px;
   margin-bottom: 4px;
-  color: rgba(60, 60, 67, 0.6);
-}
-
-html.dark .theme-btn svg {
-  color: rgba(235, 235, 245, 0.6);
+  color: var(--bf-text-muted);
 }
 
 .theme-btn.active svg {
-  color: #FF6B35;
-}
-
-html.dark .theme-btn.active svg {
-  color: #FF8C5A;
+  color: var(--bf-primary);
 }
 
 .theme-btn span {
   font-size: 0.6875rem;
   font-weight: 500;
-  color: rgba(60, 60, 67, 0.8);
-}
-
-html.dark .theme-btn span {
-  color: rgba(235, 235, 245, 0.8);
+  color: var(--bf-text-secondary);
 }
 
 .theme-btn.active span {
-  color: #E55A25;
-}
-
-html.dark .theme-btn.active span {
-  color: #FF8C5A;
+  color: var(--bf-primary);
 }
 
 .close-btn {
   width: calc(100% - 32px);
   margin: 8px 16px 16px;
   padding: 14px;
-  background: rgba(0, 122, 255, 0.1);
+  background: var(--bf-fire-gradient-subtle);
   border: none;
   border-radius: 12px;
   font-size: 1rem;
   font-weight: 500;
-  color: #007AFF;
+  color: var(--bf-primary);
   cursor: pointer;
   transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-html.dark .close-btn {
-  background: rgba(10, 132, 255, 0.2);
-  color: #0A84FF;
-}
-
 .close-btn:active {
   transform: scale(0.98);
-}
-
-/* ===== 主题提示 ===== */
-.theme-hint {
-  background: rgba(118, 118, 128, 0.08);
-  border-radius: 12px;
-  margin-top: 4px;
-}
-
-html.dark .theme-hint {
-  background: rgba(118, 118, 128, 0.24);
-}
-
-.hint-text {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.875rem;
-  color: rgba(60, 60, 67, 0.7);
-}
-
-html.dark .hint-text {
-  color: rgba(235, 235, 245, 0.7);
-}
-
-.hint-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  color: rgba(60, 60, 67, 0.5);
-}
-
-html.dark .hint-icon {
-  color: rgba(235, 235, 245, 0.5);
 }
 
 /* ===== 桌面端子菜单 ===== */
@@ -1174,7 +1064,7 @@ html.dark .hint-icon {
 }
 
 :deep(.p-menubar-item-link:hover) {
-  background: rgba(120, 120, 140, 0.1) !important;
+  background: var(--bf-surface-hover) !important;
 }
 
 :deep(.p-menubar-item-content) {
@@ -1185,63 +1075,26 @@ html.dark .hint-icon {
   background: transparent !important;
   font-weight: 500 !important;
   font-size: 15px !important;
-  color: rgba(60, 60, 67, 0.9) !important;
+  color: var(--bf-text-primary) !important;
   transition: transform 0.15s ease !important;
   transform-origin: center center !important;
 }
 
 :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
   transform: scale(1.08) !important;
+  color: var(--bf-primary) !important;
 }
 
 :deep(.p-menubar-item-icon) {
   background: transparent !important;
-  color: rgba(100, 100, 115, 0.85) !important;
+  color: var(--bf-text-secondary) !important;
   transition: transform 0.15s ease !important;
   transform-origin: center center !important;
 }
 
 :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
   transform: scale(1.15) !important;
-}
-
-/* 暗色模式 */
-html.dark :deep(.p-menubar-item-link:hover) {
-  background: rgba(255, 255, 255, 0.08) !important;
-}
-
-html.dark :deep(.p-menubar-item-label) {
-  color: #FFFFFF !important;
-}
-
-html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-label) {
-  color: #FFFFFF !important;
-  transform: scale(1.08) !important;
-}
-
-html.dark :deep(.p-menubar-item-icon) {
-  color: #FFFFFF !important;
-}
-
-html.dark :deep(.p-menubar-item-link:hover .p-menubar-item-icon) {
-  color: #FFFFFF !important;
-  transform: scale(1.15) !important;
-}
-
-html.dark :deep(.p-menubar-item-content) {
-  color: #FFFFFF !important;
-}
-
-html.dark :deep(.p-menubar-item) {
-  color: #FFFFFF !important;
-}
-
-html.dark :deep(.p-menubar-root-list) {
-  color: #FFFFFF !important;
-}
-
-html.dark :deep(span.p-menubar-item-label) {
-  color: #FFFFFF !important;
+  color: var(--bf-primary) !important;
 }
 
 :deep(.p-menubar-submenu) { margin: 0 4px !important; }
@@ -1256,10 +1109,10 @@ html.dark :deep(span.p-menubar-item-label) {
   ) !important;
   backdrop-filter: blur(24px) saturate(200%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.4)) !important;
   border-radius: 12px !important;
   padding: 8px !important;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.12),
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
@@ -1274,8 +1127,8 @@ html.dark :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
     rgba(60, 60, 67, 0.4) 50%,
     rgba(70, 70, 80, 0.45) 100%
   ) !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  box-shadow: 
+  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.18)) !important;
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.35),
     0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
@@ -1283,21 +1136,17 @@ html.dark :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
 }
 
 :deep(.p-submenu-list .p-menubar-item) { background: transparent !important; margin: 0 !important; }
-:deep(.p-submenu-list .p-menubar-item-link) { 
-  background: transparent !important; 
-  margin: 2px 0 !important; 
+:deep(.p-submenu-list .p-menubar-item-link) {
+  background: transparent !important;
+  margin: 2px 0 !important;
   border-radius: 8px !important;
   border: none !important;
 }
-:deep(.p-submenu-list .p-menubar-item-link:hover) { 
-  background: rgba(120, 120, 140, 0.1) !important; 
-}
-html.dark :deep(.p-submenu-list .p-menubar-item-link:hover) { 
-  background: rgba(255, 255, 255, 0.08) !important;
+:deep(.p-submenu-list .p-menubar-item-link:hover) {
+  background: var(--bf-surface-hover) !important;
 }
 
-:deep(.p-menubar-submenu-icon) { color: rgba(0, 0, 0, 0.5) !important; font-size: 12px !important; }
-html.dark :deep(.p-menubar-submenu-icon) { color: rgba(255, 255, 255, 0.6) !important; }
+:deep(.p-menubar-submenu-icon) { color: var(--bf-text-muted) !important; font-size: 12px !important; }
 
 :deep(.p-menubar-root-list > .p-menubar-item > .p-submenu-list) {
   animation: menuSlide 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
@@ -1307,5 +1156,29 @@ html.dark :deep(.p-menubar-submenu-icon) { color: rgba(255, 255, 255, 0.6) !impo
 @keyframes menuSlide {
   from { opacity: 0 !important; transform: translateY(-10px) scale(0.95) !important; }
   to { opacity: 1 !important; transform: translateY(0) scale(1) !important; }
+}
+</style>
+
+<!-- 全局样式覆盖 PrimeVue 默认样式 -->
+<style>
+/* 导航栏使用全局变量 */
+html.dark .p-menubar .p-menubar-item-label {
+  color: var(--bf-text-primary) !important;
+}
+
+html.dark .p-menubar .p-menubar-item-icon {
+  color: var(--bf-text-secondary) !important;
+}
+
+html.dark .p-menubar .p-menubar-item-content {
+  color: var(--bf-text-primary) !important;
+}
+
+html.dark .p-menubar-item-link:hover .p-menubar-item-label {
+  color: var(--bf-primary) !important;
+}
+
+html.dark .p-menubar-item-link:hover .p-menubar-item-icon {
+  color: var(--bf-primary) !important;
 }
 </style>

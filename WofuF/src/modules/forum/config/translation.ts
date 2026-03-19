@@ -11,6 +11,30 @@ const forumTranslations = {
     zh: '分享你的游戏体验，与其他玩家交流',
     en: 'Share your gaming experience, connect with other players',
   },
+  'forum.title': {
+    zh: '论坛',
+    en: 'Forum',
+  },
+  'createPost.button': {
+    zh: '创建帖子',
+    en: 'Create Post',
+  },
+  'login.title': {
+    zh: '登录',
+    en: 'Login',
+  },
+  'tabs.recent': {
+    zh: '最新',
+    en: 'Recent',
+  },
+  'tabs.popular': {
+    zh: '热门',
+    en: 'Popular',
+  },
+  'post.toc.title': {
+    zh: '目录',
+    en: 'Table of Contents',
+  },
   // 帖子相关
   post: {
     zh: '帖子',

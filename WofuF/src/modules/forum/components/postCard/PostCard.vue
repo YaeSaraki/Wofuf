@@ -106,18 +106,14 @@ const avatarUrl = ref<string | null>(null)
 
 async function loadAvatar() {
   const playerId = props.post.memberPostBy?.playerId
-  console.log('[PostCard] loadAvatar called, playerId:', playerId)
   if (!playerId) return
 
   try {
     const result = await playerService.getPlayerSkin(playerId)
-    console.log('[PostCard] getPlayerSkin result:', result)
     if (result.isSuccess) {
       const skinData = result.getValue()
-      console.log('[PostCard] skinData:', skinData)
       if (skinData?.skin) {
         avatarUrl.value = await playerService.renderAvatar(skinData.skin, 32)
-        console.log('[PostCard] avatarUrl set:', avatarUrl.value?.substring(0, 50))
       }
     }
   } catch (e) {
@@ -128,13 +124,45 @@ async function loadAvatar() {
 // 监听 post 变化加载头像
 watch(() => props.post.memberPostBy?.playerId, loadAvatar, { immediate: true })
 
-// 生成随机标签颜色（用于演示分类）
-const categoryColors: Record<string, string> = {
-  discussion: 'bg-blue-500',
-  share: 'bg-green-500',
-  question: 'bg-yellow-500',
-  announcement: 'bg-red-500',
-}
+// Markdown 预览 - 移除图片，只显示文字，限制长度
+const previewText = computed(() => {
+  if (!props.post.text) return ''
+  
+  // 移除图片标记
+  let text = props.post.text.replace(/!\[.*?\]\(.*?\)/g, '[图片]')
+  
+  // 移除其他 Markdown 语法，保留纯文本
+  text = text
+    .replace(/^#{1,6}\s+/gm, '')      // 标题
+    .replace(/\*\*(.+?)\*\*/g, '$1')   // 粗体
+    .replace(/\*(.+?)\*/g, '$1')       // 斜体
+    .replace(/~~(.+?)~~/g, '$1')       // 删除线
+    .replace(/`(.+?)`/g, '$1')         // 行内代码
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')  // 链接
+    .replace(/^[-*+]\s+/gm, '')        // 无序列表
+    .replace(/^\d+\.\s+/gm, '')        // 有序列表
+    .replace(/^>\s+/gm, '')            // 引用
+    .replace(/\n+/g, ' ')              // 换行转空格
+    .trim()
+  
+  // 限制长度
+  if (text.length > 200) {
+    return text.substring(0, 200) + '...'
+  }
+  return text
+})
+
+// 检查是否有图片
+const hasImages = computed(() => {
+  return props.post.text && /!\[.*?\]\(.*?\)/.test(props.post.text)
+})
+
+// 图片数量
+const imageCount = computed(() => {
+  if (!props.post.text) return 0
+  const matches = props.post.text.match(/!\[.*?\]\(.*?\)/g)
+  return matches ? matches.length : 0
+})
 </script>
 
 <template>
@@ -215,9 +243,17 @@ const categoryColors: Record<string, string> = {
       </h2>
 
       <!-- 内容预览 -->
-      <p v-if="post.type === 'TEXT' && post.text" class="bf-post-card__preview">
-        {{ post.text.slice(0, 200) }}{{ post.text.length > 200 ? '...' : '' }}
-      </p>
+      <div v-if="post.type === 'TEXT' && (previewText || hasImages)" class="bf-post-card__preview-wrapper">
+        <p class="bf-post-card__preview">{{ previewText }}</p>
+        <span v-if="hasImages" class="bf-image-indicator">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21,15 16,10 5,21"/>
+          </svg>
+          {{ imageCount }}
+        </span>
+      </div>
 
       <!-- 链接预览 -->
       <a v-if="post.type === 'LINK' && post.link" class="bf-link-preview" @click="visitLink">
@@ -484,7 +520,14 @@ const categoryColors: Record<string, string> = {
 }
 
 /* === 内容预览 === */
+.bf-post-card__preview-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bf-space-sm, 10px);
+}
+
 .bf-post-card__preview {
+  flex: 1;
   font-size: 14px;
   color: var(--bf-text-secondary);
   line-height: 1.6;
@@ -493,6 +536,26 @@ const categoryColors: Record<string, string> = {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.bf-image-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #22C55E;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.bf-image-indicator svg {
+  width: 12px;
+  height: 12px;
 }
 
 /* === 链接预览 === */

@@ -36,7 +36,7 @@ data class PostEntity(
     @Column(name = "category", nullable = false)
     val category: String = "DISCUSSION",
 
-    @Column(name = "text", nullable = true)
+    @Column(name = "text", nullable = true, columnDefinition = "LONGTEXT")
     val text: String?,
 
     @Column(name = "link", nullable = true)

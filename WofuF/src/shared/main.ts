@@ -2,6 +2,7 @@ import {createApp} from 'vue'
 import router from '@S/infra/router'
 import App from '@M/app/App.vue'
 import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice'
 
 // 引入各个模块
 import '@S/services/i18n/index.ts'
@@ -69,5 +70,6 @@ app.use(PrimeVue, {
     },
   },
 })
+app.use(ToastService)
 
 app.mount('#app')

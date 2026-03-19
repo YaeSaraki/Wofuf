@@ -529,7 +529,6 @@ function insertQuote() {
 @media (max-width: 640px) {
   .bf-reply-form {
     border-radius: var(--bf-card-radius-sm, 12px);
-    margin: 0 calc(-1 * var(--bf-space-md, 16px));
   }
 
   .bf-reply-header {
@@ -597,13 +596,6 @@ function insertQuote() {
 
   .bf-btn {
     font-size: 0.9375rem;
-  }
-}
-
-/* 平板 */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .bf-editor-textarea {
-    min-height: 130px;
   }
 }
 </style>

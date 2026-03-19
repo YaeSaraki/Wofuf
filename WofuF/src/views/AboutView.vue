@@ -66,7 +66,6 @@ onMounted(() => {
 
 <template>
   <PageBackground variant="default" :show-pattern="true">
-    <!-- 页面头部 - 与论坛风格一致 -->
     <header class="bf-page-header">
       <div class="bf-header-content">
         <div class="bf-header-text">

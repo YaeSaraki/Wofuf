@@ -1,19 +1,19 @@
 <script lang="ts" setup>
-import {nextTick, onUnmounted, ref, watch} from 'vue'
-import type {Player} from '@M/players/dtos/Player.ts'
-import {PlayerService} from '@M/players/services/PlayerService.ts'
-import {useAsyncLoader} from '@SU/async/useAsyncLoader.ts'
-import {Render, WalkingAnimation} from 'skin3d'
-import type {PlayerSkin} from '@M/players/dtos/PlayerSkin.ts'
-import {translate} from '@S/services/i18n'
-import {addImagePrefixToBase64} from '@SU/Base64Util.ts'
+import { nextTick, onUnmounted, ref, watch } from 'vue'
+import type { Player } from '@M/players/dtos/Player.ts'
+import { PlayerService } from '@M/players/services/PlayerService.ts'
+import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
+import { Render, WalkingAnimation } from 'skin3d'
+import type { PlayerSkin } from '@M/players/dtos/PlayerSkin.ts'
+import { translate } from '@S/services/i18n'
+import { addImagePrefixToBase64 } from '@SU/Base64Util.ts'
 
 const props = defineProps<{ player: Player | null }>()
 const playerService = new PlayerService()
 const hasSkinViewerResizeListener = ref(false)
 
 /* ---------------- 复用通用加载逻辑 ---------------- */
-const {isLoading, errorMsg, executeAsync} = useAsyncLoader()
+const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
 /* ---------------- 获取玩家皮肤 ---------------- */
 
 const playerSkin = ref<PlayerSkin | null>(null)
@@ -33,7 +33,7 @@ watch(
       destroyViewer()
     }
   },
-  {immediate: true},
+  { immediate: true },
 )
 
 // 监听皮肤数据变化，初始化/更新查看器
@@ -54,7 +54,7 @@ async function fetchPlayerSkin() {
   }
   try {
     const playerSkinData = await executeAsync(async (signal) => {
-      const apiResult = await playerService.getPlayerSkin(props.player!.id, {signal})
+      const apiResult = await playerService.getPlayerSkin(props.player!.id, { signal })
       if (apiResult.isSuccess) {
         return apiResult.getValue()
       }
@@ -175,12 +175,7 @@ onUnmounted(() => {
 
     <!-- 3D皮肤展示 -->
     <div class="bf-skin-viewer">
-      <canvas
-        ref="canvas"
-        :height="dims.height"
-        :width="dims.width"
-        class="bf-skin-canvas"
-      />
+      <canvas ref="canvas" :height="dims.height" :width="dims.width" class="bf-skin-canvas" />
     </div>
 
     <!-- 信息面板 -->
@@ -193,20 +188,16 @@ onUnmounted(() => {
         <p class="bf-info-value">
           {{ (player.totalPlaytimeSeconds / (20 * 60 * 60)).toFixed(1) }} h
         </p>
-      </div>
 
-      <!-- 上次游玩 -->
-      <div class="bf-info-card">
+        <!-- 上次游玩 -->
         <p class="bf-info-label">
           {{ translate('players', 'player.last-login') }}
         </p>
         <p class="bf-info-value">
           {{ new Date(player.lastLogin).toLocaleString().split(',')[0] }}
         </p>
-      </div>
 
-      <!-- 注册时间 -->
-      <div class="bf-info-card">
+        <!-- 注册时间 -->
         <p class="bf-info-label">
           {{ translate('players', 'player.register-time') }}
         </p>
@@ -237,7 +228,9 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 错误状态 */
@@ -287,11 +280,11 @@ onUnmounted(() => {
 
 .bf-skin-canvas {
   border-radius: var(--bf-card-radius, 16px);
-  border: 2px solid var(--bf-border-default);
   transition: all var(--bf-transition-fast, 0.15s ease);
 }
 
 .bf-skin-canvas:hover {
+  border: 2px solid var(--bf-border-default);
   border-color: var(--bf-border-accent);
   transform: scale(1.02);
 }
@@ -307,11 +300,9 @@ onUnmounted(() => {
 
 /* 信息卡片 */
 .bf-info-card {
-  background: var(--bf-card-bg);
   border: 1px solid var(--bf-card-border);
   border-radius: var(--bf-card-radius-sm, 12px);
   padding: var(--bf-space-md, 16px);
-  box-shadow: var(--bf-card-shadow);
   transition: all var(--bf-transition-fast, 0.15s ease);
 }
 
