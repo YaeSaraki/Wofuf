@@ -39,10 +39,33 @@ const isLoggedIn = computed(() => authService.isAuthenticated())
 
 // 获取帖子列表
 async function fetchPosts(append: boolean = false) {
+  // 加载更多时，使用独立的加载状态，不触发全局 isLoading
   if (append) {
     isLoadingMore.value = true
+    try {
+      const fetchFn = sortMode.value === 'recent'
+        ? () => forumService.getRecentPosts(currentOffset.value)
+        : () => forumService.getPopularPosts(currentOffset.value)
+
+      const result = await fetchFn()
+
+      if (result && result.isSuccess) {
+        const newPosts = result.getValue().posts
+        posts.value = [...posts.value, ...newPosts]
+        // 如果返回的帖子数量少于请求数量，说明没有更多了
+        if (newPosts.length < currentOffset.value) {
+          hasMore.value = false
+        }
+      }
+    } catch (err) {
+      console.error('加载更多失败:', err)
+    } finally {
+      isLoadingMore.value = false
+    }
+    return
   }
 
+  // 首次加载使用 executeAsync
   const fetchFn = sortMode.value === 'recent'
     ? () => forumService.getRecentPosts(currentOffset.value)
     : () => forumService.getPopularPosts(currentOffset.value)
@@ -51,20 +74,9 @@ async function fetchPosts(append: boolean = false) {
 
   if (result && result.isSuccess) {
     const newPosts = result.getValue().posts
-
-    if (append) {
-      posts.value = [...posts.value, ...newPosts]
-      // 如果返回的帖子数量少于请求数量，说明没有更多了
-      if (newPosts.length < currentOffset.value) {
-        hasMore.value = false
-      }
-    } else {
-      posts.value = newPosts
-      hasMore.value = newPosts.length >= currentOffset.value
-    }
+    posts.value = newPosts
+    hasMore.value = newPosts.length >= currentOffset.value
   }
-
-  isLoadingMore.value = false
 }
 
 // 加载更多
@@ -252,21 +264,15 @@ onUnmounted(() => {
 
     <!-- 帖子列表 -->
     <template v-else-if="posts.length > 0">
-      <TransitionGroup
-        name="bf-post-item"
-        tag="div"
-        class="bf-post-list"
-        appear
-      >
+      <div class="bf-post-list">
         <PostCard
-          v-for="(post, index) in posts"
+          v-for="post in posts"
           :key="post.slug"
           :post="post"
-          :style="{ '--index': index }"
           @upvote="handleUpvote"
           @downvote="handleDownvote"
         />
-      </TransitionGroup>
+      </div>
 
       <!-- 加载更多指示器 -->
       <div v-if="isLoadingMore" class="bf-load-more">
@@ -443,22 +449,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--bf-space-md, 16px);
-}
-
-/* 帖子卡片淡入动画 */
-.bf-post-item-enter-active {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  transition-delay: calc(var(--index, 0) * 0.08s);
-}
-
-.bf-post-item-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.bf-post-item-enter-to {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* === 加载更多 === */
