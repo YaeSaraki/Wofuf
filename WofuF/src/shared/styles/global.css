@@ -3,9 +3,105 @@
 /* 字体引入 */
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600;700&display=swap');
 
-/* CSS变量 */
+/* CSS变量 - 浅色主题（默认） */
 :root {
-  /* 颜色系统 - 深色主题 */
+  /* 颜色系统 */
+  --background: 0 0% 98%;
+  --foreground: 220 15% 8%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 15% 8%;
+  --primary: 220 15% 8%;
+  --primary-foreground: 0 0% 98%;
+  --accent: 220 15% 92%;
+  --accent-foreground: 220 15% 8%;
+  --muted: 220 15% 85%;
+  --muted-foreground: 220 15% 35%;
+  --border: 220 15% 8% / 0.12;
+
+  /* 文字颜色 - 浅色模式 */
+  --text-primary: rgba(0, 0, 0, 0.87);
+  --text-secondary: rgba(0, 0, 0, 0.65);
+  --text-tertiary: rgba(0, 0, 0, 0.50);
+  --text-muted: rgba(0, 0, 0, 0.38);
+
+  /* 玻璃效果 - 浅色模式 */
+  --glass-bg: rgba(0, 0, 0, 0.02);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+
+  /* 主题色 */
+  --primary-color: #6366f1;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #f43f5e;
+
+  /* 间距 */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* 圆角 */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-full: 9999px;
+
+  /* 字体 */
+  --font-heading: 'Instrument Serif', serif;
+  --font-body: 'Barlow', sans-serif;
+
+  /* 过渡 */
+  --transition-fast: 150ms;
+  --transition-base: 300ms;
+  --transition-slow: 500ms;
+
+  /* Forum Design System Variables - Light Mode */
+  --bf-primary: #E85A2C;
+  --bf-primary-glow: rgba(232, 90, 44, 0.2);
+  --bf-fire-gradient: linear-gradient(135deg, #E85A2C 0%, #FF6B35 50%, #FF8C5A 100%);
+  --bf-fire-gradient-subtle: rgba(232, 90, 44, 0.06);
+
+  --bf-text-primary: rgba(0, 0, 0, 0.87);
+  --bf-text-secondary: rgba(0, 0, 0, 0.65);
+  --bf-text-muted: rgba(0, 0, 0, 0.38);
+
+  --bf-card-bg: rgba(255, 255, 255, 0.8);
+  --bf-card-border: rgba(0, 0, 0, 0.08);
+  --bf-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --bf-card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.1);
+  --bf-card-radius: 1.25rem;
+
+  --bf-border-default: rgba(0, 0, 0, 0.06);
+  --bf-border-accent: rgba(232, 90, 44, 0.25);
+
+  --bf-input-bg: rgba(0, 0, 0, 0.02);
+  --bf-input-radius: 0.75rem;
+
+  --bf-btn-primary-bg: var(--bf-fire-gradient);
+  --bf-btn-primary-hover: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 50%, #FFB088 100%);
+  --bf-btn-secondary-bg: rgba(0, 0, 0, 0.04);
+  --bf-btn-secondary-hover: rgba(0, 0, 0, 0.08);
+  --bf-btn-radius: 0.75rem;
+
+  --bf-space-xs: 0.25rem;
+  --bf-space-sm: 0.5rem;
+  --bf-space-md: 1rem;
+  --bf-space-lg: 1.5rem;
+  --bf-space-xl: 2rem;
+
+  --bf-transition-fast: 150ms ease;
+  --bf-transition-normal: 250ms ease;
+
+  --bf-header-height: 5rem;
+}
+
+/* 深色主题 */
+.dark {
   --background: 220 15% 8%;
   --foreground: 0 0% 98%;
   --card: 220 15% 12%;
@@ -17,48 +113,44 @@
   --muted: 220 15% 25%;
   --muted-foreground: 0 0% 75%;
   --border: 0 0% 100% / 0.12;
-  
+
   /* 文字颜色 - 确保可读性 */
   --text-primary: rgba(255, 255, 255, 0.95);
   --text-secondary: rgba(255, 255, 255, 0.75);
   --text-tertiary: rgba(255, 255, 255, 0.55);
   --text-muted: rgba(255, 255, 255, 0.40);
-  
+
   /* 玻璃效果 */
   --glass-bg: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.12);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  
-  /* 主题色 */
-  --primary-color: #6366f1;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #f43f5e;
-  
-  /* 间距 */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
-  
-  /* 圆角 */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
-  --radius-full: 9999px;
-  
-  /* 字体 */
-  --font-heading: 'Instrument Serif', serif;
-  --font-body: 'Barlow', sans-serif;
-  
-  /* 过渡 */
-  --transition-fast: 150ms;
-  --transition-base: 300ms;
-  --transition-slow: 500ms;
+
+  /* Forum Design System Variables - Dark Mode */
+  --bf-primary: #FF6B35;
+  --bf-primary-glow: rgba(255, 107, 53, 0.25);
+  --bf-fire-gradient: linear-gradient(135deg, #FF6B35 0%, #FF8C5A 50%, #FFB088 100%);
+  --bf-fire-gradient-subtle: rgba(255, 107, 53, 0.08);
+
+  --bf-text-primary: rgba(255, 255, 255, 0.95);
+  --bf-text-secondary: rgba(255, 255, 255, 0.75);
+  --bf-text-muted: rgba(255, 255, 255, 0.40);
+
+  --bf-card-bg: rgba(255, 255, 255, 0.03);
+  --bf-card-border: rgba(255, 255, 255, 0.08);
+  --bf-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --bf-card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.25);
+  --bf-card-radius: 1.25rem;
+
+  --bf-border-default: rgba(255, 255, 255, 0.06);
+  --bf-border-accent: rgba(255, 107, 53, 0.3);
+
+  --bf-input-bg: rgba(255, 255, 255, 0.04);
+  --bf-input-radius: 0.75rem;
+
+  --bf-btn-primary-bg: var(--bf-fire-gradient);
+  --bf-btn-primary-hover: linear-gradient(135deg, #FF8C5A 0%, #FFB088 50%, #FFCDB2 100%);
+  --bf-btn-secondary-bg: rgba(255, 255, 255, 0.06);
+  --bf-btn-secondary-hover: rgba(255, 255, 255, 0.1);
 }
 
 /* ==================== 页面容器 ==================== */
@@ -89,11 +181,11 @@
   align-items: center;
   padding: 0.75rem 2rem;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 .global-logo {
@@ -101,7 +193,7 @@
   font-weight: 600;
   font-family: var(--font-heading);
   font-style: italic;
-  color: white;
+  color: var(--text-primary);
   text-decoration: none;
 }
 
@@ -122,7 +214,7 @@
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   text-decoration: none;
   border-radius: var(--radius-full);
   transition: all var(--transition-base) ease;
@@ -130,8 +222,18 @@
 
 .global-nav-link:hover,
 .global-nav-link.active {
-  color: white;
+  color: var(--text-primary);
   background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .global-nav-link:hover,
+.dark .global-nav-link.active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+:root:not(.dark) .global-nav-link:hover,
+:root:not(.dark) .global-nav-link.active {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 /* ==================== Hero 区域 ==================== */
@@ -154,6 +256,14 @@
     transparent 50%
   );
   pointer-events: none;
+}
+
+.dark .global-hero-gradient {
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(99, 102, 241, 0.15) 0%,
+    transparent 50%
+  );
 }
 
 .global-hero-content {
@@ -225,11 +335,11 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 1rem;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   color: var(--text-primary);
 }
 
@@ -241,13 +351,11 @@
 
 /* ==================== 液态玻璃效果 ==================== */
 .liquid-glass {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.06),
-    0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   position: relative;
   overflow: hidden;
 }
@@ -273,14 +381,36 @@
   pointer-events: none;
 }
 
+.dark .liquid-glass::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.1) 80%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+}
+
+:root:not(.dark) .liquid-glass::before {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.05) 20%,
+    rgba(0, 0, 0, 0) 40%,
+    rgba(0, 0, 0, 0) 60%,
+    rgba(0, 0, 0, 0.05) 80%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+}
+
 .liquid-glass-strong {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.1),
-    0 12px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   position: relative;
   overflow: hidden;
 }
@@ -304,6 +434,30 @@
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
+}
+
+.dark .liquid-glass-strong::before {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.15) 80%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
+}
+
+:root:not(.dark) .liquid-glass-strong::before {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0.08) 20%,
+    rgba(0, 0, 0, 0) 40%,
+    rgba(0, 0, 0, 0) 60%,
+    rgba(0, 0, 0, 0.08) 80%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
 }
 
 /* ==================== 按钮 ==================== */
@@ -330,49 +484,54 @@
 }
 
 .global-button-primary {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 12px 40px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   color: var(--text-primary);
 }
 
 .global-button-primary:hover {
   transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.dark .global-button-primary:hover {
   background: rgba(255, 255, 255, 0.12);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2), 0 16px 48px rgba(0, 0, 0, 0.3);
 }
 
+:root:not(.dark) .global-button-primary:hover {
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
 .global-button-secondary {
-  background: white;
-  color: black;
+  background: var(--text-primary);
+  color: var(--background);
 }
 
 .global-button-secondary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
 }
 
 /* ==================== 卡片 ==================== */
 .global-card {
   padding: 2rem;
   border-radius: var(--radius-2xl);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.08),
-    0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   transition: all var(--transition-base) ease;
 }
 
 .global-card:hover {
   transform: translateY(-4px);
-  box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.1),
-    0 12px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
 }
 
 /* ==================== Section ==================== */
@@ -398,7 +557,7 @@
   font-weight: 400;
   font-style: italic;
   letter-spacing: -0.01em;
-  color: white;
+  color: var(--text-primary);
 }
 
 @media (min-width: 768px) {
@@ -409,7 +568,7 @@
 
 /* ==================== Footer ==================== */
 .global-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--glass-border);
   padding: 2rem 1.5rem;
   margin-top: 4rem;
 }
@@ -432,7 +591,7 @@
 
 .global-footer-text {
   font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
 }
 
 .global-footer-links {
@@ -442,13 +601,13 @@
 
 .global-footer-link {
   font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   text-decoration: none;
   transition: color var(--transition-base) ease;
 }
 
 .global-footer-link:hover {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-primary);
 }
 
 /* ==================== 动画 ==================== */

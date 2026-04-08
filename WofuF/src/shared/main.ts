@@ -14,6 +14,7 @@ import '@M/auth/index.ts'
 
 // 全局样式
 import Aura from '@primeuix/themes/aura'
+import '@S/styles/global.css'
 import '@S/assets/main.css'
 import '@S/assets/base.css'
 import '@S/assets/theme.css'

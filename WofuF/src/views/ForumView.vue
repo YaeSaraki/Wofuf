@@ -26,7 +26,7 @@ onMounted(() => {
   setTimeout(() => {
     isVisible.value = true
   }, 100)
-  
+
   setTimeout(() => {
     textVisible.value = true
   }, 300)
@@ -35,24 +35,12 @@ onMounted(() => {
 
 <template>
   <div class="page-container">
-    <!-- 导航栏 -->
-    <nav class="navbar">
-      <div class="navbar-content">
-        <router-link to="/" class="logo">WofuF</router-link>
-        <div class="nav-links">
-          <router-link to="/" class="nav-link">首页</router-link>
-          <router-link to="/forum" class="nav-link active">论坛</router-link>
-          <router-link to="/about" class="nav-link">关于</router-link>
-        </div>
-      </div>
-    </nav>
-
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-gradient"></div>
-      
+
       <div class="hero-content" :class="{ visible: textVisible }">
-        <div class="badge liquid-glass">社区</div>
+        <div class="badge liquid-glass">{{ translate('forum', 'community') || '社区' }}</div>
         <h1 class="hero-title">
           <span class="title-line">{{ translate('forum', 'forumTitle') }}</span>
           <span class="title-line italic">Community</span>
@@ -108,69 +96,7 @@ onMounted(() => {
   color: hsl(var(--foreground));
   font-family: var(--font-body);
   overflow-x: hidden;
-}
-
-/* 导航栏 */
-.navbar {
-  position: fixed;
-  top: 1rem;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  padding: 0 2rem;
-}
-
-.navbar-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 2rem;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.15);
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: 600;
-  font-family: var(--font-heading);
-  font-style: italic;
-  color: white;
-  text-decoration: none;
-}
-
-.nav-links {
-  display: none;
-  gap: 0.5rem;
-  padding: 0.25rem;
-  border-radius: var(--radius-full);
-}
-
-@media (min-width: 768px) {
-  .nav-links {
-    display: flex;
-  }
-}
-
-.nav-link {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  border-radius: var(--radius-full);
-  transition: all var(--transition-base) ease;
-}
-
-.nav-link:hover,
-.nav-link.active {
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
+  padding-top: 5rem;
 }
 
 /* Hero Section */
@@ -212,10 +138,10 @@ onMounted(() => {
 
 .badge {
   display: inline-block;
-  padding: 0.25rem 0.875rem;
+  padding: 0.5rem 1.25rem;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.75rem;
@@ -376,171 +302,34 @@ onMounted(() => {
 .footer-link:hover {
   color: rgba(255, 255, 255, 0.8);
 }
-</style>
+
+/* Light mode */
+:root:not(.dark) .hero-subtitle {
+  color: rgba(0, 0, 0, 0.6);
 }
 
-.bf-header-text {
-  flex: 1;
+:root:not(.dark) .hero-gradient {
+  background: radial-gradient(
+    circle at 50% 30%,
+    rgba(99, 102, 241, 0.2) 0%,
+    transparent 50%
+  );
 }
 
-.bf-forum-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 0.5rem 0;
-  line-height: 1.2;
+:root:not(.dark) .hero-fade {
+  background: linear-gradient(to top, hsl(var(--background)), transparent);
 }
 
-.bf-title-gradient {
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFF5EB 50%, #FFE4CC 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+:root:not(.dark) .footer {
+  border-top-color: rgba(0, 0, 0, 0.1);
 }
 
-/* 暗色模式 - 标题更亮 */
-:global(.dark) .bf-title-gradient {
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFFFFF 50%, #FFF5EB 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+:root:not(.dark) .footer-text,
+:root:not(.dark) .footer-link {
+  color: rgba(0, 0, 0, 0.4);
 }
 
-.bf-forum-subtitle {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* 暗色模式 - 副标题 */
-:global(.dark) .bf-forum-subtitle {
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* 发帖按钮 - 亮色模式 */
-.bf-create-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  border-radius: var(--bf-btn-radius, 12px);
-  color: var(--bf-primary, #FF6B35);
-  font-weight: 600;
-  font-size: 0.9375rem;
-  cursor: pointer;
-  transition: all var(--bf-transition-fast, 0.15s ease);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.bf-create-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  background: #FFFFFF;
-}
-
-/* 暗色模式 - 按钮样式调整 */
-:global(.dark) .bf-create-btn {
-  background: rgba(30, 30, 30, 0.95);
-  color: var(--bf-primary, #FF8C5A);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 140, 90, 0.2);
-}
-
-:global(.dark) .bf-create-btn:hover {
-  background: rgba(45, 45, 45, 0.98);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 140, 90, 0.3);
-}
-
-.bf-create-btn:active {
-  transform: translateY(0);
-}
-
-.bf-btn-icon {
-  width: 18px;
-  height: 18px;
-}
-
-/* === 两栏布局 === */
-.bf-forum-layout {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--bf-space-lg, 24px) var(--bf-space-md, 16px);
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: var(--bf-space-lg, 24px);
-  align-items: start;
-  
-  /* 淡入动画 */
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.bf-forum-layout.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.bf-forum-main {
-  min-width: 0;
-}
-
-.bf-forum-sidebar {
-  opacity: 0;
-  transform: translateX(20px);
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  transition-delay: 0.2s;
-}
-
-.bf-forum-sidebar.visible {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-/* 响应式 */
-@media (max-width: 1024px) {
-  .bf-forum-layout {
-    grid-template-columns: 1fr;
-    max-width: 800px;
-  }
-
-  .bf-header-content {
-    max-width: 800px;
-  }
-
-  .bf-forum-sidebar {
-    display: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .bf-forum-header {
-    padding: 2rem 1rem;
-  }
-
-  .bf-forum-title {
-    font-size: 1.75rem;
-  }
-
-  .bf-forum-subtitle {
-    font-size: 0.875rem;
-  }
-
-  .bf-header-content {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .bf-create-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .bf-forum-layout {
-    padding: var(--bf-space-md, 16px) 12px;
-  }
+:root:not(.dark) .footer-link:hover {
+  color: rgba(0, 0, 0, 0.8);
 }
 </style>

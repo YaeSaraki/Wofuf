@@ -69,18 +69,6 @@ onMounted(() => {
 
 <template>
   <div class="page-container">
-    <!-- 导航栏 -->
-    <nav class="navbar">
-      <div class="navbar-content">
-        <router-link to="/" class="logo">WofuF</router-link>
-        <div class="nav-links">
-          <router-link to="/" class="nav-link">首页</router-link>
-          <router-link to="/forum" class="nav-link">论坛</router-link>
-          <router-link to="/about" class="nav-link active">关于</router-link>
-        </div>
-      </div>
-    </nav>
-
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-gradient"></div>
@@ -329,69 +317,7 @@ onMounted(() => {
   color: var(--text-primary);
   font-family: var(--font-body);
   overflow-x: hidden;
-}
-
-/* 导航栏 */
-.navbar {
-  position: fixed;
-  top: 1rem;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  padding: 0 2rem;
-}
-
-.navbar-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.875rem 2rem;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-.logo {
-  font-size: 1.625rem;
-  font-weight: 600;
-  font-family: var(--font-heading);
-  font-style: italic;
-  color: var(--text-primary);
-  text-decoration: none;
-}
-
-.nav-links {
-  display: none;
-  gap: 0.5rem;
-  padding: 0.25rem;
-  border-radius: var(--radius-full);
-}
-
-@media (min-width: 768px) {
-  .nav-links {
-    display: flex;
-  }
-}
-
-.nav-link {
-  padding: 0.625rem 1.25rem;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-decoration: none;
-  border-radius: var(--radius-full);
-  transition: all var(--transition-base) ease;
-}
-
-.nav-link:hover,
-.nav-link.active {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.1);
+  padding-top: 5rem;
 }
 
 /* Hero Section */

@@ -11,6 +11,10 @@ const forumTranslations = {
     zh: '分享你的游戏体验，与其他玩家交流',
     en: 'Share your gaming experience, connect with other players',
   },
+  community: {
+    zh: '社区',
+    en: 'Community',
+  },
   'forum.title': {
     zh: '论坛',
     en: 'Forum',
