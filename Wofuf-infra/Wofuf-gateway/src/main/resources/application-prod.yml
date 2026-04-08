@@ -1,0 +1,42 @@
+# ===================== Gateway Production Profile =====================
+
+debug: false
+
+server:
+  port: 9999
+
+spring:
+  application:
+    name: infra-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            - id: modules-players
+              uri: lb://modules-players
+              predicates:
+                - Path=/api/v1/players/**
+
+            - id: modules-users
+              uri: lb://modules-users
+              predicates:
+                - Path=/api/v1/users/**
+
+            - id: modules-forum
+              uri: lb://modules-forum
+              predicates:
+                - Path=/api/v1/forum/**
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOST:discovery}:${EUREKA_PORT:8761}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true

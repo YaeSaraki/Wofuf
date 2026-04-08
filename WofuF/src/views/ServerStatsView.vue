@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useLocale } from '@S/services/i18n/useLocale.ts'
-import PageBackground from '@S/components/PageBackground.vue'
 import YesterdayOnlineList from '@M/players/components/yesterdayOnlineList/YesterdayOnlineList.vue'
 import PlayerSearch from '@M/players/components/playerSearch/PlayerSearch.vue'
 import { playerService } from '@M/players'
@@ -25,11 +24,11 @@ const statusClass = computed(() => isOnline.value ? 'status-online' : 'status-of
 const statusText = computed(() => isOnline.value ? translate('app', 'status.online') : translate('app', 'status.offline'))
 
 const tpsColor = computed(() => {
-  if (!serverStatus.value) return 'text-gray-400'
+  if (!serverStatus.value) return 'text-tertiary'
   const tps = parseFloat(serverStatus.value.tps)
-  if (tps >= 18) return 'text-emerald-400'
-  if (tps >= 15) return 'text-amber-400'
-  return 'text-rose-400'
+  if (tps >= 18) return 'text-emerald'
+  if (tps >= 15) return 'text-amber'
+  return 'text-rose'
 })
 
 // 获取服务器状态
@@ -91,27 +90,28 @@ onUnmounted(() => {
     <!-- 导航栏 -->
     <nav class="navbar">
       <div class="navbar-content">
-        <div class="logo">
-          <span class="logo-text">WofuF</span>
-        </div>
+        <router-link to="/" class="logo">WofuF</router-link>
         <div class="nav-links">
-          <a href="#" class="nav-link">首页</a>
-          <a href="#" class="nav-link">玩家</a>
-          <a href="#" class="nav-link active">服务器</a>
+          <router-link to="/" class="nav-link active">首页</router-link>
+          <router-link to="/forum" class="nav-link">论坛</router-link>
+          <router-link to="/about" class="nav-link">关于</router-link>
         </div>
       </div>
     </nav>
 
     <!-- Hero Section -->
     <section class="hero-section">
-      <!-- 背景渐变 -->
       <div class="hero-gradient"></div>
       
-      <!-- 内容 -->
       <div class="hero-content" :class="{ visible: textVisible }">
         <!-- 状态徽章 -->
         <div class="status-badge liquid-glass">
-          <div class="badge-dot" :class="statusClass"></div>
+          <div class="badge-icon global-icon global-icon-sm">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"/>
+            </svg>
+          </div>
           <span>{{ statusText }}</span>
         </div>
 
@@ -127,7 +127,6 @@ onUnmounted(() => {
         </p>
       </div>
 
-      <!-- 底部渐变 -->
       <div class="hero-fade"></div>
     </section>
 
@@ -136,7 +135,15 @@ onUnmounted(() => {
       <!-- 玩家搜索 -->
       <section class="section" :class="{ visible: isVisible }">
         <div class="section-header">
-          <div class="badge liquid-glass">搜索</div>
+          <div class="badge liquid-glass">
+            <div class="badge-icon global-icon global-icon-sm">
+              <svg viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+            <span>搜索</span>
+          </div>
           <h2 class="section-title">玩家搜索</h2>
         </div>
         <div class="glass-card">
@@ -147,7 +154,17 @@ onUnmounted(() => {
       <!-- 昨日在线玩家 -->
       <section class="section" :class="{ visible: isVisible }">
         <div class="section-header">
-          <div class="badge liquid-glass">统计</div>
+          <div class="badge liquid-glass">
+            <div class="badge-icon global-icon global-icon-sm">
+              <svg viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <span>统计</span>
+          </div>
           <h2 class="section-title">昨日在线玩家</h2>
         </div>
         <div class="glass-card">
@@ -158,7 +175,15 @@ onUnmounted(() => {
       <!-- 服务器状态 -->
       <section class="section server-status-section" :class="{ visible: isVisible }">
         <div class="section-header">
-          <div class="badge liquid-glass">实时</div>
+          <div class="badge liquid-glass">
+            <div class="badge-icon global-icon global-icon-sm">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <span>实时</span>
+          </div>
           <h2 class="section-title">服务器状态</h2>
         </div>
         
@@ -173,10 +198,22 @@ onUnmounted(() => {
         <!-- 错误提示 -->
         <div v-else-if="error" class="error-container">
           <div class="liquid-glass error-card">
-            <div class="error-icon">⚠️</div>
+            <div class="error-icon global-icon global-icon-xl">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
             <p class="error-text">{{ error }}</p>
             <button @click="fetchServerStatus" class="retry-button liquid-glass-strong">
-              重试
+              <div class="button-icon global-icon global-icon-sm">
+                <svg viewBox="0 0 24 24">
+                  <path d="M23 4v6h-6"/>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+              </div>
+              <span>重试</span>
             </button>
           </div>
         </div>
@@ -185,7 +222,16 @@ onUnmounted(() => {
         <div v-else-if="serverStatus" class="server-stats-grid">
           <!-- 在线人数 -->
           <div class="stat-card liquid-glass">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon-wrapper liquid-glass-strong">
+              <div class="stat-icon global-icon global-icon-xl">
+                <svg viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+            </div>
             <div class="stat-content">
               <div class="stat-label">在线玩家</div>
               <div class="stat-value">
@@ -204,7 +250,13 @@ onUnmounted(() => {
 
           <!-- TPS -->
           <div class="stat-card liquid-glass">
-            <div class="stat-icon">⚡</div>
+            <div class="stat-icon-wrapper liquid-glass-strong">
+              <div class="stat-icon global-icon global-icon-xl">
+                <svg viewBox="0 0 24 24">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+              </div>
+            </div>
             <div class="stat-content">
               <div class="stat-label">服务器 TPS</div>
               <div class="stat-value" :class="tpsColor">
@@ -218,7 +270,13 @@ onUnmounted(() => {
 
           <!-- 心跳状态 -->
           <div class="stat-card liquid-glass">
-            <div class="stat-icon">💓</div>
+            <div class="stat-icon-wrapper liquid-glass-strong">
+              <div class="stat-icon global-icon global-icon-xl">
+                <svg viewBox="0 0 24 24">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </div>
+            </div>
             <div class="stat-content">
               <div class="stat-label">心跳检测</div>
               <div class="stat-value">
@@ -234,14 +292,26 @@ onUnmounted(() => {
 
           <!-- 更新时间 -->
           <div class="stat-card liquid-glass">
-            <div class="stat-icon">🕐</div>
+            <div class="stat-icon-wrapper liquid-glass-strong">
+              <div class="stat-icon global-icon global-icon-xl">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+            </div>
             <div class="stat-content">
               <div class="stat-label">最后更新</div>
               <div class="stat-value time-value">
                 {{ formatTime(serverStatus.updateTime) }}
               </div>
               <div class="auto-refresh">
-                <span class="refresh-icon">🔄</span>
+                <div class="refresh-icon global-icon global-icon-sm">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M23 4v6h-6"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                  </svg>
+                </div>
                 <span class="refresh-text">每30秒自动刷新</span>
               </div>
             </div>
@@ -265,101 +335,15 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* 字体引入 */
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap');
-
-/* CSS变量 */
-:root {
-  --background: 213 45% 5%;
-  --foreground: 0 0% 100%;
-  --card: 213 45% 8%;
-  --card-foreground: 0 0% 100%;
-  --primary: 0 0% 100%;
-  --primary-foreground: 213 45% 5%;
-  --accent: 213 45% 15%;
-  --accent-foreground: 0 0% 100%;
-  --muted: 213 35% 20%;
-  --muted-foreground: 0 0% 100% / 0.6;
-  --border: 0 0% 100% / 0.1;
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
+@import '@S/styles/global.css';
 
 /* 页面容器 */
 .page-container {
   min-height: 100vh;
   background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: 'Barlow', sans-serif;
+  color: var(--text-primary);
+  font-family: var(--font-body);
   overflow-x: hidden;
-}
-
-/* 液态玻璃效果 */
-.liquid-glass {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.06),
-    0 8px 32px rgba(0, 0, 0, 0.15);
-  position: relative;
-  overflow: hidden;
-}
-
-.liquid-glass::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 0.1) 20%,
-    rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0) 60%,
-    rgba(255, 255, 255, 0.1) 80%,
-    rgba(255, 255, 255, 0.3) 100%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-.liquid-glass-strong {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.1),
-    0 12px 40px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.liquid-glass-strong::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.4) 0%,
-    rgba(255, 255, 255, 0.15) 20%,
-    rgba(255, 255, 255, 0) 40%,
-    rgba(255, 255, 255, 0) 60%,
-    rgba(255, 255, 255, 0.15) 80%,
-    rgba(255, 255, 255, 0.4) 100%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
 }
 
 /* 导航栏 */
@@ -378,22 +362,29 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 2rem;
-  border-radius: 9999px;
+  padding: 0.875rem 2rem;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .logo {
-  font-size: 1.5rem;
+  font-size: 1.625rem;
   font-weight: 600;
-  font-family: 'Instrument Serif', serif;
+  font-family: var(--font-heading);
   font-style: italic;
+  color: var(--text-primary);
+  text-decoration: none;
 }
 
 .nav-links {
   display: none;
   gap: 0.5rem;
   padding: 0.25rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
 }
 
 @media (min-width: 768px) {
@@ -403,18 +394,18 @@ onUnmounted(() => {
 }
 
 .nav-link {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.9375rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   text-decoration: none;
-  border-radius: 9999px;
-  transition: all 0.3s ease;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-base) ease;
 }
 
 .nav-link:hover,
 .nav-link.active {
-  color: white;
+  color: var(--text-primary);
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -434,7 +425,7 @@ onUnmounted(() => {
   inset: 0;
   background: radial-gradient(
     circle at 50% 30%,
-    rgba(99, 102, 241, 0.15) 0%,
+    rgba(99, 102, 241, 0.12) 0%,
     transparent 50%
   );
   pointer-events: none;
@@ -444,7 +435,7 @@ onUnmounted(() => {
   position: relative;
   z-index: 10;
   text-align: center;
-  max-width: 800px;
+  max-width: 900px;
   opacity: 0;
   transform: translateY(30px);
   transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -458,29 +449,25 @@ onUnmounted(() => {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1.25rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 2rem;
+  gap: 0.625rem;
+  padding: 0.625rem 1.375rem;
+  border-radius: var(--radius-full);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
 }
 
-.badge-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
+.badge-icon {
+  opacity: 0.9;
 }
 
-.status-online .badge-dot {
-  background: #10b981;
-  box-shadow: 0 0 12px #10b981;
+.status-online .badge-icon {
+  color: #10b981;
 }
 
-.status-offline .badge-dot {
-  background: #ef4444;
-  box-shadow: 0 0 12px #ef4444;
+.status-offline .badge-icon {
+  color: #f43f5e;
 }
 
 @keyframes pulse {
@@ -489,16 +476,18 @@ onUnmounted(() => {
 }
 
 .hero-title {
-  font-family: 'Instrument Serif', serif;
-  font-size: 3.5rem;
+  font-family: var(--font-heading);
+  font-size: 4rem;
   line-height: 1.1;
   margin-bottom: 1.5rem;
   font-weight: 400;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
 }
 
 @media (min-width: 768px) {
   .hero-title {
-    font-size: 5rem;
+    font-size: 5.5rem;
   }
 }
 
@@ -512,10 +501,10 @@ onUnmounted(() => {
 }
 
 .hero-subtitle {
-  font-size: 1.125rem;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.6);
-  line-height: 1.6;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.7;
 }
 
 .hero-fade {
@@ -550,55 +539,61 @@ onUnmounted(() => {
   transform: translateY(0);
 }
 
-.section:nth-child(2) {
-  transition-delay: 0.1s;
-}
-
-.section:nth-child(3) {
-  transition-delay: 0.2s;
-}
-
-.section:nth-child(4) {
-  transition-delay: 0.3s;
-}
+.section:nth-child(2) { transition-delay: 0.1s; }
+.section:nth-child(3) { transition-delay: 0.2s; }
 
 .section-header {
   margin-bottom: 1.5rem;
 }
 
 .badge {
-  display: inline-block;
-  padding: 0.25rem 0.875rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.75rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.875rem;
+  color: var(--text-primary);
+}
+
+.badge-icon {
+  opacity: 0.9;
+  color: var(--primary-color);
 }
 
 .section-title {
-  font-family: 'Instrument Serif', serif;
-  font-size: 2rem;
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
   font-weight: 400;
   font-style: italic;
   letter-spacing: -0.01em;
+  color: var(--text-primary);
 }
 
 @media (min-width: 768px) {
   .section-title {
-    font-size: 2.5rem;
+    font-size: 2.75rem;
   }
 }
 
+/* 玻璃卡片 */
 .glass-card {
-  border-radius: 1.5rem;
-  padding: 1.5rem;
+  padding: 2rem;
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 @media (min-width: 768px) {
   .glass-card {
-    padding: 2rem;
+    padding: 2.5rem;
   }
 }
 
@@ -615,14 +610,14 @@ onUnmounted(() => {
   align-items: center;
   gap: 1.5rem;
   padding: 3rem 2rem;
-  border-radius: 1.5rem;
+  border-radius: var(--radius-2xl);
   text-align: center;
 }
 
 .loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
+  width: 52px;
+  height: 52px;
+  border: 3px solid rgba(255, 255, 255, 0.15);
   border-top-color: #6366f1;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -633,35 +628,44 @@ onUnmounted(() => {
 }
 
 .loading-text {
-  font-size: 0.9375rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 300;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 400;
 }
 
 .error-icon {
-  font-size: 3rem;
-  line-height: 1;
+  color: #f43f5e;
+  opacity: 0.8;
 }
 
 .error-text {
-  font-size: 0.9375rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 300;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 400;
   max-width: 400px;
 }
 
 .retry-button {
-  padding: 0.75rem 2rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 2.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base) ease;
+  color: var(--text-primary);
+  border: none;
+  outline: none;
 }
 
 .retry-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.button-icon {
+  opacity: 0.9;
 }
 
 /* 服务器状态网格 */
@@ -684,70 +688,80 @@ onUnmounted(() => {
 }
 
 .stat-card {
-  padding: 1.5rem;
-  border-radius: 1.5rem;
-  transition: all 0.3s ease;
+  padding: 2rem;
+  border-radius: var(--radius-2xl);
+  transition: all var(--transition-base) ease;
 }
 
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.stat-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-xl);
+  margin-bottom: 1.5rem;
 }
 
 .stat-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  line-height: 1;
+  color: var(--primary-color);
 }
 
 .stat-content {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.625rem;
 }
 
 .stat-label {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 400;
+  font-size: 0.9375rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
 .stat-value {
-  font-size: 1.75rem;
-  font-weight: 600;
+  font-size: 2rem;
+  font-weight: 700;
   display: flex;
   align-items: baseline;
   gap: 0.25rem;
+  color: var(--text-primary);
 }
 
 @media (min-width: 768px) {
   .stat-value {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 }
 
 .online-count {
   color: #10b981;
   font-size: 2.5rem;
+  font-weight: 700;
 }
 
 .separator {
-  color: rgba(255, 255, 255, 0.3);
-  font-weight: 300;
+  color: var(--text-tertiary);
+  font-weight: 400;
 }
 
 .max-count {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 1.25rem;
+  color: var(--text-tertiary);
+  font-size: 1.375rem;
+  font-weight: 600;
 }
 
 /* 进度条 */
 .stat-bar {
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
   overflow: hidden;
   margin-top: 0.5rem;
 }
@@ -755,51 +769,51 @@ onUnmounted(() => {
 .stat-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #10b981, #6366f1);
-  border-radius: 2px;
+  border-radius: 3px;
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* TPS 指示器 */
 .tps-indicator {
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
   overflow: hidden;
   margin-top: 0.5rem;
 }
 
 .tps-bar {
   height: 100%;
-  border-radius: 2px;
-  transition: all 0.3s ease;
+  border-radius: 3px;
+  transition: all var(--transition-base) ease;
 }
 
-.tps-bar.text-emerald-400 {
+.tps-bar.text-emerald {
   background: #10b981;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
 }
 
-.tps-bar.text-amber-400 {
+.tps-bar.text-amber {
   background: #f59e0b;
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
 }
 
-.tps-bar.text-rose-400 {
+.tps-bar.text-rose {
   background: #f43f5e;
-  box-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
+  box-shadow: 0 0 16px rgba(244, 63, 94, 0.5);
 }
 
 /* 心跳动画 */
 .heartbeat-animation {
   position: relative;
-  height: 20px;
+  height: 24px;
   margin-top: 0.5rem;
 }
 
 .heartbeat-pulse {
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   background: #ef4444;
   border-radius: 50%;
   top: 50%;
@@ -827,41 +841,41 @@ onUnmounted(() => {
 /* 状态文字 */
 .status-online-text {
   color: #10b981;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .status-offline-text {
-  color: #ef4444;
-  font-weight: 600;
+  color: #f43f5e;
+  font-weight: 700;
 }
 
 /* 时间值 */
 .time-value {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 
 /* 自动刷新提示 */
 .auto-refresh {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
+  gap: 0.5rem;
+  margin-top: 0.375rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
 }
 
 .refresh-icon {
-  font-size: 0.875rem;
+  opacity: 0.6;
 }
 
 .refresh-text {
-  font-weight: 300;
+  font-weight: 400;
 }
 
 /* Footer */
 .footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   padding: 2rem 1.5rem;
   margin-top: 4rem;
 }
@@ -883,8 +897,8 @@ onUnmounted(() => {
 }
 
 .footer-text {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.875rem;
+  color: var(--text-muted);
 }
 
 .footer-links {
@@ -893,30 +907,19 @@ onUnmounted(() => {
 }
 
 .footer-link {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.875rem;
+  color: var(--text-muted);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color var(--transition-base) ease;
 }
 
 .footer-link:hover {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
 }
 
 /* 颜色类 */
-.text-emerald-400 {
-  color: #10b981;
-}
-
-.text-amber-400 {
-  color: #f59e0b;
-}
-
-.text-rose-400 {
-  color: #f43f5e;
-}
-
-.text-gray-400 {
-  color: rgba(255, 255, 255, 0.5);
-}
+.text-tertiary { color: var(--text-tertiary); }
+.text-emerald { color: #10b981; }
+.text-amber { color: #f59e0b; }
+.text-rose { color: #f43f5e; }
 </style>

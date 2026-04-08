@@ -1,0 +1,289 @@
+services:
+  # ===================== Infrastructure Services (Optional) =====================
+  # Start with: docker compose --profile infra up -d
+
+  db:
+    container_name: wofuf-dist-db
+    image: mysql:8.0
+    ports:
+      - "${MYSQL_EXTERNAL_PORT:-3307}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-Woffo_db}
+      MYSQL_USER: ${MYSQL_USER:-Woffo_db_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+    volumes:
+      - mysql-data-dist:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - wofuf-network
+    profiles:
+      - infra
+
+  redis:
+    container_name: wofuf-dist-redis
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_EXTERNAL_PORT:-6380}:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data-dist:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - wofuf-network
+    profiles:
+      - infra
+
+  kafka:
+    container_name: wofuf-dist-kafka
+    image: apache/kafka:latest
+    user: "0:0"
+    ports:
+      - "${KAFKA_EXTERNAL_PORT:-9092}:9092"
+      - "${KAFKA_CONTROLLER_PORT:-9093}:9093"
+    environment:
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qw=="
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      KAFKA_LOG_DIRS: "/home/kafka/data"
+    volumes:
+      - kafka-data-dist:/home/kafka/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - wofuf-network
+    profiles:
+      - infra
+
+  minio:
+    container_name: wofuf-dist-minio
+    image: minio/minio:latest
+    ports:
+      - "${MINIO_EXTERNAL_PORT:-9000}:9000"
+      - "${MINIO_EXTERNAL_CONSOLE_PORT:-9001}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data-dist:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - wofuf-network
+    profiles:
+      - infra
+
+  # ===================== Service Discovery =====================
+
+  discovery:
+    container_name: wofuf-discovery
+    image: wofuf-discovery:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_HOST: ${EUREKA_HOST:-discovery}
+      EUREKA_PORT: ${EUREKA_PORT:-8761}
+    ports:
+      - "${DISCOVERY_PORT:-8761}:8761"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:8761/ | grep -q '404\\|200\\|302'"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - wofuf-network
+
+  # ===================== API Gateway =====================
+
+  wofuf-gateway:
+    container_name: wofuf-gateway
+    image: wofuf-gateway:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_HOST: ${EUREKA_HOST:-discovery}
+      EUREKA_PORT: ${EUREKA_PORT:-8761}
+    ports:
+      - "${GATEWAY_PORT:-9999}:9999"
+    depends_on:
+      discovery:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:9999/ | grep -q '404\\|200\\|302'"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - wofuf-network
+
+  # ===================== Business Services =====================
+
+  wofuf-users:
+    container_name: wofuf-users
+    image: wofuf-users:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MYSQL_HOST: ${MYSQL_HOST:-db}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-Woffo_db}
+      MYSQL_USER: ${MYSQL_USER:-Woffo_db_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-}"
+      KAFKA_HOST: ${KAFKA_HOST:-kafka}
+      KAFKA_PORT: ${KAFKA_PORT:-9092}
+      EUREKA_HOST: ${EUREKA_HOST:-discovery}
+      EUREKA_PORT: ${EUREKA_PORT:-8761}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-must-be-at-least-32-bytes-long-and-secure!}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600000}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+      SECURITY_USER: ${SECURITY_USER:-saraki}
+      SECURITY_PASSWORD: ${SECURITY_PASSWORD:-saraki}
+    ports:
+      - "${USERS_PORT:-8001}:8001"
+    depends_on:
+      discovery:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:8001/ | grep -q '404\\|200\\|302'"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - wofuf-network
+
+  wofuf-players:
+    container_name: wofuf-players
+    image: wofuf-players:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MYSQL_HOST: ${MYSQL_HOST:-db}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-Woffo_db}
+      MYSQL_USER: ${MYSQL_USER:-Woffo_db_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-}"
+      KAFKA_HOST: ${KAFKA_HOST:-kafka}
+      KAFKA_PORT: ${KAFKA_PORT:-9092}
+      EUREKA_HOST: ${EUREKA_HOST:-discovery}
+      EUREKA_PORT: ${EUREKA_PORT:-8761}
+      PLAYERS_SECRET_KEY: ${PLAYERS_SECRET_KEY:-secretKey}
+      PLUGIN_API_BASE_URL: ${PLUGIN_API_BASE_URL:-http://127.0.0.1:8080}
+      SKIN_BACKUP_URL: ${SKIN_BACKUP_URL:-https://littleskin.cn/skin}
+    ports:
+      - "${PLAYERS_PORT:-8002}:8002"
+    depends_on:
+      discovery:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:8002/ | grep -q '404\\|200\\|302'"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - wofuf-network
+
+  wofuf-forum:
+    container_name: wofuf-forum
+    image: wofuf-forum:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MYSQL_HOST: ${MYSQL_HOST:-db}
+      MYSQL_PORT: ${MYSQL_PORT:-3306}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-Woffo_db}
+      MYSQL_USER: ${MYSQL_USER:-Woffo_db_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-}"
+      KAFKA_HOST: ${KAFKA_HOST:-kafka}
+      KAFKA_PORT: ${KAFKA_PORT:-9092}
+      EUREKA_HOST: ${EUREKA_HOST:-discovery}
+      EUREKA_PORT: ${EUREKA_PORT:-8761}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-must-be-at-least-32-bytes-long-and-secure!}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600000}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+      FORUM_SECRET_KEY: ${FORUM_SECRET_KEY:-This is a secret key that only the server and the client know.}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://minio:9000}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-wofuf-images}
+    ports:
+      - "${FORUM_PORT:-8003}:8003"
+    depends_on:
+      discovery:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:8003/ | grep -q '404\\|200\\|302'"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - wofuf-network
+
+  # ===================== Frontend (Nginx) =====================
+
+  wofuf-frontend:
+    container_name: wofuf-dist-frontend
+    image: wofuf-frontend-dist:latest
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      wofuf-gateway:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - wofuf-network
+
+volumes:
+  mysql-data-dist:
+  redis-data-dist:
+  kafka-data-dist:
+  minio-data-dist:
+
+networks:
+  wofuf-network:
+    driver: bridge

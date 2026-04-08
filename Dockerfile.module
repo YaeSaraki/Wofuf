@@ -1,0 +1,46 @@
+# ======================== Stage 1: Build ========================
+FROM gradle:9.2.1-jdk17 AS builder
+
+WORKDIR /app
+
+ARG MODULE
+ARG PROJECT_DIR
+
+# Copy Gradle wrapper and project files first (layer caching)
+COPY gradlew .
+COPY gradle/ gradle/
+COPY settings.gradle.kts build.gradle.kts ./
+
+# Copy all modules (needed for dependency resolution)
+COPY Wofuf-shared/ Wofuf-shared/
+COPY Wofuf-modules/ Wofuf-modules/
+COPY Wofuf-infra/ Wofuf-infra/
+
+# Build the specific module's bootJar and copy to known location
+RUN chmod +x gradlew && \
+    ./gradlew :${MODULE}:bootJar --no-daemon -x test && \
+    find ${PROJECT_DIR}/build/libs -name '*SNAPSHOT.jar' -not -name '*-plain.jar' -exec cp {} /app/app.jar \;
+
+# ======================== Stage 2: Runtime ========================
+FROM eclipse-temurin:17-jre
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Create non-root user
+RUN groupadd -r wofuf && useradd -r -g wofuf -d /app -s /sbin/nologin wofuf
+
+# Copy fat JAR from known location
+COPY --from=builder /app/app.jar app.jar
+
+# Create directory for uploads
+RUN mkdir -p /app/uploads && chown -R wofuf:wofuf /app
+
+USER wofuf
+
+ARG PORT
+EXPOSE ${PORT}
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

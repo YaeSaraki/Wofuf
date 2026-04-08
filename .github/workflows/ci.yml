@@ -1,0 +1,157 @@
+name: CI Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  JAVA_VERSION: "17"
+  NODE_VERSION: "22"
+
+jobs:
+  # ===================== Backend: Sub-modules =====================
+  backend-modules:
+    name: "Backend Module - ${{ matrix.module }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - shared
+          - shared-auth
+          - modules-users
+          - modules-players
+          - modules-forum
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile module ${{ matrix.module }}
+        run: ./gradlew :${{ matrix.module }}:compileKotlin --no-daemon
+
+      - name: Test module ${{ matrix.module }}
+        run: ./gradlew :${{ matrix.module }}:test --no-daemon
+
+  # ===================== Backend: Monolith =====================
+  backend-monolith:
+    name: "Backend Monolith"
+    runs-on: ubuntu-latest
+    needs: backend-modules
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile monolith
+        run: ./gradlew compileKotlin --no-daemon
+
+      - name: Build boot JAR
+        run: ./gradlew bootJar --no-daemon -x test
+
+      - name: Upload boot JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: wofuf-boot-jar
+          path: build/libs/*.jar
+          retention-days: 7
+
+  # ===================== Backend: Infrastructure =====================
+  backend-infra:
+    name: "Backend Infra - ${{ matrix.module }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - infra-discovery
+          - infra-gateway
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile ${{ matrix.module }}
+        run: ./gradlew :${{ matrix.module }}:compileKotlin --no-daemon
+
+      - name: Test ${{ matrix.module }}
+        run: ./gradlew :${{ matrix.module }}:test --no-daemon
+
+  # ===================== Frontend: Lint & Type Check =====================
+  frontend-lint:
+    name: "Frontend Lint"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: WofuF
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: WofuF/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+  # ===================== Frontend: Build =====================
+  frontend-build:
+    name: "Frontend Build"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: WofuF
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: WofuF/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wofuf-frontend-dist
+          path: WofuF/dist/
+          retention-days: 7

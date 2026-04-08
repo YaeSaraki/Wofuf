@@ -9,47 +9,47 @@ const teamMembers = ref([
   { 
     name: 'YaeSaraki', 
     role: translate('app', 'about.team.owner'), 
-    avatar: '👨‍💻',
-    description: translate('app', 'about.team.ownerDesc')
+    description: translate('app', 'about.team.ownerDesc'),
+    icon: 'crown'
   },
   { 
     name: 'Qing_Chen', 
     role: translate('app', 'about.team.developer'), 
-    avatar: '👩‍💻',
-    description: translate('app', 'about.team.developerDesc')
+    description: translate('app', 'about.team.developerDesc'),
+    icon: 'code'
   }
 ])
 
 // 服务器特点
 const features = ref([
   {
-    icon: '🎮',
     title: translate('app', 'about.features.gameplay'),
-    description: translate('app', 'about.features.gameplayDesc')
+    description: translate('app', 'about.features.gameplayDesc'),
+    icon: 'gamepad'
   },
   {
-    icon: '⚡',
     title: translate('app', 'about.features.performance'),
-    description: translate('app', 'about.features.performanceDesc')
+    description: translate('app', 'about.features.performanceDesc'),
+    icon: 'zap'
   },
   {
-    icon: '🛡️',
     title: translate('app', 'about.features.security'),
-    description: translate('app', 'about.features.securityDesc')
+    description: translate('app', 'about.features.securityDesc'),
+    icon: 'shield'
   },
   {
-    icon: '🌍',
     title: translate('app', 'about.features.community'),
-    description: translate('app', 'about.features.communityDesc')
+    description: translate('app', 'about.features.communityDesc'),
+    icon: 'users'
   }
 ])
 
 // 服务器统计
 const stats = ref([
-  { label: translate('app', 'about.stats.version'), value: '1.21.8', icon: '📦' },
-  { label: translate('app', 'about.stats.core'), value: 'Leaves', icon: '🍃' },
-  { label: translate('app', 'about.stats.uptime'), value: '24/7', icon: '⏰' },
-  { label: translate('app', 'about.stats.founded'), value: '2024', icon: '🎉' }
+  { label: translate('app', 'about.stats.version'), value: '1.21.8', icon: 'box' },
+  { label: translate('app', 'about.stats.core'), value: 'Leaves', icon: 'server' },
+  { label: translate('app', 'about.stats.uptime'), value: '24/7', icon: 'clock' },
+  { label: translate('app', 'about.stats.founded'), value: '2024', icon: 'calendar' }
 ])
 
 // 动画效果
@@ -86,7 +86,16 @@ onMounted(() => {
       <div class="hero-gradient"></div>
       
       <div class="hero-content" :class="{ visible: textVisible }">
-        <div class="badge">关于我们</div>
+        <div class="badge liquid-glass">
+          <div class="badge-icon global-icon global-icon-sm">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </div>
+          <span>关于我们</span>
+        </div>
         <h1 class="hero-title">
           <span class="title-line">WofuF</span>
           <span class="title-line italic">Minecraft Server</span>
@@ -104,7 +113,18 @@ onMounted(() => {
       <!-- 服务器介绍 -->
       <section class="section" :class="{ visible: isVisible }">
         <div class="section-header">
-          <div class="badge liquid-glass">简介</div>
+          <div class="badge liquid-glass">
+            <div class="badge-icon global-icon global-icon-sm">
+              <svg viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </div>
+            <span>简介</span>
+          </div>
           <h2 class="section-title">{{ translate('app', 'about.intro') }}</h2>
         </div>
         <div class="glass-card intro-content">
@@ -117,12 +137,45 @@ onMounted(() => {
       <!-- 服务器特点 -->
       <section class="section" :class="{ visible: isVisible }">
         <div class="section-header">
-          <div class="badge liquid-glass">特色</div>
+          <div class="badge liquid-glass">
+            <div class="badge-icon global-icon global-icon-sm">
+              <svg viewBox="0 0 24 24">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+            <span>特色</span>
+          </div>
           <h2 class="section-title">{{ translate('app', 'about.features.title') }}</h2>
         </div>
         <div class="features-grid">
           <div v-for="(feature, index) in features" :key="index" class="feature-card liquid-glass">
-            <div class="feature-icon">{{ feature.icon }}</div>
+            <div class="feature-icon-wrapper liquid-glass-strong">
+              <div class="feature-icon global-icon global-icon-lg">
+                <!-- Gamepad -->
+                <svg v-if="feature.icon === 'gamepad'" viewBox="0 0 24 24">
+                  <line x1="6" y1="12" x2="10" y2="12"/>
+                  <line x1="8" y1="10" x2="8" y2="14"/>
+                  <line x1="15" y1="13" x2="15.01" y2="13"/>
+                  <line x1="18" y1="11" x2="18.01" y2="11"/>
+                  <rect x="2" y="6" width="20" height="12" rx="2"/>
+                </svg>
+                <!-- Zap -->
+                <svg v-else-if="feature.icon === 'zap'" viewBox="0 0 24 24">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <!-- Shield -->
+                <svg v-else-if="feature.icon === 'shield'" viewBox="0 0 24 24">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <!-- Users -->
+                <svg v-else-if="feature.icon === 'users'" viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+            </div>
             <h3>{{ feature.title }}</h3>
             <p>{{ feature.description }}</p>
           </div>
@@ -132,12 +185,49 @@ onMounted(() => {
       <!-- 服务器统计 -->
       <section class="section" :class="{ visible: isVisible }">
         <div class="section-header">
-          <div class="badge liquid-glass">数据</div>
+          <div class="badge liquid-glass">
+            <div class="badge-icon global-icon global-icon-sm">
+              <svg viewBox="0 0 24 24">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </div>
+            <span>数据</span>
+          </div>
           <h2 class="section-title">{{ translate('app', 'about.stats.title') }}</h2>
         </div>
         <div class="stats-grid">
           <div v-for="(stat, index) in stats" :key="index" class="stat-card liquid-glass">
-            <div class="stat-icon">{{ stat.icon }}</div>
+            <div class="stat-icon-wrapper liquid-glass-strong">
+              <div class="stat-icon global-icon global-icon-lg">
+                <!-- Box -->
+                <svg v-if="stat.icon === 'box'" viewBox="0 0 24 24">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
+                <!-- Server -->
+                <svg v-else-if="stat.icon === 'server'" viewBox="0 0 24 24">
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                  <line x1="6" y1="6" x2="6.01" y2="6"/>
+                  <line x1="6" y1="18" x2="6.01" y2="18"/>
+                </svg>
+                <!-- Clock -->
+                <svg v-else-if="stat.icon === 'clock'" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <!-- Calendar -->
+                <svg v-else-if="stat.icon === 'calendar'" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+            </div>
             <span class="stat-value">{{ stat.value }}</span>
             <span class="stat-label">{{ stat.label }}</span>
           </div>
@@ -147,12 +237,34 @@ onMounted(() => {
       <!-- 团队成员 -->
       <section class="section" :class="{ visible: isVisible }">
         <div class="section-header">
-          <div class="badge liquid-glass">团队</div>
+          <div class="badge liquid-glass">
+            <div class="badge-icon global-icon global-icon-sm">
+              <svg viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <span>团队</span>
+          </div>
           <h2 class="section-title">{{ translate('app', 'about.team.title') }}</h2>
         </div>
         <div class="team-grid">
           <div v-for="(member, index) in teamMembers" :key="index" class="team-card liquid-glass">
-            <div class="member-avatar">{{ member.avatar }}</div>
+            <div class="member-icon-wrapper liquid-glass-strong">
+              <div class="member-icon global-icon global-icon-xl">
+                <!-- Crown -->
+                <svg v-if="member.icon === 'crown'" viewBox="0 0 24 24">
+                  <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+                </svg>
+                <!-- Code -->
+                <svg v-else-if="member.icon === 'code'" viewBox="0 0 24 24">
+                  <polyline points="16 18 22 12 16 6"/>
+                  <polyline points="8 6 2 12 8 18"/>
+                </svg>
+              </div>
+            </div>
             <div class="member-info">
               <h3>{{ member.name }}</h3>
               <p class="member-role">{{ member.role }}</p>
@@ -165,17 +277,27 @@ onMounted(() => {
       <!-- 联系我们 -->
       <section class="section" :class="{ visible: isVisible }">
         <div class="section-header">
-          <div class="badge liquid-glass">联系</div>
+          <div class="badge liquid-glass">
+            <div class="badge-icon global-icon global-icon-sm">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
+            <span>联系</span>
+          </div>
           <h2 class="section-title">{{ translate('app', 'about.contact.title') }}</h2>
         </div>
         <div class="glass-card contact-content">
           <p>{{ translate('app', 'about.contact.description') }}</p>
           <div class="contact-links">
             <a href="mailto:contact@wofuf.com" class="contact-link liquid-glass-strong">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                <polyline points="22,6 12,13 2,6" />
-              </svg>
+              <div class="contact-icon global-icon global-icon-md">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
               <span>{{ translate('app', 'about.contact.email') }}</span>
             </a>
           </div>
@@ -204,7 +326,7 @@ onMounted(() => {
 .page-container {
   min-height: 100vh;
   background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  color: var(--text-primary);
   font-family: var(--font-body);
   overflow-x: hidden;
 }
@@ -225,21 +347,21 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 2rem;
+  padding: 0.875rem 2rem;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .logo {
-  font-size: 1.5rem;
+  font-size: 1.625rem;
   font-weight: 600;
   font-family: var(--font-heading);
   font-style: italic;
-  color: white;
+  color: var(--text-primary);
   text-decoration: none;
 }
 
@@ -257,10 +379,10 @@ onMounted(() => {
 }
 
 .nav-link {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.9375rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   text-decoration: none;
   border-radius: var(--radius-full);
   transition: all var(--transition-base) ease;
@@ -268,7 +390,7 @@ onMounted(() => {
 
 .nav-link:hover,
 .nav-link.active {
-  color: white;
+  color: var(--text-primary);
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -288,7 +410,7 @@ onMounted(() => {
   inset: 0;
   background: radial-gradient(
     circle at 50% 30%,
-    rgba(99, 102, 241, 0.15) 0%,
+    rgba(99, 102, 241, 0.12) 0%,
     transparent 50%
   );
   pointer-events: none;
@@ -298,7 +420,7 @@ onMounted(() => {
   position: relative;
   z-index: 10;
   text-align: center;
-  max-width: 800px;
+  max-width: 900px;
   opacity: 0;
   transform: translateY(30px);
   transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -310,34 +432,37 @@ onMounted(() => {
 }
 
 .badge {
-  display: inline-block;
-  padding: 0.25rem 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.75rem;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.15);
-  color: white;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.875rem;
+  color: var(--text-primary);
+}
+
+.badge-icon {
+  opacity: 0.9;
+  color: var(--primary-color);
 }
 
 .hero-title {
   font-family: var(--font-heading);
-  font-size: 3.5rem;
+  font-size: 4rem;
   line-height: 1.1;
   margin-bottom: 1.5rem;
   font-weight: 400;
-  color: white;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
 }
 
 @media (min-width: 768px) {
   .hero-title {
-    font-size: 5rem;
+    font-size: 5.5rem;
   }
 }
 
@@ -351,10 +476,10 @@ onMounted(() => {
 }
 
 .hero-subtitle {
-  font-size: 1.125rem;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.6);
-  line-height: 1.6;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.7;
 }
 
 .hero-fade {
@@ -400,39 +525,39 @@ onMounted(() => {
 
 .section-title {
   font-family: var(--font-heading);
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 400;
   font-style: italic;
   letter-spacing: -0.01em;
-  color: white;
+  color: var(--text-primary);
 }
 
 @media (min-width: 768px) {
   .section-title {
-    font-size: 2.5rem;
+    font-size: 2.75rem;
   }
 }
 
 /* 玻璃卡片 */
 .glass-card {
-  padding: 2rem;
-  border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.02);
+  padding: 2.5rem;
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 /* 介绍内容 */
 .intro-content {
-  line-height: 1.8;
+  line-height: 1.9;
 }
 
 .intro-content p {
-  margin-bottom: 1.5rem;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1.75rem;
+  font-size: 1.0625rem;
+  color: var(--text-secondary);
 }
 
 .intro-content p:last-child {
@@ -453,8 +578,8 @@ onMounted(() => {
 }
 
 .feature-card {
-  padding: 2rem;
-  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  border-radius: var(--radius-2xl);
   transition: all var(--transition-base) ease;
   text-align: center;
 }
@@ -463,23 +588,31 @@ onMounted(() => {
   transform: translateY(-4px);
 }
 
+.feature-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-xl);
+  margin-bottom: 1.75rem;
+}
+
 .feature-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  line-height: 1;
+  color: var(--primary-color);
 }
 
 .feature-card h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: white;
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin-bottom: 0.875rem;
+  color: var(--text-primary);
 }
 
 .feature-card p {
-  color: rgba(255, 255, 255, 0.6);
-  line-height: 1.6;
-  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: 1rem;
 }
 
 /* 统计网格 */
@@ -496,8 +629,8 @@ onMounted(() => {
 }
 
 .stat-card {
-  padding: 1.5rem;
-  border-radius: var(--radius-xl);
+  padding: 2rem;
+  border-radius: var(--radius-2xl);
   text-align: center;
   transition: all var(--transition-base) ease;
 }
@@ -506,24 +639,34 @@ onMounted(() => {
   transform: translateY(-4px);
 }
 
+.stat-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-xl);
+  margin-bottom: 1.25rem;
+}
+
 .stat-icon {
-  font-size: 2rem;
-  margin-bottom: 0.75rem;
+  color: var(--primary-color);
 }
 
 .stat-value {
   display: block;
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
-  color: white;
+  margin-bottom: 0.625rem;
+  color: var(--text-primary);
   font-family: var(--font-heading);
   font-style: italic;
 }
 
 .stat-label {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9375rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
 }
 
 /* 团队网格 */
@@ -540,11 +683,11 @@ onMounted(() => {
 }
 
 .team-card {
-  padding: 2rem;
-  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  border-radius: var(--radius-2xl);
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 2rem;
   transition: all var(--transition-base) ease;
 }
 
@@ -552,10 +695,18 @@ onMounted(() => {
   transform: translateY(-4px);
 }
 
-.member-avatar {
-  font-size: 4rem;
+.member-icon-wrapper {
   flex-shrink: 0;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-xl);
+}
+
+.member-icon {
+  color: var(--primary-color);
 }
 
 .member-info {
@@ -563,24 +714,25 @@ onMounted(() => {
 }
 
 .member-info h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.625rem;
+  font-weight: 700;
   margin-bottom: 0.5rem;
-  color: white;
+  color: var(--text-primary);
 }
 
 .member-role {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--text-tertiary);
+  margin-bottom: 0.875rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  font-weight: 600;
 }
 
 .member-description {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.9375rem;
-  line-height: 1.5;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 /* 联系区域 */
@@ -590,8 +742,9 @@ onMounted(() => {
 
 .contact-content p {
   margin-bottom: 2rem;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1rem;
+  color: var(--text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.7;
 }
 
 .contact-links {
@@ -604,26 +757,26 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem 2rem;
+  padding: 1rem 2.25rem;
   border-radius: var(--radius-full);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.9375rem;
   transition: all var(--transition-base) ease;
-  color: white;
+  color: var(--text-primary);
 }
 
 .contact-link:hover {
   transform: translateY(-2px);
 }
 
-.contact-link svg {
-  width: 20px;
-  height: 20px;
+.contact-icon {
+  opacity: 0.9;
 }
 
 /* Footer */
 .footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   padding: 2rem 1.5rem;
   margin-top: 4rem;
 }
@@ -645,8 +798,8 @@ onMounted(() => {
 }
 
 .footer-text {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.875rem;
+  color: var(--text-muted);
 }
 
 .footer-links {
@@ -655,13 +808,13 @@ onMounted(() => {
 }
 
 .footer-link {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.875rem;
+  color: var(--text-muted);
   text-decoration: none;
   transition: color var(--transition-base) ease;
 }
 
 .footer-link:hover {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
 }
 </style>

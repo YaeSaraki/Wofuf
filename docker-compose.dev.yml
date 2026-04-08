@@ -1,0 +1,78 @@
+version: "1"
+
+services:
+  db:
+    container_name: Woffo_db
+    image: mysql:latest
+    ports:
+      - 3307:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=Woffo_db
+      - MYSQL_USER=Woffo_db_user
+      - MYSQL_PASSWORD=password
+    volumes:
+        - mysql-data:/var/lib/mysql
+  redis:
+    container_name: Woffo_redis
+    image: redis:latest
+    ports:
+      - 6380:6379
+    environment:
+      - REDIS_PASSWORD=
+      - REDIS_DATABASES=0
+    volumes:
+      - redis-data:/data
+  kafka:
+    container_name: Woffo_kafka
+    image: apache/kafka:latest  # 固定版本，避免latest版本兼容性问题
+    ports:
+      - "9092:9092"  # 外部客户端访问端口
+      - "9093:9093"  # 控制器内部通信端口
+    environment:
+      # ===================== 核心必填配置（解决controller.listener.names报错） =====================
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: "broker,controller"  # 单节点同时作为broker和控制器
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"  # 必须和listeners中的CONTROLLER匹配
+      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"  # 绑定所有网卡
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"  # 必须包含CONTROLLER
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"  # 外部访问地址
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"  # 控制器集群（单节点）
+      KAFKA_CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qw=="  # 固定有效集群ID（可直接用）
+
+      # ===================== 单节点集群必要配置 =====================
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      KAFKA_LOG_DIRS: "/home/kafka/data"  # kafka用户有权限的目录，避免权限错误
+
+    volumes:
+      - kafka-data:/home/kafka/data  # 命名数据卷，自动处理权限
+    networks:
+      - woffo-network
+
+  minio:
+    container_name: Woffo_minio
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"   # API端口
+      - "9001:9001"   # Console端口
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - woffo-network
+
+volumes:
+  kafka-data:
+  minio-data:
+  mysql-data:
+  redis-data:
+
+networks:
+  woffo-network:
+    driver: bridge

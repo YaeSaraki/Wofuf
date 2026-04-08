@@ -1,0 +1,23 @@
+# ===================== Discovery Production Profile =====================
+
+debug: false
+
+server:
+  port: 8761
+
+spring:
+  application:
+    name: infra-discovery
+  cloud:
+    discovery:
+      enabled: true
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
+  instance:
+    prefer-ip-address: true
+    hostname: ${EUREKA_HOST:localhost}

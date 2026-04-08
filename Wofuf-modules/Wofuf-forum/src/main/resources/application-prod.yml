@@ -1,0 +1,123 @@
+# ===================== Forum Production Profile =====================
+
+debug: false
+
+secretKey: ${FORUM_SECRET_KEY:This is a secret key that only the server and the client know.}
+
+# ===================== MinIO =====================
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://minio:9000}
+  access-key: ${MINIO_ROOT_USER:minioadmin}
+  secret-key: ${MINIO_ROOT_PASSWORD:minioadmin}
+  bucket-name: ${MINIO_BUCKET:wofuf-images}
+
+server:
+  port: 8003
+
+spring:
+  application:
+    name: modules-forum
+
+  # ===================== Database =====================
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:db}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:Woffo_db}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:Woffo_db_user}
+    password: ${MYSQL_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      pool-name: WofufHikariPool
+      maximum-pool-size: ${DB_MAX_POOL:10}
+      minimum-idle: ${DB_MIN_IDLE:5}
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  # ===================== JPA =====================
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    properties:
+      hibernate:
+        format_sql: false
+    show-sql: false
+
+  # ===================== Redis =====================
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: "${REDIS_PASSWORD:}"
+      database: 0
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+        shutdown-timeout: 100ms
+
+  # ===================== Kafka =====================
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST:kafka}:${KAFKA_PORT:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                header: true
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+            use:
+              type:
+                headers: true
+
+  # ===================== Spring Cloud Stream =====================
+  cloud:
+    stream:
+      bindings:
+        orderEventProcessor-in-0:
+          destination: domain-events-topic
+          group: modules-forum-group
+          content-type: application/json
+      kafka:
+        binder:
+          brokers: ${KAFKA_HOST:kafka}:${KAFKA_PORT:9092}
+          auto-create-topics: true
+        bindings:
+          orderEventProcessor-in-0:
+            consumer:
+              enable-dlq: true
+              dlq-name: modules-forum-dlq
+
+# ===================== Auth =====================
+auth:
+  jwt:
+    secret: ${JWT_SECRET:your-secret-key-must-be-at-least-32-bytes-long-and-secure!}
+    expiration: ${JWT_EXPIRATION:3600000}
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+    issuer: ${JWT_ISSUER:auth-service}
+    clock-skew: ${JWT_CLOCK_SKEW:60}
+    token-version: '0'
+  redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    password: "${REDIS_PASSWORD:}"
+    database: 0
+
+# ===================== Eureka =====================
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOST:discovery}:${EUREKA_PORT:8761}/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true

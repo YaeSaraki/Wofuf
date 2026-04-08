@@ -1,0 +1,50 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.DS_Store
+
+# Git
+.git/
+.gitattributes
+.gitignore
+
+# Frontend (backend Dockerfile doesn't need it)
+WofuF/node_modules/
+WofuF/dist/
+
+# Separate projects
+MeovO/
+document/
+
+# Environment files
+.env
+.env.production
+
+# Scripts (not needed in image)
+scripts/
+
+# GitHub Actions
+.github/
+
+# Docker
+docker-compose*.yml
+.dockerignore
+
+# CI
+CLAUDE.md
+AGENTS.md
+README.md
+LICENSE
+
+# Misc
+*.log
+*.md
+!**/src/main/resources/
