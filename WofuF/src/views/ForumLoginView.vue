@@ -245,25 +245,15 @@ onMounted(() => {
 .bg-gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background: #f8fafc;
 }
 
 .dark .bg-gradient {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: #0f172a;
 }
 
 .bg-pattern {
-  position: absolute;
-  inset: 0;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
-}
-
-.dark .bg-pattern {
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+  display: none;
 }
 
 /* 返回按钮 */
@@ -471,11 +461,12 @@ onMounted(() => {
 }
 
 /* Password组件样式 */
-.form-input:deep(.p-password) {
+.input-wrapper:deep(.p-password) {
   width: 100%;
+  position: relative;
 }
 
-.form-input:deep(.p-password-input) {
+.input-wrapper:deep(.p-password-input) {
   width: 100%;
   padding: 0.875rem 2.5rem 0.875rem 2.75rem;
   border-radius: 0.75rem;
@@ -483,15 +474,29 @@ onMounted(() => {
   background: #f9fafb;
   color: #111827;
   font-size: 0.9375rem;
+  transition: all 0.2s ease;
 }
 
-.dark .form-input:deep(.p-password-input) {
+.input-wrapper:deep(.p-password-input:focus) {
+  outline: none;
+  border-color: #667eea;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.dark .input-wrapper:deep(.p-password-input) {
   background: #2d2d3d;
   border-color: #3d3d4d;
   color: #f9fafb;
 }
 
-.form-input:deep(.p-password-toggle-mask-icon) {
+.dark .input-wrapper:deep(.p-password-input:focus) {
+  background: #363646;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+}
+
+.input-wrapper:deep(.p-password-toggle-mask-icon) {
   right: 0.75rem;
   color: #9ca3af;
 }
@@ -568,7 +573,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(0, 0, 0, 0.3);
   font-size: 0.75rem;
   letter-spacing: 0.05em;
 }
