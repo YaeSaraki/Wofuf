@@ -4,6 +4,7 @@ import type {PlayerSkin} from '@M/players/dtos/PlayerSkin.ts'
 import type {PlayerUuid} from '@M/players/dtos/PlayerUuid.ts'
 import type {PlayerNameList} from '@M/players/dtos/PlayerName.ts'
 import type {PlayerSearchResponse} from '@M/players/dtos/PlayerSearch.ts'
+import type {ServerStatus} from '@M/players/dtos/ServerStatus.ts'
 import type {ApiResponse} from '@S/infra/api/v1/models/ApiResponse.ts'
 import {Result} from '@S/core/Result.ts'
 import {http} from '@S/infra/api/http.ts'
@@ -29,6 +30,9 @@ export interface IPlayerService {
 
   /* ---------------- 搜索玩家 ---------------- */
   searchPlayers(query: string, limit?: number, options?: RequestOptions): Promise<Result<PlayerSearchResponse>>
+
+  /* ---------------- 获取服务器状态 ---------------- */
+  getServerStatus(forceRefresh?: boolean, options?: RequestOptions): Promise<Result<ServerStatus>>
 }
 
 export class PlayerService implements IPlayerService {
@@ -177,6 +181,38 @@ export class PlayerService implements IPlayerService {
         error instanceof Error ? error.message : '搜索玩家失败'
       )
     }
+  }
+
+  /* ---------------- 获取服务器状态 ---------------- */
+  public async getServerStatus(
+    forceRefresh: boolean = false,
+    options?: RequestOptions,
+  ): Promise<Result<ServerStatus>> {
+    const cacheKey = `server_status_${forceRefresh}`
+
+    return cacheService.withCacheAndDeduplication<Result<ServerStatus>>(
+      PlayerService.CACHE_MODULE,
+      cacheKey,
+      async () => {
+        try {
+          const response = await http.get<ApiResponse<ServerStatus>>(
+            `/api/v1/players/server-status?forceRefresh=${forceRefresh}`,
+            {
+              signal: options?.signal,
+            }
+          )
+
+          if (response.data.success) {
+            return Result.success<ServerStatus>(response.data.data)
+          }
+          return Result.failure<ServerStatus>(response.data.message)
+        } catch (error) {
+          return Result.failure<ServerStatus>(
+            error instanceof Error ? error.message : '获取服务器状态失败'
+          )
+        }
+      }
+    )
   }
 
   public async renderAvatar(skinBase64: string, size: number): Promise<string> {

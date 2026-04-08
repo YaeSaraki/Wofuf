@@ -1,27 +1,77 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useLocale } from '@S/services/i18n/useLocale.ts'
 import PageBackground from '@S/components/PageBackground.vue'
 import YesterdayOnlineList from '@M/players/components/yesterdayOnlineList/YesterdayOnlineList.vue'
 import PlayerSearch from '@M/players/components/playerSearch/PlayerSearch.vue'
+import { playerService } from '@M/players'
+import type { ServerStatus } from '@M/players/dtos/ServerStatus.ts'
 
 const { translate } = useLocale()
 
 // 服务器状态
-const isOnline = ref(true)
-const serverStats = ref()
+const serverStatus = ref<ServerStatus | null>(null)
+const loading = ref(false)
+const error = ref<string | null>(null)
+let refreshInterval: number | null = null
 
 // 计算属性
+const isOnline = computed(() => serverStatus.value?.heartbeatStatus ?? false)
 const statusClass = computed(() => isOnline.value ? 'status-online' : 'status-offline')
 const statusText = computed(() => isOnline.value ? translate('app', 'status.online') : translate('app', 'status.offline'))
 
+const tpsColor = computed(() => {
+  if (!serverStatus.value) return 'text-gray-500'
+  const tps = parseFloat(serverStatus.value.tps)
+  if (tps >= 18) return 'text-green-500'
+  if (tps >= 15) return 'text-yellow-500'
+  return 'text-red-500'
+})
+
 // 动画效果
 const isVisible = ref(false)
+
+// 获取服务器状态
+const fetchServerStatus = async () => {
+  // 防止重复请求
+  if (loading.value) return
+  
+  loading.value = true
+  error.value = null
+  
+  try {
+    const result = await playerService.getServerStatus()
+    
+    if (result.isSuccess) {
+      serverStatus.value = result.getValue()
+    } else {
+      error.value = result.error
+      console.error('获取服务器状态失败:', result.error)
+    }
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : '获取服务器状态失败'
+    console.error('获取服务器状态异常:', e)
+  } finally {
+    loading.value = false
+  }
+}
 
 onMounted(() => {
   setTimeout(() => {
     isVisible.value = true
   }, 100)
+  
+  // 获取服务器状态
+  fetchServerStatus()
+  
+  // 每30秒自动刷新
+  refreshInterval = window.setInterval(fetchServerStatus, 30000)
+})
+
+onUnmounted(() => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
+  }
 })
 </script>
 
@@ -75,14 +125,63 @@ onMounted(() => {
             <h2>{{ translate('app', 'status.serverInfo') }}</h2>
           </div>
           <div class="card-content">
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">{{ translate('app', 'status.totalPlayers') }}</span>
-                <span class="info-value">{{ serverStats?.totalPlayers ?? '1,245' }}</span>
+            <!-- 加载状态 -->
+            <div v-if="loading && !serverStatus" class="loading-state">
+              <div class="loading-spinner"></div>
+              <p>{{ translate('app', 'common.loading') }}</p>
+            </div>
+            
+            <!-- 错误提示 -->
+            <div v-else-if="error" class="error-state">
+              <div class="error-icon">⚠️</div>
+              <p>{{ error }}</p>
+              <button @click="fetchServerStatus" class="retry-button">
+                {{ translate('app', 'common.retry') }}
+              </button>
+            </div>
+            
+            <!-- 服务器状态信息 -->
+            <div v-else-if="serverStatus" class="server-status-grid">
+              <div class="status-item">
+                <div class="status-icon">👥</div>
+                <div class="status-details">
+                  <div class="status-label">{{ translate('app', 'status.onlinePlayers') }}</div>
+                  <div class="status-value">
+                    <span class="online-count">{{ serverStatus.onlinePlayers }}</span>
+                    <span class="separator">/</span>
+                    <span class="max-count">{{ serverStatus.maxPlayers }}</span>
+                  </div>
+                </div>
               </div>
-              <div class="info-item">
-                <span class="info-label">{{ translate('app', 'status.founded') }}</span>
-                <span class="info-value">2024-01-01</span>
+              
+              <div class="status-item">
+                <div class="status-icon">⚡</div>
+                <div class="status-details">
+                  <div class="status-label">{{ translate('app', 'status.tps') }}</div>
+                  <div class="status-value" :class="tpsColor">{{ serverStatus.tps }}</div>
+                </div>
+              </div>
+              
+              <div class="status-item">
+                <div class="status-icon">💓</div>
+                <div class="status-details">
+                  <div class="status-label">{{ translate('app', 'status.heartbeat') }}</div>
+                  <div class="status-value">
+                    <span :class="serverStatus.heartbeatStatus ? 'status-online-text' : 'status-offline-text'">
+                      {{ serverStatus.heartbeatStatus ? '在线' : '离线' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="status-item">
+                <div class="status-icon">🕐</div>
+                <div class="status-details">
+                  <div class="status-label">{{ translate('app', 'status.lastUpdate') }}</div>
+                  <div class="status-value time-value">
+                    {{ new Date(serverStatus.updateTime).toLocaleString('zh-CN') }}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -304,6 +403,86 @@ onMounted(() => {
 }
 
 /* 信息网格 */
+.server-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--bf-radius-md, 12px);
+  background: var(--bf-surface-variant, rgba(255, 255, 255, 0.5));
+  transition: all 0.2s ease;
+}
+
+.status-item:hover {
+  background: var(--bf-surface-hover, rgba(255, 255, 255, 0.7));
+  transform: translateY(-2px);
+}
+
+.status-icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.status-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.status-label {
+  font-size: 0.875rem;
+  color: var(--bf-text-tertiary, #6b7285);
+  font-weight: 500;
+}
+
+.status-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--bf-text-primary, #1a1a2e);
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.online-count {
+  color: #10b981;
+  font-size: 1.5rem;
+}
+
+.separator {
+  color: var(--bf-text-tertiary, #6b7285);
+  font-weight: 400;
+}
+
+.max-count {
+  color: var(--bf-text-secondary, #6b7280);
+  font-size: 1rem;
+}
+
+.time-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-online-text {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.status-offline-text {
+  color: #ef4444;
+  font-weight: 600;
+}
+
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -325,6 +504,80 @@ onMounted(() => {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--bf-text-primary, #1a1a2e);
+}
+
+/* TPS颜色 */
+.text-green-500 {
+  color: #10b981;
+}
+
+.text-yellow-500 {
+  color: #f59e0b;
+}
+
+.text-red-500 {
+  color: #ef4444;
+}
+
+.text-gray-500 {
+  color: #6b7280;
+}
+
+/* 加载和错误状态 */
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--bf-text-tertiary, #6b7285);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 107, 53, 0.2);
+  border-top-color: #FF6B35;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.error-state {
+  color: var(--bf-text-error, #ef4444);
+}
+
+.error-state p {
+  max-width: 400px;
+  word-wrap: break-word;
+}
+
+.retry-button {
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--bf-radius-md, 8px);
+  border: 1px solid var(--bf-border-subtle, rgba(0, 0, 0, 0.1));
+  background: var(--bf-surface, rgba(255, 255, 255, 0.8));
+  color: var(--bf-text-primary, #1a1a2e);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background: var(--bf-surface-hover, rgba(255, 255, 255, 0.95));
+  border-color: var(--bf-border, rgba(0, 0, 0, 0.15));
 }
 
 /* 响应式设计 */
@@ -357,6 +610,11 @@ onMounted(() => {
 
   .card {
     padding: 1.25rem;
+  }
+
+  .server-status-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .info-grid {

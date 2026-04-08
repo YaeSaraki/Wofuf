@@ -45,5 +45,8 @@ object PlayerApiConstantV1 {
 
         /** /api/v1/players/search */
         const val SEARCH = "$BASE/search"
+
+        /** /api/v1/players/server-status */
+        const val SERVER_STATUS = "$BASE/server-status"
     }
 }
