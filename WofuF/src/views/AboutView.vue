@@ -82,7 +82,7 @@ onMounted(() => {
               <line x1="12" y1="8" x2="12.01" y2="8"/>
             </svg>
           </div>
-          <span>关于我们</span>
+          <span>{{ translate('app', 'about.heroTitle') }}</span>
         </div>
         <h1 class="hero-title">
           <span class="title-line">WofuF</span>
@@ -111,7 +111,7 @@ onMounted(() => {
                 <polyline points="10 9 9 9 8 9"/>
               </svg>
             </div>
-            <span>简介</span>
+            <span>{{ translate('app', 'about.badge.intro') }}</span>
           </div>
           <h2 class="section-title">{{ translate('app', 'about.intro') }}</h2>
         </div>
@@ -131,7 +131,7 @@ onMounted(() => {
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
             </div>
-            <span>特色</span>
+            <span>{{ translate('app', 'about.badge.features') }}</span>
           </div>
           <h2 class="section-title">{{ translate('app', 'about.features.title') }}</h2>
         </div>
@@ -181,7 +181,7 @@ onMounted(() => {
                 <line x1="6" y1="20" x2="6" y2="14"/>
               </svg>
             </div>
-            <span>数据</span>
+            <span>{{ translate('app', 'about.badge.stats') }}</span>
           </div>
           <h2 class="section-title">{{ translate('app', 'about.stats.title') }}</h2>
         </div>
@@ -234,7 +234,7 @@ onMounted(() => {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
             </div>
-            <span>团队</span>
+            <span>{{ translate('app', 'about.badge.team') }}</span>
           </div>
           <h2 class="section-title">{{ translate('app', 'about.team.title') }}</h2>
         </div>
@@ -272,7 +272,7 @@ onMounted(() => {
                 <polyline points="22,6 12,13 2,6"/>
               </svg>
             </div>
-            <span>联系</span>
+            <span>{{ translate('app', 'about.badge.contact') }}</span>
           </div>
           <h2 class="section-title">{{ translate('app', 'about.contact.title') }}</h2>
         </div>

@@ -10,29 +10,61 @@ const authTranslations = {
     zh: '用户名',
     en: 'Username',
   },
+  usernamePlaceholder: {
+    zh: '请输入用户名',
+    en: 'Enter your username',
+  },
   email: {
     zh: '邮箱',
     en: 'Email',
+  },
+  emailPlaceholder: {
+    zh: '请输入邮箱地址',
+    en: 'Enter your email',
   },
   password: {
     zh: '密码',
     en: 'Password',
   },
+  passwordPlaceholder: {
+    zh: '请输入密码',
+    en: 'Enter your password',
+  },
   confirmPassword: {
     zh: '确认密码',
     en: 'Confirm Password',
+  },
+  confirmPasswordPlaceholder: {
+    zh: '请再次输入密码',
+    en: 'Confirm your password',
   },
   nickname: {
     zh: '昵称',
     en: 'Nickname',
   },
+  nicknamePlaceholder: {
+    zh: '请输入昵称',
+    en: 'Enter your nickname',
+  },
   playerId: {
     zh: '玩家ID',
     en: 'Player ID',
   },
+  playerIdPlaceholder: {
+    zh: '请输入玩家ID',
+    en: 'Enter your Player ID',
+  },
   code: {
     zh: '验证码',
     en: 'Verification Code',
+  },
+  codePlaceholder: {
+    zh: '请输入验证码',
+    en: 'Enter verification code',
+  },
+  back: {
+    zh: '返回',
+    en: 'Back',
   },
 
   // 按钮

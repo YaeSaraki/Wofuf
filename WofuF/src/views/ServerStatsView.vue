@@ -105,13 +105,13 @@ onUnmounted(() => {
 
         <!-- 主标题 -->
         <h1 class="hero-title">
-          <span class="title-line">Minecraft</span>
-          <span class="title-line italic">服务器状态</span>
+          <span class="title-line">{{ translate('app', 'status.hero.title1') }}</span>
+          <span class="title-line italic">{{ translate('app', 'status.hero.title2') }}</span>
         </h1>
 
         <!-- 副标题 -->
         <p class="hero-subtitle">
-          实时监控服务器性能 · 时刻掌握服务器状态
+          {{ translate('app', 'status.hero.subtitle') }}
         </p>
       </div>
 
@@ -130,9 +130,9 @@ onUnmounted(() => {
                 <line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </div>
-            <span>搜索</span>
+            <span>{{ translate('app', 'status.section.search') }}</span>
           </div>
-          <h2 class="section-title">玩家搜索</h2>
+          <h2 class="section-title">{{ translate('app', 'status.section.playerSearch') }}</h2>
         </div>
         <div class="glass-card">
           <PlayerSearch />
@@ -151,9 +151,9 @@ onUnmounted(() => {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
             </div>
-            <span>统计</span>
+            <span>{{ translate('app', 'status.section.stats') }}</span>
           </div>
-          <h2 class="section-title">昨日在线玩家</h2>
+          <h2 class="section-title">{{ translate('app', 'status.section.yesterdayOnline') }}</h2>
         </div>
         <div class="glass-card">
           <YesterdayOnlineList />
@@ -170,16 +170,16 @@ onUnmounted(() => {
                 <polyline points="12 6 12 12 16 14"/>
               </svg>
             </div>
-            <span>实时</span>
+            <span>{{ translate('app', 'status.section.realtime') }}</span>
           </div>
-          <h2 class="section-title">服务器状态</h2>
+          <h2 class="section-title">{{ translate('app', 'status.section.serverStatus') }}</h2>
         </div>
         
         <!-- 加载状态 -->
         <div v-if="loading && !serverStatus" class="loading-container">
           <div class="liquid-glass loading-card">
             <div class="loading-spinner"></div>
-            <p class="loading-text">正在获取服务器状态...</p>
+            <p class="loading-text">{{ translate('app', 'status.loading') }}</p>
           </div>
         </div>
         
@@ -201,7 +201,7 @@ onUnmounted(() => {
                   <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
                 </svg>
               </div>
-              <span>重试</span>
+              <span>{{ translate('app', 'status.retry') }}</span>
             </button>
           </div>
         </div>
@@ -221,7 +221,7 @@ onUnmounted(() => {
               </div>
             </div>
             <div class="stat-content">
-              <div class="stat-label">在线玩家</div>
+              <div class="stat-label">{{ translate('app', 'status.onlinePlayers') }}</div>
               <div class="stat-value">
                 <span class="online-count">{{ serverStatus.onlinePlayers }}</span>
                 <span class="separator">/</span>
@@ -246,7 +246,7 @@ onUnmounted(() => {
               </div>
             </div>
             <div class="stat-content">
-              <div class="stat-label">服务器 TPS</div>
+              <div class="stat-label">{{ translate('app', 'status.tps') }}</div>
               <div class="stat-value" :class="tpsColor">
                 {{ serverStatus.tps }}
               </div>
@@ -266,10 +266,10 @@ onUnmounted(() => {
               </div>
             </div>
             <div class="stat-content">
-              <div class="stat-label">心跳检测</div>
+              <div class="stat-label">{{ translate('app', 'status.heartbeat') }}</div>
               <div class="stat-value">
                 <span :class="serverStatus.heartbeatStatus ? 'status-online-text' : 'status-offline-text'">
-                  {{ serverStatus.heartbeatStatus ? '在线' : '离线' }}
+                  {{ serverStatus.heartbeatStatus ? translate('app', 'status.online') : translate('app', 'status.offline') }}
                 </span>
               </div>
               <div class="heartbeat-animation" :class="{ active: serverStatus.heartbeatStatus }">
@@ -289,7 +289,7 @@ onUnmounted(() => {
               </div>
             </div>
             <div class="stat-content">
-              <div class="stat-label">最后更新</div>
+              <div class="stat-label">{{ translate('app', 'status.lastUpdate') }}</div>
               <div class="stat-value time-value">
                 {{ formatTime(serverStatus.updateTime) }}
               </div>
@@ -300,7 +300,7 @@ onUnmounted(() => {
                     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
                   </svg>
                 </div>
-                <span class="refresh-text">每30秒自动刷新</span>
+                <span class="refresh-text">{{ translate('app', 'status.autoRefresh') }}</span>
               </div>
             </div>
           </div>
