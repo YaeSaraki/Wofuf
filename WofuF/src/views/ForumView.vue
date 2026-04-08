@@ -84,7 +84,7 @@ onMounted(() => {
   color: hsl(var(--foreground));
   font-family: var(--font-body);
   overflow-x: hidden;
-  padding-top: 1rem;
+  padding-top: 5rem;
 }
 
 /* Hero Section */
@@ -248,6 +248,14 @@ onMounted(() => {
 }
 
 /* Light mode */
+:root:not(.dark) .badge {
+  color: var(--text-primary);
+}
+
+:root:not(.dark) .hero-title {
+  color: var(--text-primary);
+}
+
 :root:not(.dark) .hero-subtitle {
   color: rgba(0, 0, 0, 0.6);
 }

@@ -305,13 +305,13 @@ onMounted(() => {
   color: var(--text-primary);
   font-family: var(--font-body);
   overflow-x: hidden;
-  padding-top: 1rem;
+  padding-top: 5rem;
 }
 
 /* Hero Section */
 .hero-section {
   position: relative;
-  min-height: 600px;
+  min-height: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
