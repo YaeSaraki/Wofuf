@@ -17,12 +17,6 @@ import Toast from 'primevue/toast'
 
 <style>
 main {
-  margin-top: 5%;
-}
-</style>
-
-<style scoped>
-main {
-  margin-top: 5%;
+  min-height: 100vh;
 }
 </style>

@@ -71,18 +71,6 @@ onMounted(() => {
         </aside>
       </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-content">
-        <p class="footer-text">© 2026 WofuF. All rights reserved.</p>
-        <div class="footer-links">
-          <a href="#" class="footer-link">隐私政策</a>
-          <a href="#" class="footer-link">服务条款</a>
-          <a href="#" class="footer-link">联系我们</a>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -96,7 +84,7 @@ onMounted(() => {
   color: hsl(var(--foreground));
   font-family: var(--font-body);
   overflow-x: hidden;
-  padding-top: 5rem;
+  padding-top: 1rem;
 }
 
 /* Hero Section */
@@ -259,50 +247,6 @@ onMounted(() => {
   transform: translateY(0);
 }
 
-/* Footer */
-.footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2rem 1.5rem;
-  margin-top: 4rem;
-}
-
-.footer-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-}
-
-@media (min-width: 768px) {
-  .footer-content {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-}
-
-.footer-text {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.footer-links {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.footer-link {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.4);
-  text-decoration: none;
-  transition: color var(--transition-base) ease;
-}
-
-.footer-link:hover {
-  color: rgba(255, 255, 255, 0.8);
-}
-
 /* Light mode */
 :root:not(.dark) .hero-subtitle {
   color: rgba(0, 0, 0, 0.6);
@@ -318,18 +262,5 @@ onMounted(() => {
 
 :root:not(.dark) .hero-fade {
   background: linear-gradient(to top, hsl(var(--background)), transparent);
-}
-
-:root:not(.dark) .footer {
-  border-top-color: rgba(0, 0, 0, 0.1);
-}
-
-:root:not(.dark) .footer-text,
-:root:not(.dark) .footer-link {
-  color: rgba(0, 0, 0, 0.4);
-}
-
-:root:not(.dark) .footer-link:hover {
-  color: rgba(0, 0, 0, 0.8);
 }
 </style>

@@ -292,18 +292,6 @@ onMounted(() => {
         </div>
       </section>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-content">
-        <p class="footer-text">© 2026 WofuF. All rights reserved.</p>
-        <div class="footer-links">
-          <a href="#" class="footer-link">隐私政策</a>
-          <a href="#" class="footer-link">服务条款</a>
-          <a href="#" class="footer-link">联系我们</a>
-        </div>
-      </div>
-    </footer>
   </div>
 </template>
 
@@ -317,7 +305,7 @@ onMounted(() => {
   color: var(--text-primary);
   font-family: var(--font-body);
   overflow-x: hidden;
-  padding-top: 5rem;
+  padding-top: 1rem;
 }
 
 /* Hero Section */
@@ -698,49 +686,5 @@ onMounted(() => {
 
 .contact-icon {
   opacity: 0.9;
-}
-
-/* Footer */
-.footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 2rem 1.5rem;
-  margin-top: 4rem;
-}
-
-.footer-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-}
-
-@media (min-width: 768px) {
-  .footer-content {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-}
-
-.footer-text {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
-
-.footer-links {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.footer-link {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: color var(--transition-base) ease;
-}
-
-.footer-link:hover {
-  color: var(--text-secondary);
 }
 </style>
