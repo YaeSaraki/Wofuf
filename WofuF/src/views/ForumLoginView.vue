@@ -464,11 +464,12 @@ onMounted(() => {
 .input-wrapper:deep(.p-password) {
   width: 100%;
   position: relative;
+  display: block;
 }
 
 .input-wrapper:deep(.p-password-input) {
   width: 100%;
-  padding: 0.875rem 2.5rem 0.875rem 2.75rem;
+  padding: 0.875rem 2.75rem 0.875rem 2.75rem;
   border-radius: 0.75rem;
   border: 1.5px solid #e5e7eb;
   background: #f9fafb;
@@ -497,8 +498,16 @@ onMounted(() => {
 }
 
 .input-wrapper:deep(.p-password-toggle-mask-icon) {
-  right: 0.75rem;
+  position: absolute;
+  right: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
   color: #9ca3af;
+  cursor: pointer;
+}
+
+.dark .input-wrapper:deep(.p-password-toggle-mask-icon) {
+  color: #6b7280;
 }
 
 .error-text {
