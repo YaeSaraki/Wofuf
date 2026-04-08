@@ -20,6 +20,7 @@ import { Result } from '@S/core/Result.ts'
 import { translate } from '@S/services/i18n'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
+import FloatLabel from 'primevue/floatlabel'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import Divider from 'primevue/divider'
@@ -58,7 +59,7 @@ const formErrors = reactive({
 // 当用户修改输入时清除对应错误
 watch(() => userData.email, () => { if (formErrors.email) formErrors.email = '' })
 watch(() => userData.username, () => { if (formErrors.username) formErrors.username = '' })
-watch(() => userData.password, () => { 
+watch(() => userData.password, () => {
   if (formErrors.password) formErrors.password = ''
   if (formErrors.confirmPassword && userData.confirmPassword) formErrors.confirmPassword = ''
 })
@@ -244,7 +245,6 @@ onMounted(() => {
     <!-- 背景装饰 -->
     <div class="bg-decoration">
       <div class="bg-gradient"></div>
-      <div class="bg-pattern"></div>
     </div>
 
     <!-- 返回按钮 -->
@@ -297,56 +297,45 @@ onMounted(() => {
         <div v-if="currentStep === 0" class="form-step">
           <!-- 邮箱 -->
           <div class="form-group">
-            <label class="form-label">{{ translate('auth', 'email') }}</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-              </svg>
+            <FloatLabel variant="on">
               <InputText
+                id="email"
                 v-model="userData.email"
                 type="email"
                 :invalid="!!formErrors.email"
                 autocomplete="email"
-                :placeholder="translate('auth', 'emailPlaceholder') || '请输入邮箱'"
-                class="form-input"
+                fluid
               />
-            </div>
+              <label for="email">{{ translate('auth', 'email') }}</label>
+            </FloatLabel>
             <small v-if="formErrors.email" class="error-text">{{ formErrors.email }}</small>
           </div>
 
           <!-- 用户名 -->
           <div class="form-group">
-            <label class="form-label">{{ translate('auth', 'username') }}</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
+            <FloatLabel variant="on">
               <InputText
+                id="username"
                 v-model="userData.username"
                 :invalid="!!formErrors.username"
                 autocomplete="username"
-                :placeholder="translate('auth', 'usernamePlaceholder') || '请输入用户名'"
-                class="form-input"
+                fluid
               />
-            </div>
+              <label for="username">{{ translate('auth', 'username') }}</label>
+            </FloatLabel>
             <small v-if="formErrors.username" class="error-text">{{ formErrors.username }}</small>
           </div>
 
           <!-- 密码 -->
           <div class="form-group">
-            <label class="form-label">{{ translate('auth', 'password') }}</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-              </svg>
+            <FloatLabel variant="on">
               <Password
+                id="password"
                 v-model="userData.password"
                 toggleMask
                 :invalid="!!formErrors.password"
                 autocomplete="new-password"
-                :placeholder="translate('auth', 'passwordPlaceholder') || '请输入密码'"
-                class="form-input"
-                inputClass="password-input"
+                fluid
               >
                 <template #footer>
                   <Divider />
@@ -358,29 +347,28 @@ onMounted(() => {
                   </ul>
                 </template>
               </Password>
-            </div>
+              <label for="password">{{ translate('auth', 'password') }}</label>
+            </FloatLabel>
             <small v-if="formErrors.password" class="error-text">{{ formErrors.password }}</small>
           </div>
 
           <!-- 确认密码 -->
           <div class="form-group">
-            <label class="form-label">{{ translate('auth', 'confirmPassword') }}</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-              </svg>
+            <FloatLabel variant="on">
               <Password
+                id="confirmPassword"
                 v-model="userData.confirmPassword"
                 :feedback="false"
                 toggleMask
                 :invalid="!!formErrors.confirmPassword"
                 autocomplete="new-password"
-                :placeholder="translate('auth', 'confirmPasswordPlaceholder') || '请再次输入密码'"
-                class="form-input"
-                inputClass="password-input"
+                fluid
               />
-            </div>
-            <small v-if="formErrors.confirmPassword" class="error-text">{{ formErrors.confirmPassword }}</small>
+              <label for="confirmPassword">{{ translate('auth', 'confirmPassword') }}</label>
+            </FloatLabel>
+            <small v-if="formErrors.confirmPassword" class="error-text">
+              {{ formErrors.confirmPassword }}
+            </small>
           </div>
         </div>
 
@@ -388,60 +376,51 @@ onMounted(() => {
         <div v-else class="form-step">
           <div class="info-box">
             <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span>{{ translate('auth', 'hintGameCommand') }}</span>
           </div>
 
           <!-- 玩家ID -->
           <div class="form-group">
-            <label class="form-label">{{ translate('auth', 'playerId') }}</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
+            <FloatLabel variant="on">
               <InputText
+                id="playerId"
                 v-model="memberData.playerId"
                 :invalid="!!formErrors.playerId"
-                :placeholder="translate('auth', 'playerIdPlaceholder') || '请输入玩家ID'"
-                class="form-input"
+                fluid
               />
-            </div>
+              <label for="playerId">{{ translate('auth', 'playerId') }}</label>
+            </FloatLabel>
             <small v-if="formErrors.playerId" class="error-text">{{ formErrors.playerId }}</small>
           </div>
 
           <!-- 昵称 -->
           <div class="form-group">
-            <label class="form-label">{{ translate('auth', 'nickname') }}</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
-              </svg>
+            <FloatLabel variant="on">
               <InputText
+                id="nickName"
                 v-model="memberData.nickName"
                 :invalid="!!formErrors.nickName"
-                :placeholder="translate('auth', 'nicknamePlaceholder') || '请输入昵称'"
-                class="form-input"
+                fluid
               />
-            </div>
+              <label for="nickName">{{ translate('auth', 'nickname') }}</label>
+            </FloatLabel>
             <small v-if="formErrors.nickName" class="error-text">{{ formErrors.nickName }}</small>
           </div>
 
           <!-- 验证码 -->
           <div class="form-group">
-            <label class="form-label">{{ translate('auth', 'code') }}</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-              </svg>
+            <FloatLabel variant="on">
               <InputText
+                id="code"
                 v-model="memberData.code"
                 maxlength="6"
                 :invalid="!!formErrors.code"
-                :placeholder="translate('auth', 'codePlaceholder') || '请输入验证码'"
-                class="form-input"
+                fluid
               />
-            </div>
+              <label for="code">{{ translate('auth', 'code') }}</label>
+            </FloatLabel>
             <small v-if="formErrors.code" class="error-text">{{ formErrors.code }}</small>
           </div>
         </div>
@@ -462,22 +441,15 @@ onMounted(() => {
             :label="currentStep === 0 ? translate('auth', 'nextStep') : translate('auth', 'register')"
             :loading="isLoading"
             class="submit-btn"
+            fluid
           />
         </div>
+
+        <div v-if="currentStep === 0" class="card-footer">
+          <span class="footer-text">{{ translate('auth', 'hasAccount') }}</span>
+          <a class="footer-link" @click="goToLogin">{{ translate('auth', 'loginNow') }}</a>
+        </div>
       </form>
-
-      <!-- 底部 -->
-      <div v-if="currentStep === 0" class="card-footer">
-        <span class="footer-text">{{ translate('auth', 'hasAccount') }}</span>
-        <a class="footer-link" @click="goToLogin">{{ translate('auth', 'loginNow') }}</a>
-      </div>
-    </div>
-
-    <!-- 品牌标识 -->
-    <div class="brand-footer">
-      <span class="brand-name">WofuF</span>
-      <span class="brand-divider">·</span>
-      <span class="brand-year">2026</span>
     </div>
   </div>
 </template>
@@ -512,10 +484,6 @@ onMounted(() => {
 
 .dark .bg-gradient {
   background: #0f172a;
-}
-
-.bg-pattern {
-  display: none;
 }
 
 /* 返回按钮 */
@@ -556,10 +524,10 @@ onMounted(() => {
 /* 注册卡片 */
 .register-card {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   background: #ffffff;
   border-radius: 1.25rem;
-  box-shadow: 
+  box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.1),
     0 0 0 1px rgba(0, 0, 0, 0.02);
   overflow: hidden;
@@ -575,15 +543,20 @@ onMounted(() => {
 
 .dark .register-card {
   background: #1e1e2e;
-  box-shadow: 
+  box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 /* 头部 */
 .card-header {
-  padding: 1.75rem 2rem 1.25rem;
+  padding: 2rem 2rem 1rem;
   text-align: center;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dark .card-header {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
 }
 
 .brand-icon {
@@ -594,7 +567,7 @@ onMounted(() => {
   height: 3.5rem;
   border-radius: 1rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  margin-bottom: 0.875rem;
+  margin-bottom: 1rem;
 }
 
 .brand-icon svg {
@@ -630,58 +603,50 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  padding: 0 2rem;
-  margin-bottom: 1rem;
+  padding: 1rem 2rem;
+  gap: 0.75rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #f3f4f6;
 }
 
-.step-line {
-  position: absolute;
-  top: 1rem;
-  left: calc(50% - 1.5rem);
-  right: calc(50% - 1.5rem);
-  height: 2px;
-  background: #e5e7eb;
-  z-index: 0;
-  transition: background 0.3s ease;
-}
-
-.dark .step-line {
-  background: #374151;
-}
-
-.step-line.active {
-  background: linear-gradient(90deg, #667eea, #764ba2);
+.dark .steps-indicator {
+  background: #252535;
+  border-bottom-color: rgba(255, 255, 255, 0.05);
 }
 
 .step-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  z-index: 1;
-  padding: 0 0.75rem;
 }
 
 .step-circle {
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 50%;
-  background: #f3f4f6;
-  border: 2px solid #e5e7eb;
+  background: #e5e7eb;
+  color: #6b7280;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
   transition: all 0.3s ease;
 }
 
 .dark .step-circle {
-  background: #374151;
-  border-color: #4b5563;
+  background: #3d3d4d;
   color: #9ca3af;
+}
+
+.step-item.active .step-circle {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.step-item.completed .step-circle {
+  background: #22c55e;
+  color: white;
 }
 
 .step-circle svg {
@@ -689,15 +654,8 @@ onMounted(() => {
   height: 0.875rem;
 }
 
-.step-item.active .step-circle,
-.step-item.completed .step-circle {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: transparent;
-  color: white;
-}
-
 .step-label {
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   color: #6b7280;
   font-weight: 500;
 }
@@ -710,9 +668,25 @@ onMounted(() => {
   color: #667eea;
 }
 
+.step-line {
+  width: 2rem;
+  height: 2px;
+  background: #e5e7eb;
+  border-radius: 1px;
+  transition: all 0.3s ease;
+}
+
+.dark .step-line {
+  background: #3d3d4d;
+}
+
+.step-line.active {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
 /* 表单 */
 .register-form {
-  padding: 0 2rem 1.5rem;
+  padding: 1.5rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -731,150 +705,110 @@ onMounted(() => {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
-.form-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #374151;
-  letter-spacing: 0.01em;
-}
-
-.dark .form-label {
-  color: #d1d5db;
-}
-
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: 0.875rem;
-  width: 1.125rem;
-  height: 1.125rem;
-  color: #9ca3af;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.dark .input-icon {
-  color: #6b7280;
-}
-
-.form-input {
+/* FloatLabel 输入框样式 */
+.form-group :deep(.p-floatlabel) {
   width: 100%;
-  padding: 0.875rem 0.875rem 0.875rem 2.75rem;
+}
+
+.form-group :deep(.p-inputtext),
+.form-group :deep(.p-password-input) {
+  width: 100%;
   border-radius: 0.75rem;
-  border: 1.5px solid #e5e7eb;
   background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
   color: #111827;
+  padding: 1rem 0.875rem 0.5rem;
   font-size: 0.9375rem;
   transition: all 0.2s ease;
 }
 
-.form-input::placeholder {
+.form-group :deep(.p-inputtext::placeholder),
+.form-group :deep(.p-password-input::placeholder) {
   color: #9ca3af;
 }
 
-.form-input:focus {
-  outline: none;
-  border-color: #667eea;
+.form-group :deep(.p-inputtext:focus),
+.form-group :deep(.p-password-input:focus) {
   background: #ffffff;
+  border-color: #667eea;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  outline: none;
 }
 
-.form-input.p-invalid {
+.form-group :deep(.p-inputtext.p-invalid),
+.form-group :deep(.p-password-input.p-invalid) {
   border-color: #ef4444;
 }
 
-.dark .form-input {
+.dark .form-group :deep(.p-inputtext),
+.dark .form-group :deep(.p-password-input) {
   background: #2d2d3d;
   border-color: #3d3d4d;
   color: #f9fafb;
 }
 
-.dark .form-input::placeholder {
-  color: #6b7280;
-}
-
-.dark .form-input:focus {
+.dark .form-group :deep(.p-inputtext:focus),
+.dark .form-group :deep(.p-password-input:focus) {
   background: #363646;
   border-color: #667eea;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
 }
 
-/* Password组件样式 */
-.input-wrapper:deep(.p-password) {
-  width: 100%;
-  position: relative;
-  display: block;
-}
-
-.input-wrapper:deep(.p-password-input) {
-  width: 100%;
-  padding: 0.875rem 2.75rem 0.875rem 2.75rem;
-  border-radius: 0.75rem;
-  border: 1.5px solid #e5e7eb;
-  background: #f9fafb;
-  color: #111827;
-  font-size: 0.9375rem;
-  transition: all 0.2s ease;
-}
-
-.input-wrapper:deep(.p-password-input:focus) {
-  outline: none;
-  border-color: #667eea;
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-}
-
-.dark .input-wrapper:deep(.p-password-input) {
-  background: #2d2d3d;
-  border-color: #3d3d4d;
-  color: #f9fafb;
-}
-
-.dark .input-wrapper:deep(.p-password-input:focus) {
-  background: #363646;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
-}
-
-.input-wrapper:deep(.p-password-toggle-mask-icon) {
-  position: absolute;
-  right: 0.875rem;
-  top: 50%;
-  transform: translateY(-50%);
+.form-group :deep(.p-floatlabel label) {
   color: #9ca3af;
-  cursor: pointer;
+  font-size: 0.9375rem;
+  top: 0.75rem;
+  left: 0.875rem;
+  transition: all 0.2s ease;
+  background: transparent;
 }
 
-.dark .input-wrapper:deep(.p-password-toggle-mask-icon) {
+.form-group :deep(.p-floatlabel:focus-within label),
+.form-group :deep(.p-floatlabel:has(.p-filled) label) {
+  color: #667eea;
+  font-size: 0.75rem;
+  top: 0.25rem;
+}
+
+/* Password 组件样式 */
+.form-group :deep(.p-password) {
+  width: 100%;
+}
+
+.form-group :deep(.p-password-toggle-mask-icon) {
+  right: 0.75rem;
+  color: #9ca3af;
+}
+
+.form-group :deep(.p-password-toggle-mask-icon:hover) {
   color: #6b7280;
 }
 
-.input-wrapper:deep(.p-password-panel) {
+.dark .form-group :deep(.p-password-toggle-mask-icon) {
+  color: #6b7280;
+}
+
+.form-group :deep(.p-password-panel) {
   border-radius: 0.75rem;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
-.dark .input-wrapper:deep(.p-password-panel) {
-  background: #2d2d3d;
+.dark .form-group :deep(.p-password-panel) {
+  background: #1e1e2e;
   border-color: #3d3d4d;
 }
 
 .password-rules {
-  padding-left: 1.25rem;
-  margin: 0.5rem 0;
+  margin: 0;
+  padding: 0.5rem 0 0 1rem;
+  list-style: disc;
   font-size: 0.75rem;
   color: #6b7280;
-  line-height: 1.6;
 }
 
 .dark .password-rules {
@@ -882,37 +816,45 @@ onMounted(() => {
 }
 
 .password-rules li {
-  margin-bottom: 0.25rem;
-}
-
-.error-text {
-  font-size: 0.75rem;
-  color: #ef4444;
-  margin-top: 0.125rem;
+  margin: 0.25rem 0;
 }
 
 /* 信息提示框 */
 .info-box {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
-  padding: 0.875rem;
-  background: rgba(102, 126, 234, 0.1);
+  padding: 0.875rem 1rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
   border-radius: 0.75rem;
-  font-size: 0.8125rem;
-  color: #667eea;
-  line-height: 1.5;
+  margin-bottom: 0.5rem;
 }
 
 .dark .info-box {
-  background: rgba(102, 126, 234, 0.15);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .info-icon {
   width: 1.25rem;
   height: 1.25rem;
+  color: #3b82f6;
   flex-shrink: 0;
-  margin-top: 0.0625rem;
+}
+
+.info-box span {
+  font-size: 0.8125rem;
+  color: #1e40af;
+}
+
+.dark .info-box span {
+  color: #93c5fd;
+}
+
+.error-text {
+  font-size: 0.75rem;
+  color: #ef4444;
 }
 
 /* 按钮组 */
@@ -923,16 +865,13 @@ onMounted(() => {
 }
 
 .back-button {
-  flex: 0 0 auto;
-  min-width: 100px;
-  height: 2.75rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
+  flex-shrink: 0;
+  width: auto;
+  min-width: 5rem;
 }
 
 .submit-btn {
-  flex: 1;
-  height: 2.75rem;
+  height: 3rem;
   border-radius: 0.75rem;
   font-weight: 600;
   font-size: 0.9375rem;
@@ -946,16 +885,20 @@ onMounted(() => {
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* 底部 */
 .card-footer {
-  padding: 1rem 2rem 1.5rem;
   text-align: center;
-  background: #f9fafb;
+  padding-top: 1rem;
   border-top: 1px solid #f3f4f6;
+  margin-top: 0.5rem;
 }
 
 .dark .card-footer {
-  background: #252535;
   border-top-color: rgba(255, 255, 255, 0.05);
 }
 
@@ -981,32 +924,6 @@ onMounted(() => {
   color: #764ba2;
 }
 
-/* 品牌标识 */
-.brand-footer {
-  position: absolute;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: rgba(0, 0, 0, 0.3);
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-}
-
-.dark .brand-footer {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.brand-name {
-  font-weight: 600;
-}
-
-.brand-divider {
-  opacity: 0.5;
-}
-
 /* 响应式 */
 @media (max-width: 640px) {
   .register-page {
@@ -1021,15 +938,15 @@ onMounted(() => {
   }
 
   .card-header {
-    padding: 1.25rem 1.5rem 1rem;
+    padding: 1.5rem 1.5rem 1rem;
+  }
+
+  .steps-indicator {
+    padding: 0.875rem 1.5rem;
   }
 
   .register-form {
-    padding: 0 1.5rem 1.25rem;
-  }
-
-  .card-footer {
-    padding: 0.875rem 1.5rem 1.25rem;
+    padding: 1.25rem 1.5rem;
   }
 
   .back-btn {
@@ -1037,10 +954,6 @@ onMounted(() => {
     left: 1rem;
     width: 2.5rem;
     height: 2.5rem;
-  }
-
-  .brand-footer {
-    display: none;
   }
 }
 </style>

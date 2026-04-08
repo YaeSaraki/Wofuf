@@ -126,7 +126,6 @@ onMounted(() => {
     <!-- 背景装饰 -->
     <div class="bg-decoration">
       <div class="bg-gradient"></div>
-      <div class="bg-pattern"></div>
     </div>
 
     <!-- 返回按钮 -->
@@ -157,40 +156,33 @@ onMounted(() => {
 
         <!-- 用户名 -->
         <div class="form-group">
-          <label class="form-label">{{ translate('auth', 'username') }}</label>
-          <div class="input-wrapper">
-            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
+          <FloatLabel variant="on">
             <InputText
+              id="username"
               v-model="formData.username"
               :invalid="!!formErrors.username"
               autocomplete="username"
-              :placeholder="translate('auth', 'usernamePlaceholder') || '请输入用户名'"
-              class="form-input"
+              fluid
             />
-          </div>
+            <label for="username">{{ translate('auth', 'username') }}</label>
+          </FloatLabel>
           <small v-if="formErrors.username" class="error-text">{{ formErrors.username }}</small>
         </div>
 
         <!-- 密码 -->
         <div class="form-group">
-          <label class="form-label">{{ translate('auth', 'password') }}</label>
-          <div class="input-wrapper">
-            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-            </svg>
+          <FloatLabel variant="on">
             <Password
+              id="password"
               v-model="formData.password"
               :feedback="false"
               toggleMask
               :invalid="!!formErrors.password"
               autocomplete="current-password"
-              :placeholder="translate('auth', 'passwordPlaceholder') || '请输入密码'"
-              class="form-input"
-              inputClass="password-input"
+              fluid
             />
-          </div>
+            <label for="password">{{ translate('auth', 'password') }}</label>
+          </FloatLabel>
           <small v-if="formErrors.password" class="error-text">{{ formErrors.password }}</small>
         </div>
 
@@ -201,6 +193,7 @@ onMounted(() => {
           :loading="isLoading"
           :disabled="!canSubmit"
           class="submit-btn"
+          fluid
         />
       </form>
 
@@ -209,13 +202,6 @@ onMounted(() => {
         <span class="footer-text">{{ translate('auth', 'noAccount') }}</span>
         <a class="footer-link" @click="goToRegister">{{ translate('auth', 'registerNow') }}</a>
       </div>
-    </div>
-
-    <!-- 品牌标识 -->
-    <div class="brand-footer">
-      <span class="brand-name">WofuF</span>
-      <span class="brand-divider">·</span>
-      <span class="brand-year">2026</span>
     </div>
   </div>
 </template>
@@ -250,10 +236,6 @@ onMounted(() => {
 
 .dark .bg-gradient {
   background: #0f172a;
-}
-
-.bg-pattern {
-  display: none;
 }
 
 /* 返回按钮 */
@@ -294,10 +276,10 @@ onMounted(() => {
 /* 登录卡片 */
 .login-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   background: #ffffff;
   border-radius: 1.25rem;
-  box-shadow: 
+  box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.1),
     0 0 0 1px rgba(0, 0, 0, 0.02);
   overflow: hidden;
@@ -313,7 +295,7 @@ onMounted(() => {
 
 .dark .login-card {
   background: #1e1e2e;
-  box-shadow: 
+  box-shadow:
     0 20px 40px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.05);
 }
@@ -383,137 +365,95 @@ onMounted(() => {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
-.form-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #374151;
-  letter-spacing: 0.01em;
-}
-
-.dark .form-label {
-  color: #d1d5db;
-}
-
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: 0.875rem;
-  width: 1.125rem;
-  height: 1.125rem;
-  color: #9ca3af;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.dark .input-icon {
-  color: #6b7280;
-}
-
-.form-input {
+/* FloatLabel 输入框样式 */
+.form-group :deep(.p-floatlabel) {
   width: 100%;
-  padding: 0.875rem 0.875rem 0.875rem 2.75rem;
+}
+
+.form-group :deep(.p-inputtext),
+.form-group :deep(.p-password-input) {
+  width: 100%;
   border-radius: 0.75rem;
-  border: 1.5px solid #e5e7eb;
   background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
   color: #111827;
+  padding: 1rem 0.875rem 0.5rem;
   font-size: 0.9375rem;
   transition: all 0.2s ease;
 }
 
-.form-input::placeholder {
+.form-group :deep(.p-inputtext::placeholder),
+.form-group :deep(.p-password-input::placeholder) {
   color: #9ca3af;
 }
 
-.form-input:focus {
-  outline: none;
-  border-color: #667eea;
+.form-group :deep(.p-inputtext:focus),
+.form-group :deep(.p-password-input:focus) {
   background: #ffffff;
+  border-color: #667eea;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  outline: none;
 }
 
-.form-input:invalid,
-.form-input.p-invalid {
+.form-group :deep(.p-inputtext.p-invalid),
+.form-group :deep(.p-password-input.p-invalid) {
   border-color: #ef4444;
 }
 
-.dark .form-input {
+.dark .form-group :deep(.p-inputtext),
+.dark .form-group :deep(.p-password-input) {
   background: #2d2d3d;
   border-color: #3d3d4d;
   color: #f9fafb;
 }
 
-.dark .form-input::placeholder {
+.dark .form-group :deep(.p-inputtext:focus),
+.dark .form-group :deep(.p-password-input:focus) {
+  background: #363646;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+}
+
+.form-group :deep(.p-floatlabel label) {
+  color: #9ca3af;
+  font-size: 0.9375rem;
+  top: 0.75rem;
+  left: 0.875rem;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.form-group :deep(.p-floatlabel:focus-within label),
+.form-group :deep(.p-floatlabel:has(.p-filled) label) {
+  color: #667eea;
+  font-size: 0.75rem;
+  top: 0.25rem;
+}
+
+/* Password 组件样式 */
+.form-group :deep(.p-password) {
+  width: 100%;
+}
+
+.form-group :deep(.p-password-toggle-mask-icon) {
+  right: 0.75rem;
+  color: #9ca3af;
+}
+
+.form-group :deep(.p-password-toggle-mask-icon:hover) {
   color: #6b7280;
 }
 
-.dark .form-input:focus {
-  background: #363646;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
-}
-
-/* Password组件样式 */
-.input-wrapper:deep(.p-password) {
-  width: 100%;
-  position: relative;
-  display: block;
-}
-
-.input-wrapper:deep(.p-password-input) {
-  width: 100%;
-  padding: 0.875rem 2.75rem 0.875rem 2.75rem;
-  border-radius: 0.75rem;
-  border: 1.5px solid #e5e7eb;
-  background: #f9fafb;
-  color: #111827;
-  font-size: 0.9375rem;
-  transition: all 0.2s ease;
-}
-
-.input-wrapper:deep(.p-password-input:focus) {
-  outline: none;
-  border-color: #667eea;
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-}
-
-.dark .input-wrapper:deep(.p-password-input) {
-  background: #2d2d3d;
-  border-color: #3d3d4d;
-  color: #f9fafb;
-}
-
-.dark .input-wrapper:deep(.p-password-input:focus) {
-  background: #363646;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
-}
-
-.input-wrapper:deep(.p-password-toggle-mask-icon) {
-  position: absolute;
-  right: 0.875rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #9ca3af;
-  cursor: pointer;
-}
-
-.dark .input-wrapper:deep(.p-password-toggle-mask-icon) {
+.dark .form-group :deep(.p-password-toggle-mask-icon) {
   color: #6b7280;
 }
 
 .error-text {
   font-size: 0.75rem;
   color: #ef4444;
-  margin-top: 0.125rem;
 }
 
 /* 提交按钮 */
@@ -573,32 +513,6 @@ onMounted(() => {
   color: #764ba2;
 }
 
-/* 品牌标识 */
-.brand-footer {
-  position: absolute;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: rgba(0, 0, 0, 0.3);
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-}
-
-.dark .brand-footer {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.brand-name {
-  font-weight: 600;
-}
-
-.brand-divider {
-  opacity: 0.5;
-}
-
 /* 响应式 */
 @media (max-width: 640px) {
   .login-page {
@@ -629,10 +543,6 @@ onMounted(() => {
     left: 1rem;
     width: 2.5rem;
     height: 2.5rem;
-  }
-
-  .brand-footer {
-    display: none;
   }
 }
 </style>
