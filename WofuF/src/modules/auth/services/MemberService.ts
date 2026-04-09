@@ -68,16 +68,19 @@ export class MemberService implements IMemberService {
   /* ==================== 获取当前成员 ==================== */
   public async getCurrentMember(
     options?: RequestOptions,
+    forceRefresh: boolean = false,
   ): Promise<Result<GetCurrentMemberResponse>> {
     const cacheKey = 'current_member'
 
-    // 检查缓存
-    const cached = cacheService.get<GetCurrentMemberResponse>(
-      MemberService.CACHE_MODULE,
-      cacheKey,
-    )
-    if (cached) {
-      return Result.success(cached)
+    // 检查缓存（如果不需要强制刷新）
+    if (!forceRefresh) {
+      const cached = cacheService.get<GetCurrentMemberResponse>(
+        MemberService.CACHE_MODULE,
+        cacheKey,
+      )
+      if (cached) {
+        return Result.success(cached)
+      }
     }
 
     // 获取当前用户ID
@@ -91,10 +94,7 @@ export class MemberService implements IMemberService {
         '/api/v1/forum/members/current',
         {
           signal: options?.signal,
-          headers: {
-            ...authService.getAuthHeaders(),
-            userId: tokens.userId,
-          },
+          headers: authService.getAuthHeaders(),
         }
       )
 

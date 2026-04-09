@@ -44,7 +44,7 @@ const fetchServerStatus = async () => {
     if (result.isSuccess) {
       serverStatus.value = result.getValue()
     } else {
-      error.value = result.error
+      error.value = typeof result.error === 'string' ? result.error : '获取服务器状态失败'
       console.error('获取服务器状态失败:', result.error)
     }
   } catch (e) {

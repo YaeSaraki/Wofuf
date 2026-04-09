@@ -182,8 +182,6 @@ const handleRegister = async () => {
           return Result.failure(String(registerResult.error) || '用户注册失败')
         }
 
-        const registerData = registerResult.getValue()
-
         const loginResult = await authService.login(
           {
             username: userData.username,
@@ -199,7 +197,6 @@ const handleRegister = async () => {
 
         const memberResult = await memberService.createMember(
           {
-            userId: registerData.userId,
             playerId: memberData.playerId,
             nickName: memberData.nickName,
             lastPlayed: memberData.lastPlayed,

@@ -39,11 +39,24 @@ const router = createRouter({
       component: () => import('@/views/ForumRegisterView.vue'),
     },
     {
+      path: '/forum/admin',
+      name: 'admin',
+      component: () => import('@/views/AdminView.vue'),
+    },
+    {
       path: '/about',
       name: 'about',
       component: () => import('@/views/AboutView.vue'),
     },
   ],
+  scrollBehavior(to, from, savedPosition) {
+    // 如果是通过浏览器前进/后退触发的路由变化，返回保存的位置
+    if (savedPosition) {
+      return savedPosition
+    }
+    // 如果是正常的路由跳转（push），滚动到顶部
+    return { top: 0 }
+  },
 })
 
 export default router
