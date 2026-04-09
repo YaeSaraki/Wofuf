@@ -9,7 +9,6 @@ import type {
   GetPostsResponse,
   GetPostResponse,
   GetCommentsResponse,
-  VoteRequest,
   VoteResponse,
   ReplyToPostRequest,
   ReplyToCommentRequest,
@@ -289,14 +288,13 @@ export class ForumService implements IForumService {
     options?: RequestOptions,
   ): Promise<Result<VoteResponse>> {
     try {
-      const tokens = authService.getTokens()
-      if (!tokens?.userId) {
+      if (!authService.isAuthenticated()) {
         return Result.failure('请先登录')
       }
 
       const response = await http.put<ApiResponse<VoteResponse>>(
         `/api/v1/forum/posts/${postId}/upvote`,
-        { userId: tokens.userId } as VoteRequest,
+        {},
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
@@ -321,14 +319,13 @@ export class ForumService implements IForumService {
     options?: RequestOptions,
   ): Promise<Result<VoteResponse>> {
     try {
-      const tokens = authService.getTokens()
-      if (!tokens?.userId) {
+      if (!authService.isAuthenticated()) {
         return Result.failure('请先登录')
       }
 
       const response = await http.put<ApiResponse<VoteResponse>>(
         `/api/v1/forum/posts/${postId}/downvote`,
-        { userId: tokens.userId } as VoteRequest,
+        {},
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
@@ -353,14 +350,13 @@ export class ForumService implements IForumService {
     options?: RequestOptions,
   ): Promise<Result<VoteResponse>> {
     try {
-      const tokens = authService.getTokens()
-      if (!tokens?.userId) {
+      if (!authService.isAuthenticated()) {
         return Result.failure('请先登录')
       }
 
       const response = await http.put<ApiResponse<VoteResponse>>(
         `/api/v1/forum/posts/${postId}/unvote`,
-        { userId: tokens.userId } as VoteRequest,
+        {},
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
@@ -385,14 +381,13 @@ export class ForumService implements IForumService {
     options?: RequestOptions,
   ): Promise<Result<VoteResponse>> {
     try {
-      const tokens = authService.getTokens()
-      if (!tokens?.userId) {
+      if (!authService.isAuthenticated()) {
         return Result.failure('请先登录')
       }
 
       const response = await http.put<ApiResponse<VoteResponse>>(
         `/api/v1/forum/comments/${commentId}/upvote`,
-        { userId: tokens.userId } as VoteRequest,
+        {},
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
@@ -417,14 +412,13 @@ export class ForumService implements IForumService {
     options?: RequestOptions,
   ): Promise<Result<VoteResponse>> {
     try {
-      const tokens = authService.getTokens()
-      if (!tokens?.userId) {
+      if (!authService.isAuthenticated()) {
         return Result.failure('请先登录')
       }
 
       const response = await http.put<ApiResponse<VoteResponse>>(
         `/api/v1/forum/comments/${commentId}/downvote`,
-        { userId: tokens.userId } as VoteRequest,
+        {},
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),

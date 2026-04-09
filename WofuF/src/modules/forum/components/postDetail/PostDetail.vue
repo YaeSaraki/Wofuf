@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, watch, reactive, computed } from 'vue'
+import { ref, onMounted, watch, reactive, computed, onBeforeMount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { PostDto, CommentDto } from '@M/forum/dtos/Post.ts'
 import { forumService } from '@M/forum/services/ForumService.ts'
@@ -28,8 +28,32 @@ const post = ref<PostDto | null>(null)
 const comments = ref<CommentDto[]>([])
 const { isAuthenticated } = useAuth()
 
+// 来源页面（用于返回导航）
+const fromRoute = ref<string | null>(null)
+
+// 在组件挂载前检查来源
+onBeforeMount(() => {
+  // 从 sessionStorage 获取来源
+  const sessionFrom = sessionStorage.getItem('forum_post_from')
+  if (sessionFrom) {
+    fromRoute.value = sessionFrom
+    // 清除，只使用一次
+    sessionStorage.removeItem('forum_post_from')
+  }
+})
+
 // 评论区域显示状态
 const showComments = ref(true)
+
+// 导航返回
+function goBack() {
+  if (window.history.state && window.history.state.back) {
+    router.back() // 原路返回，天然会保留所有 URL 参数（Query）
+  } else {
+    // 3. 兜底：如果是直接通过别人分享的链接点进来的（没有历史栈），则跳回主页
+    router.push('/forum')
+  }
+}
 
 /* ---------------- 使用独立的加载状态 ---------------- */
 const {
@@ -246,6 +270,16 @@ onMounted(() => {
 
 <template>
   <div class="bf-post-detail">
+    <!-- 返回按钮 -->
+    <div class="bf-back-nav">
+      <button class="bf-back-btn" @click="goBack">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        <span>{{ translate('forum', 'back') }}</span>
+      </button>
+    </div>
+
     <!-- 加载状态 -->
     <div v-if="isLoading" class="bf-loading">
       <div class="bf-spinner"></div>
@@ -356,8 +390,39 @@ onMounted(() => {
   max-width: 1100px;
   margin: 0 auto;
   padding: var(--bf-space-lg, 24px);
+  padding-top: 5rem;
   box-sizing: border-box;
   overflow-x: hidden;
+}
+
+/* 返回按钮 */
+.bf-back-nav {
+  margin-bottom: var(--bf-space-md, 16px);
+}
+
+.bf-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--bf-card-bg, rgba(26, 26, 26, 0.8));
+  border: 1px solid var(--bf-card-border, rgba(255, 255, 255, 0.06));
+  border-radius: var(--bf-radius-md, 8px);
+  color: var(--bf-text-secondary, #b3b3b3);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bf-back-btn:hover {
+  background: var(--bf-card-bg-hover, rgba(38, 38, 38, 0.9));
+  color: var(--bf-text-primary, #ffffff);
+  border-color: var(--bf-primary, #ff6b35);
+}
+
+.bf-back-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* 加载状态 */

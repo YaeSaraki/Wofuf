@@ -13,14 +13,13 @@ import DraftToast, { type DraftToastData } from '@S/components/DraftToast.vue'
 
 const router = useRouter()
 const toast = useToast()
-const { isAuthenticated, getCurrentUserId } = useAuth()
+const { isAuthenticated } = useAuth()
 
 /* ---------------- 编辑器引用 ---------------- */
 const editorRef = ref<InstanceType<typeof MarkdownEditor> | null>(null)
 
 /* ---------------- 表单数据 ---------------- */
-const formData = ref<CreatePostRequest>({
-  userId: '',
+const formData = ref<Omit<CreatePostRequest, 'userId'>>({
   title: '',
   type: 'TEXT',
   text: '',
@@ -71,14 +70,12 @@ function validateForm(): boolean {
 async function createPost() {
   if (!validateForm()) return
 
-  const userId = getCurrentUserId()
-  if (!userId) {
+  if (!isAuthenticated()) {
     router.push('/forum/login')
     return
   }
 
   const requestData: CreatePostRequest = {
-    userId: userId,
     title: formData.value.title.trim(),
     type: formData.value.type,
     text: formData.value.text?.trim() || undefined,
@@ -99,7 +96,7 @@ async function createPost() {
 
 // 重置表单
 function resetForm() {
-  formData.value = { userId: '', title: '', type: 'TEXT', text: '', link: '' }
+  formData.value = { title: '', type: 'TEXT', text: '', link: '' }
   formErrors.value = { title: '', content: '' }
   editorRef.value?.clearCache()
 }

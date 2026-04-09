@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { PostCategory, type PostDto } from '@M/forum/dtos/Post'
 import { forumService } from '@M/forum/services/ForumService'
 import { authService } from '@M/auth/services/AuthService'
@@ -9,13 +9,16 @@ import { translate } from '@S/services/i18n'
 import PostCard from '@M/forum/components/postCard/PostCard.vue'
 
 const router = useRouter()
+const route = useRoute()
 const { isLoading, errorMsg } = useAsyncLoader()
 
 // 帖子列表数据
 const posts = ref<PostDto[]>([])
 
-// 当前排序模式：最新 / 热门
-const sortMode = ref<'recent' | 'popular'>('recent')
+// 当前排序模式：最新 / 热门 - 从 URL 初始化
+const sortMode = ref<'recent' | 'popular'>(
+  (route.query.sort as 'recent' | 'popular') || 'recent'
+)
 
 // 独立分页管理：最新和热门分开计数
 const pageInfo = ref({
@@ -33,8 +36,10 @@ const isLoadingMore = ref(false)
 const ALL_CATEGORY = 'ALL' as const
 type CategoryValue = PostCategory | typeof ALL_CATEGORY
 
-// 当前选中的分类，默认全部
-const selectedCategory = ref<CategoryValue>(ALL_CATEGORY)
+// 当前选中的分类 - 从 URL 初始化
+const selectedCategory = ref<CategoryValue>(
+  (route.query.category as CategoryValue) || ALL_CATEGORY
+)
 
 // 分类展示列表
 const categories = [
@@ -45,6 +50,35 @@ const categories = [
   { id: PostCategory.NEWS, label: '新闻', icon: 'news' },
   { id: PostCategory.GUIDE, label: '指南', icon: 'book' },
 ]
+
+// ==================== URL 状态同步 ====================
+// 同步状态到 URL Query
+function syncStateToUrl() {
+  const query: Record<string, string> = {}
+  if (sortMode.value !== 'recent') query.sort = sortMode.value
+  if (selectedCategory.value !== ALL_CATEGORY) query.category = selectedCategory.value
+  // 使用 replace 避免污染历史栈
+  router.replace({ query })
+}
+
+// 监听状态变化，同步到 URL
+watch(sortMode, syncStateToUrl)
+watch(selectedCategory, syncStateToUrl)
+
+// 监听浏览器前进/后退，响应 URL 变化
+watch(() => route.query, (newQuery) => {
+  const newSort = (newQuery.sort as 'recent' | 'popular') || 'recent'
+  const newCategory = (newQuery.category as CategoryValue) || ALL_CATEGORY
+
+  if (newSort !== sortMode.value) sortMode.value = newSort
+  if (newCategory !== selectedCategory.value) {
+    selectedCategory.value = newCategory
+    // 切换分类后，两个排序的分页都重置
+    pageInfo.value.recent = { current: 0, hasMore: true }
+    pageInfo.value.popular = { current: 0, hasMore: true }
+    fetchPosts(false)
+  }
+}, { immediate: false })
 
 // 登录状态计算属性
 const isLoggedIn = computed(() => authService.isAuthenticated())
@@ -71,8 +105,8 @@ async function fetchPosts(append: boolean = false) {
   }
 
   try {
-    // 全部分类传 null，后端查询所有
-    const category = selectedCategory.value === ALL_CATEGORY ? null : selectedCategory.value
+    // 全部分类传 undefined，后端查询所有
+    const category = selectedCategory.value === ALL_CATEGORY ? undefined : selectedCategory.value
 
     // 根据排序模式调用对应接口
     const result = await (mode === 'recent'
@@ -255,12 +289,6 @@ onUnmounted(() => {
           {{ translate('forum', 'sortPopular') }}
         </button>
       </div>
-      <button class="bf-btn bf-btn--primary bf-btn-create" @click="goToCreatePost">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-        </svg>
-        {{ translate('forum', 'create_post') }}
-      </button>
     </div>
 
     <div v-if="isLoading" class="bf-loading">

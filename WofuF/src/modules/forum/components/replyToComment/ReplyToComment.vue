@@ -14,7 +14,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const router = useRouter()
-const { isAuthenticated, getCurrentUserId } = useAuth()
+const { isAuthenticated } = useAuth()
 
 const emit = defineEmits<{
   replyAdded: []
@@ -38,8 +38,7 @@ async function submitReply() {
     return
   }
 
-  const userId = getCurrentUserId()
-  if (!userId) {
+  if (!isAuthenticated()) {
     router.push('/forum/login')
     return
   }
@@ -48,12 +47,10 @@ async function submitReply() {
     if (props.parentCommentId) {
       return await forumService.replyToComment(props.parentCommentId, {
         postSlug: props.postSlug,
-        userId,
         comment: replyText.value.trim(),
       })
     } else {
       return await forumService.replyToPostBySlug(props.postSlug, {
-        userId,
         comment: replyText.value.trim(),
       })
     }
