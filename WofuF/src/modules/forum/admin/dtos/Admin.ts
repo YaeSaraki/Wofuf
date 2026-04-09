@@ -1,0 +1,108 @@
+/**
+ * 管理后台 DTO 定义
+ */
+
+// ==================== 权限点 ====================
+export type PermissionPoint =
+  | 'POST_PIN'
+  | 'POST_FEATURE'
+  | 'POST_HIDE'
+  | 'POST_REVIEW'
+  | 'POST_DELETE_ANY'
+  | 'COMMENT_DELETE_ANY'
+  | 'COMMENT_VIEW_HIDDEN'
+  | 'CATEGORY_MANAGE'
+  | 'USER_BAN'
+  | 'USER_VIEW_BANNED'
+  | 'ADMIN_ACCESS'
+  | 'PERMISSION_GRANT'
+
+// ==================== 帖子状态 ====================
+export type PostStatus = 'NORMAL' | 'HIDDEN' | 'UNDER_REVIEW'
+
+// ==================== 帖子管理 ====================
+export interface PostActionResponse {
+  postId: string
+  isPinned?: boolean
+  isFeatured?: boolean
+  status?: string
+  message: string
+}
+
+export interface PostForReview {
+  postId: string
+  title: string
+  status: string
+  dateTimePosted: number
+  authorId: string
+}
+
+export interface GetPostsForReviewResponse {
+  posts: PostForReview[]
+  total: number
+  page: number
+  size: number
+}
+
+// ==================== 评论管理 ====================
+export interface HiddenComment {
+  commentId: string
+  postId: string
+  content: string
+  isHidden: boolean
+  hiddenAt: number | null
+  hiddenBy: string | null
+  authorId: string
+}
+
+export interface GetHiddenCommentsResponse {
+  comments: HiddenComment[]
+  total: number
+  page: number
+  size: number
+}
+
+export interface CommentActionResponse {
+  commentId: string
+  isHidden: boolean
+  message: string
+}
+
+// ==================== 成员管理 ====================
+export interface BannedMember {
+  memberId: string
+  nickname: string
+  isBanned: boolean
+  bannedAt: number | null
+  bannedUntil: number | null
+  bannedReason: string | null
+  bannedBy: string | null
+}
+
+export interface GetBannedMembersResponse {
+  members: BannedMember[]
+  total: number
+  page: number
+  size: number
+}
+
+export interface MemberActionResponse {
+  memberId: string
+  isBanned?: boolean
+  bannedUntil?: string | null
+  permission?: string
+  granted?: boolean
+  revoked?: boolean
+  message: string
+}
+
+// ==================== 统计数据 ====================
+export interface AdminStats {
+  totalPosts: number
+  totalComments: number
+  totalMembers: number
+  pendingReview: number
+  hiddenPosts: number
+  hiddenComments: number
+  bannedMembers: number
+}
