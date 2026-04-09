@@ -65,6 +65,11 @@ export function getIsFeatured(post: PostDto): boolean {
   return post.isFeatured ?? post.featured ?? false
 }
 
+// 辅助函数：获取隐藏状态
+export function getIsHidden(post: PostDto): boolean {
+  return post.status === PostStatus.HIDDEN
+}
+
 // 评论 DTO (对应后端 CommentDto)
 export interface CommentDto {
   postSlug: string
@@ -81,6 +86,7 @@ export interface CommentDto {
   points: number
   wasUpvotedByMe: boolean  // 当前用户是否点赞
   wasDownvotedByMe: boolean  // 当前用户是否点踩
+  isHidden?: boolean  // 评论是否被隐藏（管理功能）
 }
 
 // ========== 请求/响应类型 ==========

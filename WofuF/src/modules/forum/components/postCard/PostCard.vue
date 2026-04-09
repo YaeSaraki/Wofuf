@@ -7,7 +7,7 @@
 import { computed, watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { PostDto } from '@M/forum/dtos/Post'
-import { getIsPinned, getIsFeatured } from '@M/forum/dtos/Post'
+import { getIsPinned, getIsFeatured, getIsHidden } from '@M/forum/dtos/Post'
 import { translate } from '@S/services/i18n'
 import { authService } from '@M/auth/services/AuthService'
 import { PlayerService } from '@M/players/services/PlayerService'
@@ -128,10 +128,10 @@ watch(() => props.post.memberPostBy?.playerId, loadAvatar, { immediate: true })
 // Markdown 预览 - 移除图片，只显示文字，限制长度
 const previewText = computed(() => {
   if (!props.post.text) return ''
-  
+
   // 移除图片标记
   let text = props.post.text.replace(/!\[.*?\]\(.*?\)/g, '[图片]')
-  
+
   // 移除其他 Markdown 语法，保留纯文本
   text = text
     .replace(/^#{1,6}\s+/gm, '')      // 标题
@@ -145,7 +145,7 @@ const previewText = computed(() => {
     .replace(/^>\s+/gm, '')            // 引用
     .replace(/\n+/g, ' ')              // 换行转空格
     .trim()
-  
+
   // 限制长度
   if (text.length > 200) {
     return text.substring(0, 200) + '...'
@@ -202,58 +202,43 @@ const imageCount = computed(() => {
 
     <!-- 右侧内容区 -->
     <div class="bf-post-card__content">
-      <!-- 元信息行 -->
-      <div class="bf-post-card__meta">
-        <div class="bf-post-card__author">
-          <img
-            v-if="avatarUrl"
-            :src="avatarUrl"
-            class="bf-avatar bf-avatar--img"
-            alt=""
-          />
-          <div v-else class="bf-avatar">
-            {{ post.memberPostBy.nickname.charAt(0).toUpperCase() }}
-          </div>
-          <div class="bf-author-info">
-            <span class="bf-author-name">{{ post.memberPostBy.nickname }}</span>
-            <div class="bf-meta-sub">
-              <span class="bf-meta-time">{{ formattedDate }}</span>
-              <span class="bf-meta-dot">·</span>
-              <span class="bf-meta-rep">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
-                  <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-                {{ post.memberPostBy.reputation }}
-              </span>
-            </div>
-          </div>
-        </div>
+      <!-- 标题 + 徽章 + 日期 -->
+      <div class="bf-post-card__header">
+        <h2 class="bf-post-card__title">
+          {{ post.title }}
+        </h2>
         <div class="bf-post-card__badges">
-          <span v-if="getIsPinned(post)" class="bf-badge bf-badge--pinned">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 17v5M9 10.5a3 3 0 115.196-3M5 21h14M12 3l-4 8h8l-4-8z" />
-            </svg>
-            置顶
-          </span>
-          <span v-if="getIsFeatured(post)" class="bf-badge bf-badge--featured">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-            精华
-          </span>
+          <span v-if="getIsFeatured(post)" class="bf-badge bf-badge--featured" title="精华">★</span>
+          <span v-if="getIsPinned(post)" class="bf-badge bf-badge--pinned" title="置顶">◆</span>
+          <span v-if="getIsHidden(post)" class="bf-badge bf-badge--hidden" title="已隐藏">◉</span>
           <span v-if="post.type === 'LINK'" class="bf-badge bf-badge--link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-            链接
           </span>
         </div>
+        <span class="bf-meta-time">{{ formattedDate }}</span>
       </div>
 
-      <!-- 标题 -->
-      <h2 class="bf-post-card__title">
-        {{ post.title }}
-      </h2>
+      <!-- 作者信息 -->
+      <div class="bf-post-card__author">
+        <img
+          v-if="avatarUrl"
+          :src="avatarUrl"
+          class="bf-avatar bf-avatar--img"
+          alt=""
+        />
+        <div v-else class="bf-avatar">
+          {{ post.memberPostBy.nickname.charAt(0).toUpperCase() }}
+        </div>
+        <span class="bf-author-name">{{ post.memberPostBy.nickname }}</span>
+        <span class="bf-meta-rep">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+          </svg>
+          {{ post.memberPostBy.reputation }}
+        </span>
+      </div>
 
       <!-- 内容预览 -->
       <div v-if="post.type === 'TEXT' && (previewText || hasImages)" class="bf-post-card__preview-wrapper">
@@ -308,7 +293,7 @@ const imageCount = computed(() => {
   </article>
 </template>
 
-<style scoped>
+<style src="@M/forum/assets/forum-shared.css" scoped>
 /* === 卡片容器 === */
 .bf-post-card {
   display: flex;
@@ -415,126 +400,17 @@ const imageCount = computed(() => {
   gap: 12px;
 }
 
-/* === 元信息 === */
-.bf-post-card__meta {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--bf-space-md, 12px);
-}
-
-.bf-post-card__author {
+/* === 标题 + 徽章 === */
+.bf-post-card__header {
   display: flex;
   align-items: center;
-  gap: var(--bf-space-sm, 10px);
+  gap: 8px;
+  flex: 1;
 }
 
-.bf-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--bf-fire-gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-  flex-shrink: 0;
-}
-
-.bf-avatar--img {
-  background: var(--bf-input-bg);
-  image-rendering: pixelated;
-  padding: 2px;
-}
-
-.bf-author-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.bf-author-name {
-  font-weight: 600;
-  color: var(--bf-text-primary);
-  font-size: 14px;
-}
-
-.bf-meta-sub {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.bf-meta-time {
-  font-size: 12px;
-  color: var(--bf-text-muted);
-}
-
-.bf-meta-dot {
-  color: var(--bf-text-muted);
-  font-size: 10px;
-}
-
-.bf-meta-rep {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 12px;
-  color: #FFB800;
-}
-
-.bf-meta-rep svg {
-  color: #FFB800;
-}
-
-.bf-post-card__badges {
-  display: flex;
-  gap: 6px;
-}
-
-.bf-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: var(--bf-fire-gradient-subtle);
-  border: 1px solid var(--bf-border-accent);
-  border-radius: 100px;
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--bf-primary);
-  flex-shrink: 0;
-}
-
-.bf-badge svg {
-  width: 12px;
-  height: 12px;
-}
-
-.bf-badge--link {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3B82F6;
-}
-
-.bf-badge--pinned {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3B82F6;
-}
-
-.bf-badge--featured {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
-}
-
-/* === 标题 === */
 .bf-post-card__title {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--bf-text-primary);
   margin: 0;
   line-height: 1.4;
@@ -543,6 +419,43 @@ const imageCount = computed(() => {
 
 .bf-post-card:hover .bf-post-card__title {
   color: var(--bf-primary);
+}
+
+.bf-post-card__badges {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.bf-meta-time {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--bf-text-muted);
+  flex-shrink: 0;
+}
+
+/* === 作者信息 === */
+.bf-post-card__author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bf-author-name {
+  font-weight: 600;
+  color: var(--bf-text-secondary);
+  font-size: 13px;
+}
+
+.bf-meta-rep {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: #FFB800;
+}
+
+.bf-meta-rep svg {
+  color: #FFB800;
 }
 
 /* === 内容预览 === */

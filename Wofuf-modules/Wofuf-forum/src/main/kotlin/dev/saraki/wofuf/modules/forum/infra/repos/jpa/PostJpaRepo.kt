@@ -15,43 +15,69 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
 
     fun findAllByOrderByDateTimePostedDescPointsDesc(pageable: Pageable): List<PostEntity>
     fun findByCategoryOrderByDateTimePostedDescPointsDesc(category: String, pageable: Pageable): List<PostEntity>
+    fun findByStatusOrderByDateTimePostedDescPointsDesc(status: String, pageable: Pageable): List<PostEntity>
+    fun findByStatusAndCategoryOrderByDateTimePostedDescPointsDesc(status: String, category: String, pageable: Pageable): List<PostEntity>
 
     fun findAllByOrderByPointsDescDateTimePostedDesc(pageable: Pageable): List<PostEntity>
     fun findByCategoryOrderByPointsDescDateTimePostedDesc(category: String, pageable: Pageable): List<PostEntity>
+    fun findByStatusOrderByPointsDescDateTimePostedDesc(status: String, pageable: Pageable): List<PostEntity>
+    fun findByStatusAndCategoryOrderByPointsDescDateTimePostedDesc(status: String, category: String, pageable: Pageable): List<PostEntity>
 
     fun findRecentPosts(page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
-        return findAllByOrderByDateTimePostedDescPointsDesc(PageRequest.of(safePage, safeSize))
+        // 置顶帖子优先，然后按时间倒序
+        val sort = Sort.by(
+            Sort.Order.desc("isPinned"),
+            Sort.Order.desc("dateTimePosted"),
+            Sort.Order.desc("points")
+        )
+        return findAll(
+            PageRequest.of(safePage, safeSize, sort)
+        ).content.filter { it.status == "NORMAL" }
     }
 
     fun findRecentPostsByCategory(category: PostCategory, page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
-        return findByCategoryOrderByDateTimePostedDescPointsDesc(
-            category.name,
-            PageRequest.of(safePage, safeSize)
+        // 置顶帖子优先，然后按时间倒序
+        val sort = Sort.by(
+            Sort.Order.desc("isPinned"),
+            Sort.Order.desc("dateTimePosted"),
+            Sort.Order.desc("points")
         )
+        return findAll(
+            PageRequest.of(safePage, safeSize * 2, sort)
+        ).content.filter { it.status == "NORMAL" && it.category == category.name }.take(safeSize)
     }
 
     fun findPopularPosts(page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
-        val sort = Sort.by(Sort.Order.desc("points"), Sort.Order.desc("dateTimePosted"))
-        return findAllByOrderByPointsDescDateTimePostedDesc(
-            PageRequest.of(safePage, safeSize, sort)
+        // 置顶帖子优先，然后按热度、时间倒序
+        val sort = Sort.by(
+            Sort.Order.desc("isPinned"),
+            Sort.Order.desc("points"),
+            Sort.Order.desc("dateTimePosted")
         )
+        return findAll(
+            PageRequest.of(safePage, safeSize, sort)
+        ).content.filter { it.status == "NORMAL" }
     }
 
     // 分类热门（正常不动）
     fun findPopularPostsByCategory(category: PostCategory, page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
-        val sort = Sort.by(Sort.Order.desc("points"), Sort.Order.desc("dateTimePosted"))
-        return findByCategoryOrderByPointsDescDateTimePostedDesc(
-            category.name,
-            PageRequest.of(safePage, safeSize, sort)
+        // 置顶帖子优先，然后按热度、时间倒序
+        val sort = Sort.by(
+            Sort.Order.desc("isPinned"),
+            Sort.Order.desc("points"),
+            Sort.Order.desc("dateTimePosted")
         )
+        return findAll(
+            PageRequest.of(safePage, safeSize * 2, sort)
+        ).content.filter { it.status == "NORMAL" && it.category == category.name }.take(safeSize)
     }
 
     // ==================== 管理功能方法 ====================
@@ -76,5 +102,57 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
 
     fun countByStatus(status: String): Long {
         return findAll().count { it.status == status }.toLong()
+    }
+
+    // ==================== 管理功能：获取所有帖子（不限状态）====================
+
+    /**
+     * 获取所有帖子，不限状态，按时间倒序，置顶优先
+     */
+    fun findAllByOrderByDateTimePostedDesc(page: Int, size: Int): List<PostEntity> {
+        return findAll(
+            PageRequest.of(page, size, Sort.by(
+                Sort.Order.desc("isPinned"),
+                Sort.Order.desc("dateTimePosted")
+            ))
+        ).content
+    }
+
+    /**
+     * 获取所有帖子，不限状态，按热度排序，置顶优先
+     */
+    fun findAllByOrderByPointsDescDateTimePostedDesc(page: Int, size: Int): List<PostEntity> {
+        return findAll(
+            PageRequest.of(page, size, Sort.by(
+                Sort.Order.desc("isPinned"),
+                Sort.Order.desc("points"),
+                Sort.Order.desc("dateTimePosted")
+            ))
+        ).content
+    }
+
+    /**
+     * 按分类获取所有帖子，不限状态，置顶优先
+     */
+    fun findAllByCategoryOrderByDateTimePostedDesc(category: String, page: Int, size: Int): List<PostEntity> {
+        return findAll(
+            PageRequest.of(page, size * 2, Sort.by(
+                Sort.Order.desc("isPinned"),
+                Sort.Order.desc("dateTimePosted")
+            ))
+        ).content.filter { it.category == category }.take(size)
+    }
+
+    /**
+     * 按分类获取所有帖子，不限状态，按热度排序，置顶优先
+     */
+    fun findAllByCategoryOrderByPointsDescDateTimePostedDesc(category: String, page: Int, size: Int): List<PostEntity> {
+        return findAll(
+            PageRequest.of(page, size * 2, Sort.by(
+                Sort.Order.desc("isPinned"),
+                Sort.Order.desc("points"),
+                Sort.Order.desc("dateTimePosted")
+            ))
+        ).content.filter { it.category == category }.take(size)
     }
 }

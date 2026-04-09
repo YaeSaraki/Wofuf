@@ -37,32 +37,54 @@ class PostRepoImpl(
         return PostEntityMapper.toDomain(postEntity)
     }
 
-    override fun findRecentPosts(page: Int, size: Int, category: PostCategory?): List<Post> {
+    override fun findRecentPosts(page: Int, size: Int, category: PostCategory?, includeHidden: Boolean): List<Post> {
         val safeSize = size.coerceAtLeast(1)
 
-        // 不传分类 → 查询全部
-        if (category == null) {
-            return postJpaRepo.findRecentPosts(page, safeSize)
+        // 管理员/有权限用户：返回所有帖子；普通用户：只返回 NORMAL 帖子
+        if (includeHidden) {
+            // 不传分类 → 查询全部
+            if (category == null) {
+                return postJpaRepo.findAllByOrderByDateTimePostedDesc(page, safeSize)
+                    .map(PostEntityMapper::toDomain)
+            }
+            // 传分类 → 只查该分类
+            return postJpaRepo.findAllByCategoryOrderByDateTimePostedDesc(category.name, page, safeSize)
+                .map(PostEntityMapper::toDomain)
+        } else {
+            // 不传分类 → 查询全部
+            if (category == null) {
+                return postJpaRepo.findRecentPosts(page, safeSize)
+                    .map(PostEntityMapper::toDomain)
+            }
+            // 传分类 → 只查该分类
+            return postJpaRepo.findRecentPostsByCategory(category, page, safeSize)
                 .map(PostEntityMapper::toDomain)
         }
-
-        // 传分类 → 只查该分类
-        return postJpaRepo.findRecentPostsByCategory(category, page, safeSize)
-            .map(PostEntityMapper::toDomain)
     }
 
-    override fun findPopularPosts(page: Int, size: Int, category: PostCategory?): List<Post> {
+    override fun findPopularPosts(page: Int, size: Int, category: PostCategory?, includeHidden: Boolean): List<Post> {
         val safeSize = size.coerceAtLeast(1)
 
-        // 不传分类 → 查询全部
-        if (category == null) {
-            return postJpaRepo.findPopularPosts(page, safeSize)
+        // 管理员/有权限用户：返回所有帖子；普通用户：只返回 NORMAL 帖子
+        if (includeHidden) {
+            // 不传分类 → 查询全部
+            if (category == null) {
+                return postJpaRepo.findAllByOrderByPointsDescDateTimePostedDesc(page, safeSize)
+                    .map(PostEntityMapper::toDomain)
+            }
+            // 传分类 → 只查该分类
+            return postJpaRepo.findAllByCategoryOrderByPointsDescDateTimePostedDesc(category.name, page, safeSize)
+                .map(PostEntityMapper::toDomain)
+        } else {
+            // 不传分类 → 查询全部
+            if (category == null) {
+                return postJpaRepo.findPopularPosts(page, safeSize)
+                    .map(PostEntityMapper::toDomain)
+            }
+            // 传分类 → 只查该分类
+            return postJpaRepo.findPopularPostsByCategory(category, page, safeSize)
                 .map(PostEntityMapper::toDomain)
         }
-
-        // 传分类 → 只查该分类
-        return postJpaRepo.findPopularPostsByCategory(category, page, safeSize)
-            .map(PostEntityMapper::toDomain)
     }
 
     override fun exists(postId: PostId): Boolean =

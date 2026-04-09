@@ -1,10 +1,12 @@
 package dev.saraki.wofuf.modules.forum.useCases.posts.getPopularPosts
 
+import dev.saraki.wofuf.auth.infra.JwtAuthFilter
 import dev.saraki.wofuf.modules.forum.domain.services.PostVoteDomainService
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetails
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetailsProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
@@ -39,7 +41,10 @@ class GetPopularPostsUseCase(
         // 2. Parse category
         val category = request.category?.let { PostCategory.fromString(it) }
 
-        // 3. Get current member if userId is provided
+        // 3. Check if user can see hidden posts
+        val includeHidden = canSeeHiddenPosts()
+
+        // 4. Get current member if userId is provided
         var currentMemberId: MemberId? = null
         if (!request.userId.isNullOrBlank()) {
 
@@ -51,16 +56,16 @@ class GetPopularPostsUseCase(
             currentMemberId = member?.memberId
         }
 
-        // 4. Find popular posts
-        val posts = postRepo.findPopularPosts(request.page, request.size, category)
+        // 5. Find popular posts
+        val posts = postRepo.findPopularPosts(request.page, request.size, category, includeHidden)
 
 
-        // 4. Batch get vote statuses (避免 N+1 查询)
+        // 6. Batch get vote statuses (避免 N+1 查询)
         val voteStatusMap = currentMemberId?.let { memberId ->
             postVoteDomainService.getVoteStatuses(posts.map { it.postId }, memberId)
         } ?: emptyMap()
 
-        // 5. Map posts to DTOs with member details and comment counts
+        // 7. Map posts to DTOs with member details and comment counts
         val postDtos = posts.map { post ->
             // Get member details
             val member = memberRepo.findMemberById(post.memberId)
@@ -103,7 +108,41 @@ class GetPopularPostsUseCase(
             }
         }
 
-        // 6. Return success response
+        // 8. Return success response
         return Result.success(GetPopularPostsDto.Response(postDtos))
+    }
+
+    /**
+     * 检查当前用户是否有权限查看隐藏帖子
+     * - 未登录用户：不能查看隐藏帖子
+     * - 普通用户：不能查看隐藏帖子
+     * - 管理员：可以查看所有帖子
+     * - 拥有 POST_HIDE 权限的用户：可以查看所有帖子
+     */
+    private fun canSeeHiddenPosts(): Boolean {
+        // 检查是否已登录（排除匿名用户）
+        if (!JwtAuthFilter.isAuthenticated()) {
+            return false
+        }
+
+        // 获取当前用户 ID
+        val userId = JwtAuthFilter.getCurrentUserId()
+
+        // 如果是匿名用户或 null，返回 false
+        if (userId.isNullOrBlank() || userId == "anonymousUser") {
+            return false
+        }
+
+        // 检查是否为系统管理员
+        if (JwtAuthFilter.isAdmin()) {
+            return true
+        }
+
+        // 查找论坛 Member 并检查权限
+        val userIdObj = UserId.create(UniqueEntityId(userId)).getOrNull() ?: return false
+        val member = memberRepo.findMemberByUserId(userIdObj) ?: return false
+
+        // 检查是否有 POST_HIDE 权限
+        return member.hasPermission(PermissionPoint.POST_HIDE)
     }
 }

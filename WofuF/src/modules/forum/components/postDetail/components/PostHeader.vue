@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import type { PostDto } from '@M/forum/dtos/Post.ts'
+import { getIsPinned, getIsFeatured, getIsHidden } from '@M/forum/dtos/Post.ts'
 
 const props = defineProps<{
   post: PostDto
@@ -30,123 +31,86 @@ const formattedDate = computed(() => {
   if (diffDays < 7) return `${diffDays} 天前`
   return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
 })
-
-// 格式化信誉值
-const reputationDisplay = computed(() => {
-  const rep = props.post.memberPostBy?.reputation || 0
-  if (rep >= 10000) return `${(rep / 1000).toFixed(1)}k`
-  return rep.toString()
-})
-
-// 信誉等级
-const reputationLevel = computed(() => {
-  const rep = props.post.memberPostBy?.reputation || 0
-  if (rep >= 10000) return 'legendary'
-  if (rep >= 5000) return 'expert'
-  if (rep >= 1000) return 'trusted'
-  if (rep >= 100) return 'member'
-  return 'newcomer'
-})
 </script>
 
 <template>
   <div class="bf-post-header">
-    <!-- 标题 -->
-    <h1 class="bf-post-title">{{ post.title }}</h1>
+    <!-- 标题 + 徽章 -->
+    <div class="bf-title-row">
+      <h1 class="bf-post-title">{{ post.title }}</h1>
+      <div class="bf-post-badges">
+        <span v-if="getIsFeatured(post)" class="bf-badge bf-badge--featured" title="精华">★</span>
+        <span v-if="getIsPinned(post)" class="bf-badge bf-badge--pinned" title="置顶">◆</span>
+        <span v-if="getIsHidden(post)" class="bf-badge bf-badge--hidden" title="已隐藏">◉</span>
+        <span v-if="post.type === 'LINK'" class="bf-badge bf-badge--link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </span>
+      </div>
+    </div>
 
-    <!-- 元信息卡片 -->
-    <div class="bf-post-meta-card">
-      <!-- 作者信息 -->
-      <div class="bf-author-section">
-        <div class="bf-author-avatar-wrapper">
-          <img
-            v-if="authorAvatar"
-            :src="authorAvatar"
-            class="bf-author-avatar bf-author-avatar--img"
-            alt=""
-          />
-          <div v-else class="bf-author-avatar">
-            {{ getAuthorInitial(post) }}
-          </div>
-        </div>
-        <div class="bf-author-info">
-          <div class="bf-author-name-row">
-            <span class="bf-author-name">{{ post.memberPostBy?.nickname || 'Unknown' }}</span>
-            <span
-              class="bf-reputation-badge"
-              :class="`bf-reputation--${reputationLevel}`"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-              {{ reputationDisplay }}
-            </span>
-          </div>
-          <div class="bf-meta-row">
-            <span class="bf-post-time">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-              {{ formattedDate }}
-            </span>
-            <span class="bf-meta-divider">•</span>
-            <span class="bf-post-comments">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-              {{ post.numComments }} 评论
-            </span>
-            <span class="bf-meta-divider">•</span>
-            <span class="bf-post-points">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-              </svg>
-              {{ post.points }} 赞
-            </span>
-          </div>
+    <!-- 作者信息 -->
+    <div class="bf-author-row">
+      <div class="bf-author-avatar-wrapper">
+        <img
+          v-if="authorAvatar"
+          :src="authorAvatar"
+          class="bf-author-avatar bf-author-avatar--img"
+          alt=""
+        />
+        <div v-else class="bf-author-avatar">
+          {{ getAuthorInitial(post) }}
         </div>
       </div>
+      <div class="bf-author-info">
+        <span class="bf-author-name">{{ post.memberPostBy?.nickname || 'Unknown' }}</span>
+        <span class="bf-meta-rep">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+          </svg>
+          {{ post.memberPostBy?.reputation || 0 }}
+        </span>
+      </div>
+      <span class="bf-post-time">{{ formattedDate }}</span>
     </div>
   </div>
 </template>
 
-<style scoped>
+<style src="@M/forum/assets/forum-shared.css" scoped>
 .bf-post-header {
   margin-bottom: var(--bf-space-lg, 24px);
 }
 
-/* 标题样式 */
+/* 标题 + 徽章行 */
+.bf-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
 .bf-post-title {
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--bf-text-primary, #ffffff);
-  margin: 0 0 var(--bf-space-lg, 24px);
+  margin: 0;
   line-height: 1.3;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--bf-text-primary) 0%, var(--bf-text-secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
-/* 元信息卡片 */
-.bf-post-meta-card {
-  display: flex;
-  align-items: flex-start;
-  padding: var(--bf-space-md, 16px);
-  background: var(--bf-surface, rgba(255, 255, 255, 0.03));
-  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.06));
-  border-radius: var(--bf-card-radius-sm, 12px);
-  gap: var(--bf-space-md, 16px);
+/* 徽章 */
+.bf-post-badges {
+  display: inline-flex;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
-/* 作者区域 */
-.bf-author-section {
+/* 作者信息行 */
+.bf-author-row {
   display: flex;
-  align-items: flex-start;
-  gap: var(--bf-space-md, 16px);
-  flex: 1;
+  align-items: center;
+  gap: 10px;
 }
 
 .bf-author-avatar-wrapper {
@@ -154,114 +118,19 @@ const reputationLevel = computed(() => {
 }
 
 .bf-author-avatar {
-  width: 48px;
-  height: 48px;
-  background: var(
-    --bf-fire-gradient,
-    linear-gradient(135deg, #ff6b35 0%, #ff9f1c 50%, #ffbe0b 100%)
-  );
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: white;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  width: 36px;
+  height: 36px;
+  font-size: 13px;
 }
 
-.bf-author-avatar--img {
-  background: transparent;
-  border-radius: 12px;
-  image-rendering: pixelated;
-  box-shadow: none;
-}
-
-/* 作者信息 */
 .bf-author-info {
   display: flex;
-  flex-direction: column;
-  gap: var(--bf-space-xs, 4px);
-  min-width: 0;
-}
-
-.bf-author-name-row {
-  display: flex;
   align-items: center;
-  gap: var(--bf-space-sm, 8px);
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.bf-author-name {
-  color: var(--bf-text-primary, #ffffff);
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-/* 信誉徽章 */
-.bf-reputation-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 100px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.bf-reputation--newcomer {
-  background: rgba(156, 163, 175, 0.2);
-  color: #9ca3af;
-}
-
-.bf-reputation--member {
-  background: rgba(59, 130, 246, 0.2);
-  color: #3b82f6;
-}
-
-.bf-reputation--trusted {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-}
-
-.bf-reputation--expert {
-  background: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
-}
-
-.bf-reputation--legendary {
-  background: rgba(255, 107, 53, 0.2);
-  color: var(--bf-primary, #ff6b35);
-}
-
-/* 元数据行 */
-.bf-meta-row {
-  display: flex;
-  align-items: center;
-  gap: var(--bf-space-xs, 4px);
-  flex-wrap: wrap;
-}
-
-.bf-post-time,
-.bf-post-comments,
-.bf-post-points {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--bf-text-muted, #666666);
-  font-size: 0.8125rem;
-}
-
-.bf-post-time svg,
-.bf-post-comments svg,
-.bf-post-points svg {
-  opacity: 0.6;
-}
-
-.bf-meta-divider {
-  color: var(--bf-text-muted, #666666);
-  opacity: 0.4;
-  margin: 0 2px;
+.bf-post-time {
+  margin-left: auto;
 }
 
 /* 响应式 */
@@ -270,33 +139,14 @@ const reputationLevel = computed(() => {
     font-size: 1.375rem;
   }
 
-  .bf-post-meta-card {
-    padding: var(--bf-space-sm, 12px);
-  }
-
   .bf-author-avatar {
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
-    border-radius: 10px;
-  }
-
-  .bf-author-avatar--img {
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
   }
 
   .bf-author-name {
-    font-size: 0.9375rem;
-  }
-
-  .bf-meta-row {
-    gap: 2px;
-  }
-
-  .bf-post-time,
-  .bf-post-comments,
-  .bf-post-points {
-    font-size: 0.75rem;
+    font-size: 13px;
   }
 }
 </style>
