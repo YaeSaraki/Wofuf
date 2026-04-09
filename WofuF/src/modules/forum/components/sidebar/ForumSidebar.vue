@@ -1,11 +1,13 @@
 /** * 论坛首页侧边栏组件 * 显示热门帖子、论坛统计、公告等信息 */
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import type { PostDto } from '@M/forum/dtos/Post'
 import { forumService } from '@M/forum/services/ForumService'
 import { authService } from '@M/auth/services/AuthService'
+import { memberService } from '@M/auth/services/MemberService'
 import { translate } from '@S/services/i18n'
+import { cacheService } from '@S/infra/cache'
 
 const router = useRouter()
 
@@ -22,6 +24,53 @@ const stats = ref({
 
 // 是否已登录
 const isLoggedIn = computed(() => authService.isAuthenticated())
+
+// 是否是管理员
+const isAdmin = ref(false)
+const isLoadingAdmin = ref(false)
+
+// 检查是否是管理员
+async function checkAdminStatus() {
+  // 直接检查 authService 而非依赖 isLoggedIn computed
+  if (!authService.isAuthenticated()) {
+    isAdmin.value = false
+    return
+  }
+
+  isLoadingAdmin.value = true
+  try {
+    // 清除旧缓存，确保获取最新数据
+    cacheService.clearModule('member_service')
+
+    const result = await memberService.getCurrentMember(undefined, true)
+    console.log('[ForumSidebar] getCurrentMember result:', result)
+
+    if (result.isSuccess) {
+      const member = result.getValue()
+      console.log('[ForumSidebar] 完整 Member 数据:', JSON.stringify(member, null, 2))
+
+      // API 返回的是 adminUser 字段，不是 isAdminUser
+      const adminValue = member?.adminUser ?? member?.isAdminUser ?? false
+      console.log('[ForumSidebar] adminUser 原始值:', adminValue, '类型:', typeof adminValue)
+
+      // 使用宽松的 truthy 检查
+      isAdmin.value = !!adminValue
+    } else {
+      console.warn('[ForumSidebar] Failed to get member:', result.error)
+      isAdmin.value = false
+    }
+  } catch (e) {
+    console.error('[ForumSidebar] Error checking admin status:', e)
+    isAdmin.value = false
+  } finally {
+    isLoadingAdmin.value = false
+  }
+}
+
+// 跳转到管理页面
+function goToAdmin() {
+  router.push('/forum/admin')
+}
 
 // 获取热门帖子（修复版：page=0, size=5）
 async function fetchHotPosts() {
@@ -48,6 +97,15 @@ function goToCreatePost() {
   router.push('/forum/create')
 }
 
+// 监听登录状态变化（带 immediate 选项，解决初始化时机问题）
+watch(isLoggedIn, (newVal) => {
+  if (newVal) {
+    checkAdminStatus()
+  } else {
+    isAdmin.value = false
+  }
+}, { immediate: true })
+
 onMounted(() => {
   fetchHotPosts()
 })
@@ -64,6 +122,17 @@ onMounted(() => {
         <span>{{
           isLoggedIn ? translate('forum', 'create_post') : translate('forum', 'loginToPost')
         }}</span>
+      </button>
+    </div>
+
+    <!-- 管理员入口 (仅管理员可见) -->
+    <div v-if="isAdmin" class="bf-sidebar__section bf-sidebar__admin">
+      <button class="bf-admin-btn" @click="goToAdmin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        <span>{{ translate('forum', 'admin.management') }}</span>
       </button>
     </div>
 
@@ -227,7 +296,7 @@ onMounted(() => {
 
 /* === 发帖按钮 === */
 .bf-sidebar__cta {
-  padding: 0;
+  padding: 6px;
   background: transparent;
   border: none;
   backdrop-filter: none;
@@ -257,8 +326,44 @@ onMounted(() => {
 }
 
 .bf-cta-btn:hover {
-  transform: translateY(-2px);
+  background: var(--bf-btn-primary-hover);
   box-shadow: 0 6px 24px var(--bf-primary-glow);
+}
+
+/* === 管理员按钮 === */
+.bf-sidebar__admin {
+  padding: 6px;
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+}
+
+.bf-admin-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bf-space-sm, 8px);
+  padding: 12px var(--bf-space-lg, 20px);
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: var(--bf-btn-radius, 12px);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--bf-transition-fast, 0.15s ease);
+  backdrop-filter: blur(8px);
+}
+
+.bf-admin-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.bf-admin-btn:hover {
+  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.5);
 }
 
 /* === 区块头部 === */

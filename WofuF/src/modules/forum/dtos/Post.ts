@@ -26,6 +26,13 @@ export interface MemberDto {
   playerId: string | null  // 玩家UUID，用于获取皮肤
 }
 
+// 帖子状态枚举
+export enum PostStatus {
+  NORMAL = 'NORMAL',
+  HIDDEN = 'HIDDEN',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+}
+
 // 帖子 DTO (对应后端 PostDto)
 export interface PostDto {
   postId?: string
@@ -39,8 +46,23 @@ export interface PostDto {
   link: string
   type: PostType
   category: PostCategory
+  status?: PostStatus
+  isPinned?: boolean
+  pinned?: boolean  // API 可能返回的字段名
+  isFeatured?: boolean
+  featured?: boolean  // API 可能返回的字段名
   wasUpvotedByMe: boolean | null
   wasDownvotedByMe: boolean | null
+}
+
+// 辅助函数：获取置顶状态
+export function getIsPinned(post: PostDto): boolean {
+  return post.isPinned ?? post.pinned ?? false
+}
+
+// 辅助函数：获取加精状态
+export function getIsFeatured(post: PostDto): boolean {
+  return post.isFeatured ?? post.featured ?? false
 }
 
 // 评论 DTO (对应后端 CommentDto)
@@ -65,7 +87,6 @@ export interface CommentDto {
 
 // 创建帖子请求
 export interface CreatePostRequest {
-  userId: string
   title: string
   type: string
   text?: string
@@ -94,11 +115,6 @@ export interface GetCommentsResponse {
   comments: CommentDto[]
 }
 
-// 投票请求
-export interface VoteRequest {
-  userId: string
-}
-
 // 投票响应
 export interface VoteResponse {
   success: boolean
@@ -108,14 +124,12 @@ export interface VoteResponse {
 
 // 回复帖子请求
 export interface ReplyToPostRequest {
-  userId: string
   comment: string
 }
 
 // 回复评论请求
 export interface ReplyToCommentRequest {
   postSlug: string
-  userId: string
   comment: string
 }
 

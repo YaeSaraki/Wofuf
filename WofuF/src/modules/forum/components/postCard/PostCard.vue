@@ -7,6 +7,7 @@
 import { computed, watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { PostDto } from '@M/forum/dtos/Post'
+import { getIsPinned, getIsFeatured } from '@M/forum/dtos/Post'
 import { translate } from '@S/services/i18n'
 import { authService } from '@M/auth/services/AuthService'
 import { PlayerService } from '@M/players/services/PlayerService'
@@ -228,6 +229,18 @@ const imageCount = computed(() => {
           </div>
         </div>
         <div class="bf-post-card__badges">
+          <span v-if="getIsPinned(post)" class="bf-badge bf-badge--pinned">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 17v5M9 10.5a3 3 0 115.196-3M5 21h14M12 3l-4 8h8l-4-8z" />
+            </svg>
+            置顶
+          </span>
+          <span v-if="getIsFeatured(post)" class="bf-badge bf-badge--featured">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            精华
+          </span>
           <span v-if="post.type === 'LINK'" class="bf-badge bf-badge--link">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -492,6 +505,7 @@ const imageCount = computed(() => {
   font-size: 11px;
   font-weight: 500;
   color: var(--bf-primary);
+  flex-shrink: 0;
 }
 
 .bf-badge svg {
@@ -503,6 +517,18 @@ const imageCount = computed(() => {
   background: rgba(59, 130, 246, 0.1);
   border-color: rgba(59, 130, 246, 0.3);
   color: #3B82F6;
+}
+
+.bf-badge--pinned {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3B82F6;
+}
+
+.bf-badge--featured {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
 }
 
 /* === 标题 === */
