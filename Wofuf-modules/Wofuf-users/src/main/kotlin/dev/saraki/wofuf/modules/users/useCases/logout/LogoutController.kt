@@ -9,12 +9,11 @@ package dev.saraki.wofuf.modules.users.useCases.logout
 
 import dev.saraki.wofuf.modules.users.config.UserApiConstantV1
 import dev.saraki.wofuf.modules.users.domain.valueObjects.JwtToken
-import dev.saraki.wofuf.modules.users.services.auth.UserAuthService
+import dev.saraki.wofuf.modules.users.infra.security.requireCurrentUserId
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -23,16 +22,15 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(UserApiConstantV1.Me.SESSIONS)
 class LogoutController(
-    private val logoutUseCase: LogoutUseCase,
-    private val userAuthService: UserAuthService
+    private val logoutUseCase: LogoutUseCase
 ) : BaseController() {
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun logout(@RequestHeader("MeoKey") token: JwtToken): ApiResponse<LogoutDto.Response> {
-        val jwtClaims = userAuthService.authenticate(token) ?: return ApiResponse.error("Invalid token")
+        val currentUserId = requireCurrentUserId()
 
-        val result = logoutUseCase.execute(LogoutDto.Request(jwtClaims.userId, token))
+        val result = logoutUseCase.execute(LogoutDto.Request(currentUserId, token))
 
         if (result.isFailure) {
             return ApiResponse.error(result.exceptionOrThrow())

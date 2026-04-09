@@ -13,7 +13,7 @@ import java.time.LocalDateTime
  *   @description:
  */
 
-@Entity
+@jakarta.persistence.Entity
 @DynamicUpdate
 @Table(name = "comment_vote")
 data class CommentVoteEntity(

@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.useCases.comments.replyToPost
 
 import dev.saraki.wofuf.modules.forum.config.ForumApiConstantV1
+import dev.saraki.wofuf.modules.forum.infra.security.requireCurrentUserId
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,11 +29,12 @@ class ReplyToPostController(
         @PathVariable postId: String,
         @RequestBody request: ReplyToPostRequest
     ): ApiResponse<ReplyToPostDto.Response> {
+        val currentUserId = requireCurrentUserId()
         val result = replyToPostUseCase.execute(
             ReplyToPostDto.Request(
                 postSlug = null,
                 postId = postId,
-                userId = request.userId,
+                userId = currentUserId,
                 comment = request.comment,
             )
         ).getOrThrow()
@@ -47,11 +49,12 @@ class ReplyToPostController(
         @PathVariable postSlug: String,
         @RequestBody request: ReplyToPostRequest
     ): ApiResponse<ReplyToPostDto.Response> {
+        val currentUserId = requireCurrentUserId()
         val result = replyToPostUseCase.execute(
             ReplyToPostDto.Request(
                 postSlug = postSlug,
                 postId = null,
-                userId = request.userId,
+                userId = currentUserId,
                 comment = request.comment,
             )
         ).getOrThrow()
@@ -60,6 +63,5 @@ class ReplyToPostController(
 }
 
 data class ReplyToPostRequest(
-    val userId: String,
     val comment: String,
 )

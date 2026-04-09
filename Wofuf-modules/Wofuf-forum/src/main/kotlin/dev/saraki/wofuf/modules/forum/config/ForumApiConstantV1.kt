@@ -122,6 +122,100 @@ object ForumApiConstantV1 {
         const val UPLOAD = "$ROOT/upload"
     }
 
+    // ===================== 管理功能路径 =====================
+    object Admin {
+        private const val ADMIN_BASE = "$BASE/admin"
+
+        /** /api/v1/forum/admin */
+        const val ROOT = ADMIN_BASE
+
+        // -------------------- 帖子管理 --------------------
+        object Posts {
+            private const val POSTS_BASE = "$ADMIN_BASE/posts"
+
+            /** /api/v1/forum/admin/posts/{postId}/pin */
+            const val PIN = "$POSTS_BASE/{${Param.POST_ID}}/pin"
+
+            /** /api/v1/forum/admin/posts/{postId}/unpin */
+            const val UNPIN = "$POSTS_BASE/{${Param.POST_ID}}/unpin"
+
+            /** /api/v1/forum/admin/posts/{postId}/feature */
+            const val FEATURE = "$POSTS_BASE/{${Param.POST_ID}}/feature"
+
+            /** /api/v1/forum/admin/posts/{postId}/unfeature */
+            const val UNFEATURE = "$POSTS_BASE/{${Param.POST_ID}}/unfeature"
+
+            /** /api/v1/forum/admin/posts/{postId}/hide */
+            const val HIDE = "$POSTS_BASE/{${Param.POST_ID}}/hide"
+
+            /** /api/v1/forum/admin/posts/{postId}/show */
+            const val SHOW = "$POSTS_BASE/{${Param.POST_ID}}/show"
+
+            /** /api/v1/forum/admin/posts/{postId}/review */
+            const val REVIEW = "$POSTS_BASE/{${Param.POST_ID}}/review"
+
+            /** /api/v1/forum/admin/posts/{postId}/approve */
+            const val APPROVE = "$POSTS_BASE/{${Param.POST_ID}}/approve"
+
+            /** /api/v1/forum/admin/posts/pinned */
+            const val PINNED = "$POSTS_BASE/pinned"
+
+            /** /api/v1/forum/admin/posts/featured */
+            const val FEATURED = "$POSTS_BASE/featured"
+
+            /** /api/v1/forum/admin/posts/hidden */
+            const val HIDDEN = "$POSTS_BASE/hidden"
+
+            /** /api/v1/forum/admin/posts/for-review */
+            const val FOR_REVIEW = "$POSTS_BASE/for-review"
+        }
+
+        // -------------------- 评论管理 --------------------
+        object Comments {
+            private const val COMMENTS_BASE = "$ADMIN_BASE/comments"
+
+            /** /api/v1/forum/admin/comments/{commentId}/hide */
+            const val HIDE = "$COMMENTS_BASE/{${Param.COMMENT_ID}}/hide"
+
+            /** /api/v1/forum/admin/comments/{commentId}/show */
+            const val SHOW = "$COMMENTS_BASE/{${Param.COMMENT_ID}}/show"
+
+            /** /api/v1/forum/admin/comments/hidden */
+            const val HIDDEN = "$COMMENTS_BASE/hidden"
+        }
+
+        // -------------------- 成员管理 --------------------
+        object Members {
+            private const val MEMBERS_BASE = "$ADMIN_BASE/members"
+
+            /** /api/v1/forum/admin/members/{memberId}/ban */
+            const val BAN = "$MEMBERS_BASE/{${Param.MEMBER_ID}}/ban"
+
+            /** /api/v1/forum/admin/members/{memberId}/unban */
+            const val UNBAN = "$MEMBERS_BASE/{${Param.MEMBER_ID}}/unban"
+
+            /** /api/v1/forum/admin/members/{memberId}/permissions */
+            const val PERMISSIONS = "$MEMBERS_BASE/{${Param.MEMBER_ID}}/permissions"
+
+            /** /api/v1/forum/admin/members/{memberId}/permissions/{permission} */
+            const val PERMISSION_BY_NAME = "$MEMBERS_BASE/{${Param.MEMBER_ID}}/permissions/{permission}"
+
+            /** /api/v1/forum/admin/members/banned */
+            const val BANNED = "$MEMBERS_BASE/banned"
+
+            /** /api/v1/forum/admin/members/by-permission/{permission} */
+            const val BY_PERMISSION = "$MEMBERS_BASE/by-permission/{permission}"
+        }
+
+        // -------------------- 分类管理 --------------------
+        object Categories {
+            private const val CATEGORIES_BASE = "$ADMIN_BASE/categories"
+
+            /** /api/v1/forum/admin/categories/{categoryId} */
+            const val BY_ID = "$CATEGORIES_BASE/{categoryId}"
+        }
+    }
+
     // ===================== 工具方法 =====================
     /**
      * 构建单个帖子路径

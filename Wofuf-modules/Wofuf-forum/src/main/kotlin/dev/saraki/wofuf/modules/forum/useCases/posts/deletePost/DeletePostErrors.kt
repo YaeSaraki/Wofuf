@@ -34,4 +34,28 @@ class DeletePostErrors {
             message = "Failed to delete post with postId {$postId}"
         )
     )
+
+    /** User not authenticated */
+    class UnauthorizedError : Result.Failure<DeletePostDto.Response>(
+        exception = UseCaseError(
+            code = "UNAUTHORIZED_ERROR",
+            message = "用户未登录"
+        )
+    )
+
+    /** Member not found */
+    class MemberNotFoundError : Result.Failure<DeletePostDto.Response>(
+        exception = UseCaseError(
+            code = "MEMBER_NOT_FOUND_ERROR",
+            message = "用户信息不存在"
+        )
+    )
+
+    /** Forbidden - not the author */
+    class ForbiddenError : Result.Failure<DeletePostDto.Response>(
+        exception = UseCaseError(
+            code = "FORBIDDEN_ERROR",
+            message = "无权删除此帖子"
+        )
+    )
 }

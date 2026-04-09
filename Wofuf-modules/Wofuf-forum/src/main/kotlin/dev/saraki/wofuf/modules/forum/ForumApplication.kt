@@ -7,10 +7,11 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Import
 
 /**
- *   @author YaeSaraki
- *   @email ikaraswork@iCloud.com
- *   @date 2026/2/24 23:07
- *   @description:
+ * 论坛模块启动类
+ *
+ * @author YaeSaraki
+ * @email ikaraswork@iCloud.com
+ * @date 2026/2/24 23:07
  */
 @SpringBootApplication(
     scanBasePackages = [

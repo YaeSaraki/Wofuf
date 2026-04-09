@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.useCases.members.getCurrentMember
 
 import dev.saraki.wofuf.modules.forum.config.ForumApiConstantV1
+import dev.saraki.wofuf.modules.forum.infra.security.requireCurrentUserId
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.web.bind.annotation.*
@@ -18,9 +19,10 @@ class GetCurrentMemberController(
 ) : BaseController() {
 
     @GetMapping
-    fun getCurrentMember(@RequestHeader("userId") userId: String): ApiResponse<GetCurrentMemberDto.Response> {
+    fun getCurrentMember(): ApiResponse<GetCurrentMemberDto.Response> {
+        val currentUserId = requireCurrentUserId()
         val result = getCurrentMemberUseCase.execute(
-            GetCurrentMemberDto.Request(userId = userId)
+            GetCurrentMemberDto.Request(userId = currentUserId)
         ).getOrThrow()
         return ApiResponse.success(result)
     }

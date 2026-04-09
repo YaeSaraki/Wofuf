@@ -75,4 +75,28 @@ class EditPostErrors {
             message = "图片数量超出限制: 最多允许 $max 张图片，当前有 $count 张"
         )
     )
+
+    /** User not authenticated */
+    class UnauthorizedError : Result.Failure<EditPostDto.Response>(
+        exception = UseCaseError(
+            code = "UNAUTHORIZED_ERROR",
+            message = "用户未登录"
+        )
+    )
+
+    /** Member not found */
+    class MemberNotFoundError : Result.Failure<EditPostDto.Response>(
+        exception = UseCaseError(
+            code = "MEMBER_NOT_FOUND_ERROR",
+            message = "用户信息不存在"
+        )
+    )
+
+    /** Forbidden - not the author */
+    class ForbiddenError : Result.Failure<EditPostDto.Response>(
+        exception = UseCaseError(
+            code = "FORBIDDEN_ERROR",
+            message = "无权编辑此帖子"
+        )
+    )
 }

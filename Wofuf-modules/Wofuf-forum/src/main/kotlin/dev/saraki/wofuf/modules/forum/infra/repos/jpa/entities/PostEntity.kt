@@ -51,6 +51,28 @@ data class PostEntity(
     @Column(name = "date_time_posted", nullable = false)
     val dateTimePosted: LocalDateTime,
 
+    // 管理功能相关字段 (使用 var 以便 JPA 可以更新)
+    @Column(name = "status", nullable = false)
+    var status: String = "NORMAL",
+
+    @Column(name = "is_pinned", nullable = false)
+    var isPinned: Boolean = false,
+
+    @Column(name = "is_featured", nullable = false)
+    var isFeatured: Boolean = false,
+
+    @Column(name = "pinned_at", nullable = true)
+    var pinnedAt: LocalDateTime? = null,
+
+    @Column(name = "featured_at", nullable = true)
+    var featuredAt: LocalDateTime? = null,
+
+    @Column(name = "hidden_at", nullable = true)
+    var hiddenAt: LocalDateTime? = null,
+
+    @Column(name = "hidden_by", nullable = true)
+    var hiddenBy: String? = null,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
         name = "member_id",
@@ -73,6 +95,5 @@ data class PostEntity(
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime? = null
-
-    )
+)
  

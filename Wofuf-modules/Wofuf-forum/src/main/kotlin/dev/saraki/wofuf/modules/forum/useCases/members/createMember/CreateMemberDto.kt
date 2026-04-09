@@ -8,7 +8,6 @@ package dev.saraki.wofuf.modules.forum.useCases.members.createMember
  */
 class CreateMemberDto {
     data class Request(
-        val userId: String,
         val playerId: String,
         val nickName: String,
         val lastPlayed: String,

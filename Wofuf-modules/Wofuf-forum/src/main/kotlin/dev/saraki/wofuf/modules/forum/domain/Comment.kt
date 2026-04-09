@@ -4,10 +4,12 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentText
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
+import dev.saraki.wofuf.shared.core.AppError
 import dev.saraki.wofuf.shared.core.Guard
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.domain.AggregateRoot
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
+import java.time.LocalDateTime
 
 /**
  *   @author YaeSaraki
@@ -21,7 +23,11 @@ data class CommentProps(
     val text: CommentText,
     val postId: PostId,
     val parentCommentId: CommentId?,
-    var points: Int?
+    var points: Int?,
+    // 管理功能相关字段
+    val isHidden: Boolean = false,
+    val hiddenAt: LocalDateTime? = null,
+    val hiddenBy: MemberId? = null
 )
 
 /**
@@ -50,6 +56,16 @@ class Comment private constructor(
     val points: Int
         get() = props.points ?: 0
 
+    // 管理功能相关属性
+    val isHidden: Boolean
+        get() = props.isHidden
+
+    val hiddenAt: LocalDateTime?
+        get() = props.hiddenAt
+
+    val hiddenBy: MemberId?
+        get() = props.hiddenBy
+
     /**
      * 更新基础积分（总点赞-总点踩）
      * 由 CommentVoteDomainService 调用
@@ -60,6 +76,38 @@ class Comment private constructor(
 
     fun editText(newText: CommentText): Result<Comment> {
         val newProps = props.copy(text = newText)
+        return create(newProps, id)
+    }
+
+    // ==================== 管理功能方法 ====================
+
+    /**
+     * 隐藏评论
+     */
+    fun hide(hiddenBy: MemberId): Result<Comment> {
+        if (props.isHidden) {
+            return Result.failure(AppError("评论已被隐藏"))
+        }
+        val newProps = props.copy(
+            isHidden = true,
+            hiddenAt = LocalDateTime.now(),
+            hiddenBy = hiddenBy
+        )
+        return create(newProps, id)
+    }
+
+    /**
+     * 显示评论（取消隐藏）
+     */
+    fun show(): Result<Comment> {
+        if (!props.isHidden) {
+            return Result.failure(AppError("评论未被隐藏"))
+        }
+        val newProps = props.copy(
+            isHidden = false,
+            hiddenAt = null,
+            hiddenBy = null
+        )
         return create(newProps, id)
     }
 

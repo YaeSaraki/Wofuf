@@ -29,6 +29,16 @@ data class CommentEntity(
     @Column(name = "points", nullable = true)
     val points: Int = 0,
 
+    // 管理功能相关字段
+    @Column(name = "is_hidden", nullable = false)
+    val isHidden: Boolean = false,
+
+    @Column(name = "hidden_at", nullable = true)
+    val hiddenAt: LocalDateTime? = null,
+
+    @Column(name = "hidden_by", nullable = true)
+    val hiddenBy: String? = null,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
         name = "member_id",

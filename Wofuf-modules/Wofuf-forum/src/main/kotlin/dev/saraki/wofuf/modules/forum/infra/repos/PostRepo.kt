@@ -4,6 +4,7 @@ import dev.saraki.wofuf.modules.forum.domain.Post
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostStatus
 
 /**
  *   @author YaeSaraki
@@ -20,4 +21,31 @@ interface PostRepo {
     fun exists(postId: PostId): Boolean
     fun save(post: Post): Post
     fun delete(postId: PostId)
+
+    // ==================== 管理功能方法 ====================
+
+    /**
+     * 获取置顶帖子列表
+     */
+    fun findPinnedPosts(limit: Int): List<Post>
+
+    /**
+     * 获取加精帖子列表
+     */
+    fun findFeaturedPosts(limit: Int): List<Post>
+
+    /**
+     * 根据状态分页获取帖子
+     */
+    fun findPostsByStatus(status: PostStatus, page: Int, size: Int): List<Post>
+
+    /**
+     * 获取待审核帖子
+     */
+    fun findPostsForReview(page: Int, size: Int): List<Post>
+
+    /**
+     * 统计指定状态的帖子数量
+     */
+    fun countByStatus(status: PostStatus): Long
 }

@@ -9,5 +9,11 @@ class GetCurrentMemberDto {
         val playerId: String,
         val nickname: String,
         val reputation: Int,
+        val permissions: List<String>,
+        val isAdminUser: Boolean,
+        val isBanned: Boolean,
+        val bannedAt: Long?,
+        val bannedUntil: Long?,
+        val bannedReason: String?,
     )
 }

@@ -1,8 +1,8 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers
 
-import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.Comment
+import dev.saraki.wofuf.modules.forum.domain.CommentProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentDetails
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentDetails.Companion.create
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentDetailsProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentText
@@ -11,7 +11,6 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostTitle
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.CommentEntity
-import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerSkin
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 
 /**
@@ -29,7 +28,11 @@ object CommentEntityMapper {
                 text = CommentText.create(entity.text).getOrThrow(),
                 postId = PostId.create(UniqueEntityId(entity.postId)).getOrThrow(),
                 parentCommentId = entity.parentCommentId?.let { CommentId.create(UniqueEntityId(it)).getOrThrow() },
-                points = entity.points
+                points = entity.points,
+                // 管理功能相关字段
+                isHidden = entity.isHidden,
+                hiddenAt = entity.hiddenAt,
+                hiddenBy = entity.hiddenBy?.let { MemberId.create(UniqueEntityId(it)).getOrThrow() }
             ),
             id = UniqueEntityId(entity.commentId)
         )
@@ -43,7 +46,7 @@ object CommentEntityMapper {
     }
 
     fun toCommentDetails(commentEntity: CommentEntity): CommentDetails {
-        return create(
+        return CommentDetails.create(
             CommentDetailsProps(
                 commentId = CommentId.create(UniqueEntityId(commentEntity.commentId)).getOrThrow(),
                 text = commentEntity.text,
@@ -64,7 +67,11 @@ object CommentEntityMapper {
             text = domain.text.value,
             postId = domain.postId.stringValue,
             parentCommentId = domain.parentCommentId?.stringValue,
-            points = domain.points
+            points = domain.points,
+            // 管理功能相关字段
+            isHidden = domain.isHidden,
+            hiddenAt = domain.hiddenAt,
+            hiddenBy = domain.hiddenBy?.stringValue
         )
     }
 }

@@ -7,10 +7,15 @@ package dev.saraki.wofuf.modules.forum.infra.repos.jpa
  *   @description: '
  */
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.MemberEntity
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface MemberJpaRepo : JpaRepository<MemberEntity, String> {
     fun existsByUserId(userId: String): Boolean
     fun findByUserId(userId: String): MemberEntity?
     fun findByNickname(username: String): MemberEntity?
+
+    // 管理功能方法
+    fun findByIsBannedTrue(pageable: Pageable): List<MemberEntity>
+    fun countByIsBannedTrue(): Long
 }

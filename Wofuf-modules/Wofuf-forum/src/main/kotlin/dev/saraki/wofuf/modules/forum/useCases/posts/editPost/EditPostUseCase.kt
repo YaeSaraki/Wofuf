@@ -1,12 +1,16 @@
 package dev.saraki.wofuf.modules.forum.useCases.posts.editPost
 
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLink
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLinkProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostText
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostTitle
+import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.infra.storage.MarkdownImageUtils
+import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
+import dev.saraki.wofuf.modules.users.infra.repos.UserRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
@@ -21,36 +25,60 @@ import org.springframework.stereotype.Service
 @Service
 class EditPostUseCase(
     private val postRepo: PostRepo,
+    private val memberRepo: MemberRepo,
+    private val userRepo: UserRepo,
 ) : UseCase<EditPostDto.Request, EditPostDto.Response> {
 
     override fun execute(request: EditPostDto.Request): Result<EditPostDto.Response> {
-        // 1. Validate post ID
+        // 1. 验证用户已登录
+        if (request.currentUserId.isBlank()) {
+            return EditPostErrors.UnauthorizedError()
+        }
+
+        val userIdOrError = UserId.create(UniqueEntityId(request.currentUserId))
+        if (userIdOrError.isFailure) {
+            return EditPostErrors.UnauthorizedError()
+        }
+        val userId = userIdOrError.getOrThrow()
+
+        // 2. 验证 post ID
         if (request.postId.isBlank()) {
             return EditPostErrors.PostIdEmptyError()
         }
 
-        // 2. Check if at least one field is provided for update
+        // 3. 检查至少有一个字段需要更新
         if (request.title == null && request.text == null && request.link == null) {
             return EditPostErrors.NoUpdateDataError()
         }
 
-        // 3. Validate and create PostId
+        // 4. 验证并创建 PostId
         val postIdOrError = PostId.create(UniqueEntityId(request.postId))
         if (postIdOrError.isFailure) {
             return EditPostErrors.PostNotFoundError(request.postId)
         }
         val postId = postIdOrError.getOrThrow()
 
-        // 4. Find the post
+        // 5. 查找帖子
         val post = postRepo.findPostByPostId(postId)
             ?: return EditPostErrors.PostNotFoundError(request.postId)
 
-        // 5. Validate and create value objects for updates
+        // 6. 获取当前用户的 member
+        val member = memberRepo.findMemberByUserId(userId)
+            ?: return EditPostErrors.MemberNotFoundError()
+
+        // 7. 检查权限：是帖子作者或管理员
+        val isAuthor = post.memberId.stringValue == member.memberId.stringValue
+        val isAdmin = userRepo.findUserByUserId(userId)?.isAdminUser == true
+
+        if (!isAuthor && !isAdmin) {
+            return EditPostErrors.ForbiddenError()
+        }
+
+        // 8. 验证并创建值对象
         var newTitle: PostTitle? = null
         var newText: PostText? = null
         var newLink: PostLink? = null
 
-        // Validate title if provided
         if (request.title != null) {
             val titleOrError = PostTitle.create(request.title)
             if (titleOrError.isFailure) {
@@ -59,9 +87,7 @@ class EditPostUseCase(
             newTitle = titleOrError.getOrThrow()
         }
 
-        // Validate text if provided
         if (request.text != null) {
-            // 验证图片数量
             val (isValid, imageCount) = MarkdownImageUtils.validateImageCount(request.text)
             if (!isValid) {
                 return EditPostErrors.TooManyImagesError(imageCount, MarkdownImageUtils.MAX_IMAGES_PER_POST)
@@ -74,7 +100,6 @@ class EditPostUseCase(
             newText = textOrError.getOrThrow()
         }
 
-        // Validate link if provided
         if (request.link != null) {
             val linkOrError = PostLink.create(PostLinkProps(request.link))
             if (linkOrError.isFailure) {
@@ -83,7 +108,7 @@ class EditPostUseCase(
             newLink = linkOrError.getOrThrow()
         }
 
-        // 6. Edit the post
+        // 9. 编辑帖子
         val editResult = post.edit(
             title = newTitle,
             text = newText,
@@ -94,10 +119,10 @@ class EditPostUseCase(
         }
         val editedPost = editResult.getOrThrow()
 
-        // 7. Save the updated post
+        // 10. 保存更新
         val savedPost = postRepo.save(editedPost)
 
-        // 8. Return success response
+        // 11. 返回成功响应
         return Result.success(
             EditPostDto.Response(
                 postId = savedPost.postId.stringValue,

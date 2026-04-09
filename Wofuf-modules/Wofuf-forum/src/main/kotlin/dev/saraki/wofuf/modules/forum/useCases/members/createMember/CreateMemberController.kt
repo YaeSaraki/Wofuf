@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.useCases.members.createMember
 
 import dev.saraki.wofuf.modules.forum.config.ForumApiConstantV1
+import dev.saraki.wofuf.modules.forum.infra.security.requireCurrentUserId
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,7 +26,8 @@ class CreateMemberController : BaseController() {
     fun createMember(
         @RequestBody request: CreateMemberDto.Request
     ): ApiResponse<Unit> {
-        val result = createMemberUseCase.execute(request)
+        val currentUserId = requireCurrentUserId()
+        val result = createMemberUseCase.execute(currentUserId, request)
         return ApiResponse.success(Unit)
     }
 }

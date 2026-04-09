@@ -56,6 +56,9 @@ class GetRecentPostsUseCase(
 
         // 6. Map posts to DTOs with member details and comment counts
         val postDtos = posts.map { post ->
+            // Debug logging
+            println("[GetRecentPosts] Post ${post.postId.stringValue}: isPinned=${post.isPinned}, isFeatured=${post.isFeatured}, status=${post.status}")
+            
             // Get member details
             val member = memberRepo.findMemberById(post.memberId)
             val memberDetails = if (member != null) {

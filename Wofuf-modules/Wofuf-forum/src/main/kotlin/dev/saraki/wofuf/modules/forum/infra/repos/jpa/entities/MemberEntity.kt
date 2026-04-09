@@ -1,11 +1,11 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities
 
-import dev.saraki.wofuf.modules.players.infra.repos.jpa.entities.PlayerEntity
-import dev.saraki.wofuf.modules.users.infra.repos.jpa.entities.UserEntity
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.DynamicUpdate
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.UpdateTimestamp
+import org.hibernate.type.SqlTypes
 import java.time.LocalDateTime
 
 /**
@@ -34,6 +34,26 @@ data class MemberEntity(
 
     @Column(name = "reputation", nullable = false)
     val reputation: Int,
+
+    // 论坛管理权限字段
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "permissions", nullable = true, columnDefinition = "JSON")
+    val permissions: String? = null,
+
+    @Column(name = "is_banned", nullable = false)
+    val isBanned: Boolean = false,
+
+    @Column(name = "banned_at", nullable = true)
+    val bannedAt: LocalDateTime? = null,
+
+    @Column(name = "banned_until", nullable = true)
+    val bannedUntil: LocalDateTime? = null,
+
+    @Column(name = "banned_reason", nullable = true)
+    val bannedReason: String? = null,
+
+    @Column(name = "banned_by", nullable = true)
+    val bannedBy: String? = null,
 
     // 与CommentEntity的一对多关系
     @OneToMany(mappedBy = "memberEntity", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)

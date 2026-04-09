@@ -1,8 +1,9 @@
 package dev.saraki.wofuf.modules.forum.infra.repos
 
-import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.Member
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLink
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
@@ -22,4 +23,21 @@ interface MemberRepo {
     fun findMemberByPostLink(postLink: PostLink): Member?
     fun findMemberByNickName(nickName: NickName): Member?
     fun save(member: Member): Member?
+
+    // ==================== 管理功能方法 ====================
+
+    /**
+     * 分页获取封禁用户列表
+     */
+    fun findBannedMembers(page: Int, size: Int): List<Member>
+
+    /**
+     * 统计封禁用户数量
+     */
+    fun countBannedMembers(): Long
+
+    /**
+     * 根据权限查找成员
+     */
+    fun findMembersByPermission(permission: PermissionPoint, page: Int, size: Int): List<Member>
 }

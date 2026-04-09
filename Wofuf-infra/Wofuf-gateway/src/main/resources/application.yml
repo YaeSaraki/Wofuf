@@ -26,6 +26,11 @@ spring:
               predicates:
                 - Path=/api/v1/users/**
 
+            - id: modules-forum
+              uri: lb://modules-forum
+              predicates:
+                - Path=/api/v1/forum/**
+
 # ===== Eureka =====
 eureka:
   client:

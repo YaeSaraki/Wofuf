@@ -22,36 +22,37 @@ import java.time.LocalDateTime
 class CreatePostUseCase(
     private val memberRepo: MemberRepo,
     private val postRepo: PostRepo,
-) : UseCase<CreatePostDto.Request, CreatePostDto.Response> {
-    override fun execute(request: CreatePostDto.Request): Result<CreatePostDto.Response> {
+) : UseCase<Pair<String, CreatePostDto.Request>, CreatePostDto.Response> {
+    override fun execute(request: Pair<String, CreatePostDto.Request>): Result<CreatePostDto.Response> {
+        val (currentUserId, dto) = request
         // Debug: 打印请求内容
         println("=== CreatePost Debug ===")
-        println("userId: '${request.userId}'")
-        println("title: '${request.title}'")
-        println("type: '${request.type}'")
-        println("text: '${request.text}'")
-        println("link: '${request.link}'")
+        println("userId: '$currentUserId'")
+        println("title: '${dto.title}'")
+        println("type: '${dto.type}'")
+        println("text: '${dto.text}'")
+        println("link: '${dto.link}'")
         println("========================")
 
-        if (request.userId.isBlank()) {
+        if (currentUserId.isBlank()) {
             return CreatePostErrors.UserIdEmptyError()
         }
-        if (request.title.isBlank()) {
+        if (dto.title.isBlank()) {
             return CreatePostErrors.TitleEmptyError()
         }
 
         // Validate user ID
-        val userIdOrError = UserId.create(UniqueEntityId(request.userId))
+        val userIdOrError = UserId.create(UniqueEntityId(currentUserId))
         if (userIdOrError.isFailure) {
-            return CreatePostErrors.MemberNotFoundError(request.userId)
+            return CreatePostErrors.MemberNotFoundError(currentUserId)
         }
         val userId = userIdOrError.getOrThrow()
 
         // Get member
-        val member = memberRepo.findMemberByUserId(userId) ?: return CreatePostErrors.MemberNotFoundError(request.userId)
+        val member = memberRepo.findMemberByUserId(userId) ?: return CreatePostErrors.MemberNotFoundError(currentUserId)
 
         // Create post title
-        val postTitleOrError = PostTitle.create(request.title)
+        val postTitleOrError = PostTitle.create(dto.title)
         if (postTitleOrError.isFailure) {
             return CreatePostErrors.TitleEmptyError()
         }
@@ -66,21 +67,21 @@ class CreatePostUseCase(
 
         // Create post type
         val postType = try {
-            PostType.valueOf(request.type.uppercase())
+            PostType.valueOf(dto.type.uppercase())
         } catch (e: IllegalArgumentException) {
-            return CreatePostErrors.TypeInvalidError(request.type)
+            return CreatePostErrors.TypeInvalidError(dto.type)
         }
 
         // Create post text if provided
         var postText: PostText? = null
-        if (!request.text.isNullOrBlank()) {
+        if (!dto.text.isNullOrBlank()) {
             // 验证图片数量
-            val (isValid, imageCount) = MarkdownImageUtils.validateImageCount(request.text)
+            val (isValid, imageCount) = MarkdownImageUtils.validateImageCount(dto.text)
             if (!isValid) {
                 return CreatePostErrors.TooManyImagesError(imageCount, MarkdownImageUtils.MAX_IMAGES_PER_POST)
             }
 
-            val postTextOrError = PostText.create(request.text)
+            val postTextOrError = PostText.create(dto.text)
             if (postTextOrError.isFailure) {
                 return CreatePostErrors.PostCreationFailedError()
             }
@@ -89,8 +90,8 @@ class CreatePostUseCase(
 
         // Create post link if provided
         var postLink: PostLink? = null
-        if (!request.link.isNullOrBlank()) {
-            val postLinkOrError = PostLink.create(PostLinkProps(request.link))
+        if (!dto.link.isNullOrBlank()) {
+            val postLinkOrError = PostLink.create(PostLinkProps(dto.link))
             if (postLinkOrError.isFailure) {
                 return CreatePostErrors.PostCreationFailedError()
             }

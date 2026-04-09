@@ -1,8 +1,9 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.impl
 
-import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.Member
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLink
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
@@ -11,6 +12,7 @@ import dev.saraki.wofuf.modules.forum.infra.repos.jpa.PostJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.MemberEntityMapper
 import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
@@ -63,5 +65,23 @@ class MemberRepoImpl(
         val memberEntity = MemberEntityMapper.toEntity(member)
         val savedEntity = memberJpaRepo.save(memberEntity)
         return MemberEntityMapper.toDomain(savedEntity)
+    }
+
+    // ==================== 管理功能方法实现 ====================
+
+    override fun findBannedMembers(page: Int, size: Int): List<Member> =
+        memberJpaRepo.findByIsBannedTrue(PageRequest.of(page, size))
+            .map(MemberEntityMapper::toDomain)
+
+    override fun countBannedMembers(): Long =
+        memberJpaRepo.countByIsBannedTrue()
+
+    override fun findMembersByPermission(permission: PermissionPoint, page: Int, size: Int): List<Member> {
+        // 由于权限存储为JSON，这里使用简单的过滤方式
+        return memberJpaRepo.findAll(PageRequest.of(page, size)).content
+            .filter { entity ->
+                entity.permissions?.contains(permission.name) == true
+            }
+            .map(MemberEntityMapper::toDomain)
     }
 }

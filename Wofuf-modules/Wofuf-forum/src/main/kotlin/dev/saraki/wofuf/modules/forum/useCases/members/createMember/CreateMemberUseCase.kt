@@ -7,7 +7,6 @@ import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.players.domain.valueObjects.PlayerId
 import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
 import dev.saraki.wofuf.shared.core.Result
-import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import dev.saraki.wofuf.shared.utils.HashVerifyUtil
 import org.springframework.beans.factory.annotation.Value
@@ -24,15 +23,15 @@ class CreateMemberUseCase(
     private val memberRepository: MemberRepo,
     @Value("\${secretKey}")
     private val secretKey: String = "This is a secret key that only the server and the client know."
-) : UseCase<CreateMemberDto.Request, Unit> {
-    override fun execute(request: CreateMemberDto.Request): Result<Unit> {
+) {
+    fun execute(currentUserId: String, request: CreateMemberDto.Request): Result<Unit> {
         // 验证 code 是否正确
         val verify = HashVerifyUtil.verifyCode(request.playerId, request.code, secretKey)
         if (!verify) {
             return CreateMemberErrors.CodeError()
         }
 
-        val userIdOrError = UserId.create(UniqueEntityId(request.userId))
+        val userIdOrError = UserId.create(UniqueEntityId(currentUserId))
         val playerIdOrError = PlayerId.create(UniqueEntityId(request.playerId))
         val nickNameOrError = NickName.create(request.nickName)
 

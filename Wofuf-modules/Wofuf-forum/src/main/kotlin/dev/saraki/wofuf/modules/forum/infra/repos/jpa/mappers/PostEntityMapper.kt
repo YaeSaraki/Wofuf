@@ -1,11 +1,13 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers
 
-import dev.saraki.wofuf.modules.forum.domain.*
+import dev.saraki.wofuf.modules.forum.domain.PostProps
+import dev.saraki.wofuf.modules.forum.domain.Post
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLink
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLinkProps
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostStatus
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostText
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostTitle
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostType
@@ -22,6 +24,9 @@ import dev.saraki.wofuf.shared.domain.UniqueEntityId
 object PostEntityMapper {
 
     fun toDomain(entity: PostEntity): Post {
+        // Debug logging for management fields
+        println("[PostEntityMapper] Entity ${entity.postId}: isPinned=${entity.isPinned}, isFeatured=${entity.isFeatured}, status=${entity.status}")
+        
         val guardResult = Guard.againstNullOrUndefinedBulk(
             listOf(
                 Guard.GuardArgument(entity.postId, "postId"),
@@ -48,7 +53,15 @@ object PostEntityMapper {
                 link = entity.link?.let { PostLink.create(PostLinkProps(it)).getOrThrow() },
                 totalNumComments = entity.totalNumComments,
                 points = entity.points,
-                dateTimePosted = entity.dateTimePosted
+                dateTimePosted = entity.dateTimePosted,
+                // 管理功能相关字段
+                status = try { PostStatus.valueOf(entity.status) } catch (e: Exception) { PostStatus.NORMAL },
+                isPinned = entity.isPinned,
+                isFeatured = entity.isFeatured,
+                pinnedAt = entity.pinnedAt,
+                featuredAt = entity.featuredAt,
+                hiddenAt = entity.hiddenAt,
+                hiddenBy = entity.hiddenBy?.let { MemberId.create(UniqueEntityId(it)).getOrThrow() }
             ),
             id = UniqueEntityId(entity.postId)
         )
@@ -73,7 +86,15 @@ object PostEntityMapper {
             link = domain.link?.value,
             totalNumComments = domain.totalNumComments ?: 0,
             points = domain.points,
-            dateTimePosted = domain.dateTimePosted
+            dateTimePosted = domain.dateTimePosted,
+            // 管理功能相关字段
+            status = domain.status.name,
+            isPinned = domain.isPinned,
+            isFeatured = domain.isFeatured,
+            pinnedAt = domain.pinnedAt,
+            featuredAt = domain.featuredAt,
+            hiddenAt = domain.hiddenAt,
+            hiddenBy = domain.hiddenBy?.stringValue
         )
     }
 }

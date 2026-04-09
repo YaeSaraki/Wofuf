@@ -9,6 +9,8 @@ auth:
     issuer: auth-service
     clock-skew: 60  # 60秒时钟偏差
     token-version: '0'
+  # 是否使用 Redis 会话检查（仅用户模块需要）
+  use-session-check: true
 
   redis:
     host: localhost

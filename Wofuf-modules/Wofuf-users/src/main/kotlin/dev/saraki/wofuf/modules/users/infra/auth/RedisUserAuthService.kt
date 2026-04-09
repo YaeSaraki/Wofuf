@@ -42,6 +42,7 @@ class RedisUserAuthService(
     override fun login(user: User): AuthSession? {
         val userId = user.userId.stringValue
         val username = user.username.value
+        val isAdminUser = user.isAdminUser
 
         val jti = UUID.randomUUID().toString()
         val refreshToken = UUID.randomUUID().toString()
@@ -55,7 +56,8 @@ class RedisUserAuthService(
                 userId = userId,
                 username = username,
                 jti = jti,
-                tokenVersion = tokenVersion
+                tokenVersion = tokenVersion,
+                isAdminUser = isAdminUser
             )
         ).getOrThrow()
 
@@ -184,6 +186,7 @@ class RedisUserAuthService(
             .claim("uid", jwtClaims.userId)
             .claim("jti", jwtClaims.jti)
             .claim("ver", jwtClaims.tokenVersion)
+            .claim("admin", jwtClaims.isAdminUser)
             .issuedAt(now)
             .expiration(exp)
             .signWith(secretKey)
@@ -205,7 +208,8 @@ class RedisUserAuthService(
                     userId = payload["uid"] as String,
                     username = payload.subject ?: "",
                     jti = payload["jti"] as String,
-                    tokenVersion = payload["ver"] as String
+                    tokenVersion = payload["ver"] as String,
+                    isAdminUser = payload["admin"] as? Boolean ?: false
                 )
             ).getOrNull()
         } catch (e: Exception) {

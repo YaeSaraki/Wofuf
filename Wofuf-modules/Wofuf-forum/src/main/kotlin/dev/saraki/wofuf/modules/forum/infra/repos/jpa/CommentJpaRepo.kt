@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.jpa
 
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.CommentEntity
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.repository.query.Param
 
@@ -21,4 +22,8 @@ interface CommentJpaRepo : JpaRepository<CommentEntity, String> {
     ): List<CommentEntity>
 
     fun findByPostId(postId: String): List<CommentEntity>
+
+    fun findByIsHiddenTrue(pageable: Pageable): List<CommentEntity>
+
+    fun countByIsHiddenTrue(): Long
 }

@@ -53,4 +53,28 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
             PageRequest.of(safePage, safeSize, sort)
         )
     }
+
+    // ==================== 管理功能方法 ====================
+
+    fun findByIsPinnedTrueOrderByPinnedAtDesc(limit: Int): List<PostEntity> {
+        return findAll(
+            PageRequest.of(0, limit, Sort.by(Sort.Order.desc("pinnedAt")))
+        ).content.filter { it.isPinned }
+    }
+
+    fun findByIsFeaturedTrueOrderByFeaturedAtDesc(limit: Int): List<PostEntity> {
+        return findAll(
+            PageRequest.of(0, limit, Sort.by(Sort.Order.desc("featuredAt")))
+        ).content.filter { it.isFeatured }
+    }
+
+    fun findByStatusOrderByDateTimePostedDesc(status: String, page: Int, size: Int): List<PostEntity> {
+        return findAll(
+            PageRequest.of(page, size, Sort.by(Sort.Order.desc("dateTimePosted")))
+        ).content.filter { it.status == status }
+    }
+
+    fun countByStatus(status: String): Long {
+        return findAll().count { it.status == status }.toLong()
+    }
 }

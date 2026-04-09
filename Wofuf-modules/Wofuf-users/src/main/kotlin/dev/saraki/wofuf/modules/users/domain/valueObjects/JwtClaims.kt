@@ -13,7 +13,8 @@ data class JwtClaimsProps(
     val userId: String,
     val username: String,
     val jti: String,
-    val tokenVersion: String
+    val tokenVersion: String,
+    val isAdminUser: Boolean = false
 )
 
 class JwtClaims private constructor(
@@ -23,6 +24,7 @@ class JwtClaims private constructor(
     val username: String get() = props.username
     val jti: String get() = props.jti
     val tokenVersion: String get() = props.tokenVersion
+    val isAdminUser: Boolean get() = props.isAdminUser
 
     companion object {
         fun create(props: JwtClaimsProps): Result<JwtClaims> {

@@ -9,6 +9,7 @@ package dev.saraki.wofuf.modules.forum.useCases.posts.editPost
 class EditPostDto {
     data class Request(
         val postId: String,
+        val currentUserId: String,  // 当前登录用户的 ID（从 SecurityContextHolder 获取）
         val title: String? = null,
         val text: String? = null,
         val link: String? = null,

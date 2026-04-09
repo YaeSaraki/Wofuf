@@ -7,6 +7,7 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.CommentJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.CommentEntityMapper
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
@@ -53,4 +54,16 @@ class CommentRepoImpl(
     override fun deleteComment(commentId: CommentId) {
         commentJpaRepo.deleteById(commentId.stringValue)
     }
+
+    // ==================== 管理功能方法实现 ====================
+
+    override fun findHiddenComments(page: Int, size: Int): List<Comment> =
+        commentJpaRepo.findByIsHiddenTrue(PageRequest.of(page, size))
+            .map(CommentEntityMapper::toDomain)
+
+    override fun countHiddenComments(): Long =
+        commentJpaRepo.countByIsHiddenTrue()
+
+    override fun countAll(): Long =
+        commentJpaRepo.count()
 }

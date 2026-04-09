@@ -9,6 +9,7 @@ package dev.saraki.wofuf.modules.forum.useCases.posts.deletePost
 class DeletePostDto {
     data class Request(
         val postId: String,
+        val currentUserId: String,  // 当前登录用户的 ID（从 SecurityContextHolder 获取）
     )
 
     data class Response(

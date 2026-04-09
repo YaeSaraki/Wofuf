@@ -3,6 +3,7 @@ package dev.saraki.wofuf.modules.forum.useCases.comments.downvoteComment
 import dev.saraki.wofuf.modules.forum.config.ForumApiConstantV1
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
+import dev.saraki.wofuf.modules.forum.infra.security.requireCurrentUserId
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -12,20 +13,13 @@ class DownvoteCommentController(
 ) : BaseController() {
 
     @PutMapping
-    fun downvoteComment(
-        @PathVariable commentId: String,
-        @RequestBody request: DownvoteCommentRequest
-    ): ApiResponse<DownvoteCommentDto.Response> {
+    fun downvoteComment(@PathVariable commentId: String): ApiResponse<DownvoteCommentDto.Response> {
+        // 从 SecurityContextHolder 获取当前用户的 userId
+        val userId = requireCurrentUserId()
+
         val result = downvoteCommentUseCase.execute(
-            DownvoteCommentDto.Request(
-                commentId = commentId,
-                userId = request.userId,
-            )
+            DownvoteCommentDto.Request(commentId = commentId, userId = userId)
         ).getOrThrow()
         return ApiResponse.success(result)
     }
 }
-
-data class DownvoteCommentRequest(
-    val userId: String,
-)

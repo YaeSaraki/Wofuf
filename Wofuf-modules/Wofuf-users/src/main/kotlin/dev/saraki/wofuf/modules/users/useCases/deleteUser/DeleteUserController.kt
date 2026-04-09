@@ -1,13 +1,12 @@
 package dev.saraki.wofuf.modules.users.useCases.deleteUser
 
 import dev.saraki.wofuf.modules.users.config.UserApiConstantV1
-import dev.saraki.wofuf.modules.users.services.auth.UserAuthService
+import dev.saraki.wofuf.modules.users.infra.security.requireCurrentUserId
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
@@ -21,8 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(UserApiConstantV1.Base.ROOT)
 class DeleteUserController(
-    private val deleteUserUseCase: DeleteUserUseCase,
-    private val userAuthService: UserAuthService
+    private val deleteUserUseCase: DeleteUserUseCase
 ) : BaseController() {
     /**
      * 删除用户
@@ -31,12 +29,15 @@ class DeleteUserController(
      */
     @DeleteMapping(UserApiConstantV1.Base.BY_ID)
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun deleteUser(@PathVariable userId: String, @RequestHeader("MeoKey") token: String): ApiResponse<Unit> {
-        // 验证用户权限
-        val jwtClaims = userAuthService.authenticate(token) ?: return ApiResponse.error("Invalid token")
-        if (jwtClaims.userId != userId) { return ApiResponse.error("You are not authorized to delete this user") }
+    fun deleteUser(@PathVariable userId: String): ApiResponse<Unit> {
+        val currentUserId = requireCurrentUserId()
+        
+        // 验证用户权限：只能删除自己的账户
+        if (currentUserId != userId) {
+            return ApiResponse.error("You are not authorized to delete this user")
+        }
 
-        val result = deleteUserUseCase.execute(DeleteUserDto.Request(jwtClaims.userId))
+        val result = deleteUserUseCase.execute(DeleteUserDto.Request(currentUserId))
         return if (result.isSuccess) {
             ApiResponse.success(
                 data = Unit,

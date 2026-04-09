@@ -35,6 +35,9 @@ dependencies {
     // 安全
     implementation(libs.spring.boot.starter.security)
 
+    // Web
+    implementation(libs.spring.boot.starter.web)
+
     // Redis
     implementation(libs.spring.boot.starter.data.redis)
 

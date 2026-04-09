@@ -3,14 +3,9 @@ package dev.saraki.wofuf.modules.forum.useCases.comments.upvoteComment
 import dev.saraki.wofuf.modules.forum.config.ForumApiConstantV1
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
+import dev.saraki.wofuf.modules.forum.infra.security.requireCurrentUserId
 import org.springframework.web.bind.annotation.*
 
-/**
- * @author YaeSaraki
- * @email ikaraswork@iCloud.com
- * @date 2026/3/15 16:15
- * @description Upvote a comment
- */
 @RestController
 @RequestMapping(ForumApiConstantV1.Comments.UPVOTE)
 class UpvoteCommentController(
@@ -18,20 +13,13 @@ class UpvoteCommentController(
 ) : BaseController() {
 
     @PutMapping
-    fun upvoteComment(
-        @PathVariable commentId: String,
-        @RequestBody request: UpvoteCommentRequest
-    ): ApiResponse<UpvoteCommentDto.Response> {
+    fun upvoteComment(@PathVariable commentId: String): ApiResponse<UpvoteCommentDto.Response> {
+        // 从 SecurityContextHolder 获取当前用户的 userId
+        val userId = requireCurrentUserId()
+
         val result = upvoteCommentUseCase.execute(
-            UpvoteCommentDto.Request(
-                commentId = commentId,
-                userId = request.userId,
-            )
+            UpvoteCommentDto.Request(commentId = commentId, userId = userId)
         ).getOrThrow()
         return ApiResponse.success(result)
     }
 }
-
-data class UpvoteCommentRequest(
-    val userId: String,
-)

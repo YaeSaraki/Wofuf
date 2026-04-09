@@ -3,14 +3,9 @@ package dev.saraki.wofuf.modules.forum.useCases.posts.unvotePost
 import dev.saraki.wofuf.modules.forum.config.ForumApiConstantV1
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
+import dev.saraki.wofuf.modules.forum.infra.security.requireCurrentUserId
 import org.springframework.web.bind.annotation.*
 
-/**
- * @author YaeSaraki
- * @email ikaraswork@iCloud.com
- * @date 2026/3/17
- * @description Controller for removing a vote from a post
- */
 @RestController
 @RequestMapping(ForumApiConstantV1.Posts.UNVOTE)
 class UnvotePostController(
@@ -18,20 +13,13 @@ class UnvotePostController(
 ) : BaseController() {
 
     @PutMapping
-    fun unvotePost(
-        @PathVariable postId: String,
-        @RequestBody request: UnvotePostRequest
-    ): ApiResponse<UnvotePostDto.Response> {
+    fun unvotePost(@PathVariable postId: String): ApiResponse<UnvotePostDto.Response> {
+        // 从 SecurityContextHolder 获取当前用户的 userId
+        val userId = requireCurrentUserId()
+
         val result = unvotePostUseCase.execute(
-            UnvotePostDto.Request(
-                postId = postId,
-                userId = request.userId,
-            )
+            UnvotePostDto.Request(postId = postId, userId = userId)
         ).getOrThrow()
         return ApiResponse.success(result)
     }
 }
-
-data class UnvotePostRequest(
-    val userId: String,
-)

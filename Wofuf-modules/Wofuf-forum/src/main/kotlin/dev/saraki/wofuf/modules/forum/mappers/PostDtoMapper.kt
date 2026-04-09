@@ -29,6 +29,9 @@ object PostDtoMapper {
             link = post.link?.value ?: "",
             type = post.type,
             category = post.category,
+            status = post.status,
+            isPinned = post.isPinned,
+            isFeatured = post.isFeatured,
             wasUpvotedByMe = null,
             wasDownvotedByMe = null
         )
@@ -57,6 +60,9 @@ object PostDtoMapper {
             link = post.link?.value ?: "",
             type = post.type,
             category = post.category,
+            status = post.status,
+            isPinned = post.isPinned,
+            isFeatured = post.isFeatured,
             wasUpvotedByMe = wasUpvotedByMe,
             wasDownvotedByMe = wasDownvotedByMe
         )

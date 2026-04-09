@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.useCases.posts.createPost
 
 import dev.saraki.wofuf.modules.forum.config.ForumApiConstantV1
+import dev.saraki.wofuf.modules.forum.infra.security.requireCurrentUserId
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.web.bind.annotation.*
@@ -19,7 +20,8 @@ class CreatePostController(
 
     @PostMapping
     fun createPost(@RequestBody request: CreatePostDto.Request): ApiResponse<CreatePostDto.Response> {
-        val result = createPostUseCase.execute(request).getOrThrow()
+        val currentUserId = requireCurrentUserId()
+        val result = createPostUseCase.execute(currentUserId to request).getOrThrow()
         return ApiResponse.success(result)
     }
 }
