@@ -25,13 +25,18 @@ class CommentRepoImpl(
             .orElse(null)
 
     override fun findCommentsByPostSlug(postSlug: PostSlug, includeHidden: Boolean): List<Comment> {
-        // 管理员/有权限用户：返回所有评论；普通用户：只返回未隐藏的评论
-        val comments = if (includeHidden) {
-            commentJpaRepo.findByPostEntity_Slug(postSlug.value)
+        // JPA 查询获取所有评论（不过滤隐藏状态）
+        val allComments = commentJpaRepo.findByPostEntity_Slug(postSlug.value)
+
+        // Repository 层根据 includeHidden 决定是否过滤隐藏评论
+        // 注意：这是基础设施层的最低限度业务逻辑，用于数据可见性控制
+        val filteredComments = if (includeHidden) {
+            allComments
         } else {
-            commentJpaRepo.findByPostEntity_SlugAndIsHiddenFalse(postSlug.value)
+            allComments.filter { !it.isHidden }
         }
-        return comments.map(CommentEntityMapper::toDomain)
+
+        return filteredComments.map(CommentEntityMapper::toDomain)
     }
 
     override fun findCommentDetailsByCommentId(commentId: CommentId): CommentDetails? {

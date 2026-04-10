@@ -26,7 +26,7 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
     fun findRecentPosts(page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
-        // 置顶帖子优先，然后按时间倒序
+        // 置顶帖子优先，然后按时间倒序（不过滤状态，由 Repository/UseCase 层决定）
         val sort = Sort.by(
             Sort.Order.desc("isPinned"),
             Sort.Order.desc("dateTimePosted"),
@@ -34,13 +34,13 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
         )
         return findAll(
             PageRequest.of(safePage, safeSize, sort)
-        ).content.filter { it.status == "NORMAL" }
+        ).content
     }
 
     fun findRecentPostsByCategory(category: PostCategory, page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
-        // 置顶帖子优先，然后按时间倒序
+        // 置顶帖子优先，然后按时间倒序（不过滤状态，由 Repository/UseCase 层决定）
         val sort = Sort.by(
             Sort.Order.desc("isPinned"),
             Sort.Order.desc("dateTimePosted"),
@@ -48,13 +48,13 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
         )
         return findAll(
             PageRequest.of(safePage, safeSize * 2, sort)
-        ).content.filter { it.status == "NORMAL" && it.category == category.name }.take(safeSize)
+        ).content.filter { it.category == category.name }.take(safeSize)
     }
 
     fun findPopularPosts(page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
-        // 置顶帖子优先，然后按热度、时间倒序
+        // 置顶帖子优先，然后按热度、时间倒序（不过滤状态，由 Repository/UseCase 层决定）
         val sort = Sort.by(
             Sort.Order.desc("isPinned"),
             Sort.Order.desc("points"),
@@ -62,10 +62,10 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
         )
         return findAll(
             PageRequest.of(safePage, safeSize, sort)
-        ).content.filter { it.status == "NORMAL" }
+        ).content
     }
 
-    // 分类热门（正常不动）
+    // 分类热门（不过滤状态，由 Repository/UseCase 层决定）
     fun findPopularPostsByCategory(category: PostCategory, page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
@@ -77,7 +77,7 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
         )
         return findAll(
             PageRequest.of(safePage, safeSize * 2, sort)
-        ).content.filter { it.status == "NORMAL" && it.category == category.name }.take(safeSize)
+        ).content.filter { it.category == category.name }.take(safeSize)
     }
 
     // ==================== 管理功能方法 ====================

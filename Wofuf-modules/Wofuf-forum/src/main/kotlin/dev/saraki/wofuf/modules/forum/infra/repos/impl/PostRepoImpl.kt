@@ -40,51 +40,43 @@ class PostRepoImpl(
     override fun findRecentPosts(page: Int, size: Int, category: PostCategory?, includeHidden: Boolean): List<Post> {
         val safeSize = size.coerceAtLeast(1)
 
-        // 管理员/有权限用户：返回所有帖子；普通用户：只返回 NORMAL 帖子
-        if (includeHidden) {
-            // 不传分类 → 查询全部
-            if (category == null) {
-                return postJpaRepo.findAllByOrderByDateTimePostedDesc(page, safeSize)
-                    .map(PostEntityMapper::toDomain)
-            }
-            // 传分类 → 只查该分类
-            return postJpaRepo.findAllByCategoryOrderByDateTimePostedDesc(category.name, page, safeSize)
-                .map(PostEntityMapper::toDomain)
+        // JPA 查询获取所有帖子（不过滤状态）
+        val allPosts = if (category == null) {
+            postJpaRepo.findRecentPosts(page, safeSize)
         } else {
-            // 不传分类 → 查询全部
-            if (category == null) {
-                return postJpaRepo.findRecentPosts(page, safeSize)
-                    .map(PostEntityMapper::toDomain)
-            }
-            // 传分类 → 只查该分类
-            return postJpaRepo.findRecentPostsByCategory(category, page, safeSize)
-                .map(PostEntityMapper::toDomain)
+            postJpaRepo.findRecentPostsByCategory(category, page, safeSize)
         }
+
+        // Repository 层根据 includeHidden 决定是否过滤隐藏帖子
+        // 注意：这是基础设施层的最低限度业务逻辑，用于数据可见性控制
+        val filteredPosts = if (includeHidden) {
+            allPosts
+        } else {
+            allPosts.filter { it.status == "NORMAL" }
+        }
+
+        return filteredPosts.map(PostEntityMapper::toDomain)
     }
 
     override fun findPopularPosts(page: Int, size: Int, category: PostCategory?, includeHidden: Boolean): List<Post> {
         val safeSize = size.coerceAtLeast(1)
 
-        // 管理员/有权限用户：返回所有帖子；普通用户：只返回 NORMAL 帖子
-        if (includeHidden) {
-            // 不传分类 → 查询全部
-            if (category == null) {
-                return postJpaRepo.findAllByOrderByPointsDescDateTimePostedDesc(page, safeSize)
-                    .map(PostEntityMapper::toDomain)
-            }
-            // 传分类 → 只查该分类
-            return postJpaRepo.findAllByCategoryOrderByPointsDescDateTimePostedDesc(category.name, page, safeSize)
-                .map(PostEntityMapper::toDomain)
+        // JPA 查询获取所有帖子（不过滤状态）
+        val allPosts = if (category == null) {
+            postJpaRepo.findPopularPosts(page, safeSize)
         } else {
-            // 不传分类 → 查询全部
-            if (category == null) {
-                return postJpaRepo.findPopularPosts(page, safeSize)
-                    .map(PostEntityMapper::toDomain)
-            }
-            // 传分类 → 只查该分类
-            return postJpaRepo.findPopularPostsByCategory(category, page, safeSize)
-                .map(PostEntityMapper::toDomain)
+            postJpaRepo.findPopularPostsByCategory(category, page, safeSize)
         }
+
+        // Repository 层根据 includeHidden 决定是否过滤隐藏帖子
+        // 注意：这是基础设施层的最低限度业务逻辑，用于数据可见性控制
+        val filteredPosts = if (includeHidden) {
+            allPosts
+        } else {
+            allPosts.filter { it.status == "NORMAL" }
+        }
+
+        return filteredPosts.map(PostEntityMapper::toDomain)
     }
 
     override fun exists(postId: PostId): Boolean =
