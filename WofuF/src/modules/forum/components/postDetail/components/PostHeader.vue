@@ -134,13 +134,6 @@ const formattedDate = computed(() => {
   filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.6));
 }
 
-.bf-badge--hidden {
-  font-size: 14px;
-  color: #8B5CF6;
-  text-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
-  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.6));
-}
-
 .bf-badge--link {
   color: #3B82F6;
   opacity: 0.8;

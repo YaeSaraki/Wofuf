@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import type { PostDto, CommentDto } from '@M/forum/dtos/Post.ts'
 import { forumService } from '@M/forum/services/ForumService.ts'
 import { imageService } from '@M/forum/services/ImageService.ts'
+import { cacheService } from '@S/infra/cache'
 import { useAuth } from '@M/auth/composables/useAuth.ts'
 import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
 import { translate } from '@S/services/i18n'
@@ -45,6 +46,15 @@ onBeforeMount(() => {
 // 评论区域显示状态
 const showComments = ref(true)
 
+// 回复状态
+const replyingToCommentId = ref<string | null>(null)
+
+// 获取正在回复的评论数据
+const replyingToComment = computed(() => {
+  if (!replyingToCommentId.value) return null
+  return comments.value.find(c => c.commentId === replyingToCommentId.value) || null
+})
+
 // 导航返回
 function goBack() {
   if (window.history.state && window.history.state.back) {
@@ -53,6 +63,20 @@ function goBack() {
     // 3. 兜底：如果是直接通过别人分享的链接点进来的（没有历史栈），则跳回主页
     router.push('/forum')
   }
+}
+
+// 处理回复按钮点击
+function handleReply(commentId: string) {
+  replyingToCommentId.value = commentId
+  // 自动展开评论区域
+  if (!showComments.value) {
+    showComments.value = true
+  }
+}
+
+// 处理回复表单取消
+function handleReplyCancelled() {
+  replyingToCommentId.value = null
 }
 
 /* ---------------- 使用独立的加载状态 ---------------- */
@@ -160,12 +184,15 @@ async function fetchComments() {
   const slug = route.params.slug as string
   if (!slug) return
 
+  // 清除评论缓存，确保获取最新数据
+  cacheService.delete('forum_service', `comments_${slug}`)
+
   const result = await executeCommentsAsync(
     async (signal) => {
-      const apiResult = await forumService.getCommentsByPostSlug(slug, { signal })
+      const apiApi = await forumService.getCommentsByPostSlug(slug, { signal })
 
-      if (apiResult.isSuccess) {
-        return apiResult.getValue()
+      if (apiApi.isSuccess) {
+        return apiApi.getValue()
       }
 
       throw new Error('获取评论失败')
@@ -348,10 +375,16 @@ onMounted(() => {
             </h2>
 
             <!-- 评论输入 -->
-            <CommentForm :post-slug="post.slug" @reply-added="fetchComments" />
+            <CommentForm
+              :post-slug="post.slug"
+              :parent-comment-id="replyingToCommentId ?? undefined"
+              :parent-comment="replyingToComment"
+              @reply-added="fetchComments(); replyingToCommentId = null"
+              @reply-cancelled="handleReplyCancelled"
+            />
 
             <!-- 评论列表 -->
-            <CommentList :comments="comments" @comment-updated="fetchComments" />
+            <CommentList :comments="comments" :replying-to-comment-id="replyingToCommentId" @reply="handleReply" @reply-cancelled="handleReplyCancelled" @comment-updated="fetchComments" />
 
             <!-- 无评论提示 -->
             <div v-if="comments.length === 0" class="bf-empty-comments">

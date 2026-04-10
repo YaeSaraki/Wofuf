@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { forumService } from '@M/forum/services/ForumService.ts'
 import { useAuth } from '@M/auth/composables/useAuth.ts'
@@ -10,6 +10,16 @@ import ImagePicker from '@M/forum/components/imagePicker/ImagePicker.vue'
 interface Props {
   postSlug: string
   parentCommentId?: string
+  parentComment?: CommentDto | null
+}
+
+interface CommentDto {
+  commentId: string
+  text: string
+  memberNickname?: string
+  memberId: string
+  createdAt: string
+  [key: string]: unknown
 }
 
 const props = defineProps<Props>()
@@ -18,6 +28,7 @@ const { isAuthenticated } = useAuth()
 
 const emit = defineEmits<{
   replyAdded: []
+  replyCancelled: []
 }>()
 
 /* ---------------- 表单数据 ---------------- */
@@ -31,6 +42,16 @@ const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
 
 // 字数统计
 const charCount = computed(() => replyText.value.length)
+
+// 监听 parentCommentId 变化，自动展开回复表单
+watch(
+  () => props.parentCommentId,
+  (newVal) => {
+    if (newVal) {
+      isReplying.value = true
+    }
+  }
+)
 
 // 提交回复
 async function submitReply() {
@@ -67,6 +88,7 @@ async function submitReply() {
 function cancelReply() {
   replyText.value = ''
   isReplying.value = false
+  emit('replyCancelled')
 }
 
 // 开始回复
@@ -76,6 +98,12 @@ function startReply() {
     return
   }
   isReplying.value = true
+}
+
+// 截断文本
+function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength).trim() + '...'
 }
 
 // 插入选中的图片
@@ -160,13 +188,32 @@ function insertQuote() {
 
     <!-- 回复表单 -->
     <div v-else class="bf-reply-form">
+      <!-- 被回复的评论预览（液态毛玻璃浮动卡片） -->
+      <div v-if="parentComment" class="bf-reply-target">
+        <div class="bf-reply-target__glass liquid-glass-strong">
+          <div class="bf-reply-target__header">
+            <svg class="bf-reply-target__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span class="bf-reply-target__label">回复 @{{ parentComment.memberNickname || parentComment.memberId }}</span>
+            <button class="bf-reply-target__close" @click="cancelReply" title="取消回复">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="bf-reply-target__content">{{ truncateText(parentComment.text, 120) }}</div>
+        </div>
+      </div>
+
       <!-- 头部 -->
       <div class="bf-reply-header">
         <div class="bf-header-left">
           <svg class="bf-reply-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          <span class="bf-reply-title">添加评论</span>
+          <span class="bf-reply-title">{{ parentComment ? '添加回复' : '添加评论' }}</span>
         </div>
         <span class="bf-reply-hint">Markdown</span>
       </div>
@@ -301,6 +348,76 @@ function insertQuote() {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* 被回复评论的预览（液态毛玻璃浮动卡片） */
+.bf-reply-target {
+  padding: var(--bf-space-md, 16px);
+  padding-bottom: 0;
+}
+
+.bf-reply-target__glass {
+  position: relative;
+  border-radius: 12px;
+  padding: var(--bf-space-sm, 12px) var(--bf-space-md, 16px);
+  overflow: hidden;
+}
+
+.bf-reply-target__glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 53, 0.08) 0%,
+    rgba(255, 159, 28, 0.05) 100%
+  );
+  pointer-events: none;
+}
+
+.bf-reply-target__header {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-xs, 6px);
+  margin-bottom: var(--bf-space-xs, 6px);
+}
+
+.bf-reply-target__icon {
+  color: var(--bf-primary, #FF6B35);
+  flex-shrink: 0;
+}
+
+.bf-reply-target__label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--bf-primary, #FF6B35);
+  flex: 1;
+}
+
+.bf-reply-target__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--bf-text-muted, #666666);
+  cursor: pointer;
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-reply-target__close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--bf-text-primary, #ffffff);
+}
+
+.bf-reply-target__content {
+  font-size: 0.8125rem;
+  color: var(--bf-text-secondary, #b3b3b3);
+  line-height: 1.5;
+  padding-left: 20px;
 }
 
 /* 头部 */
