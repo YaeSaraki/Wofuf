@@ -12,7 +12,7 @@ class UpvoteCommentController(
     private val upvoteCommentUseCase: UpvoteCommentUseCase
 ) : BaseController() {
 
-    @PutMapping
+    @PostMapping
     fun upvoteComment(@PathVariable commentId: String): ApiResponse<UpvoteCommentDto.Response> {
         // 从 SecurityContextHolder 获取当前用户的 userId
         val userId = requireCurrentUserId()

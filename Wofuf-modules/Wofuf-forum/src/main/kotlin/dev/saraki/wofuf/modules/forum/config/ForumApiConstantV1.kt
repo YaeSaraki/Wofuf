@@ -174,14 +174,14 @@ object ForumApiConstantV1 {
         object Comments {
             private const val COMMENTS_BASE = "$ADMIN_BASE/comments"
 
+            /** /api/v1/forum/admin/comments */
+            const val ROOT = COMMENTS_BASE
+
             /** /api/v1/forum/admin/comments/{commentId}/hide */
             const val HIDE = "$COMMENTS_BASE/{${Param.COMMENT_ID}}/hide"
 
             /** /api/v1/forum/admin/comments/{commentId}/show */
             const val SHOW = "$COMMENTS_BASE/{${Param.COMMENT_ID}}/show"
-
-            /** /api/v1/forum/admin/comments/{commentId}/toggle */
-            const val TOGGLE = "$COMMENTS_BASE/{${Param.COMMENT_ID}}/toggle"
 
             /** /api/v1/forum/admin/comments/hidden */
             const val HIDDEN = "$COMMENTS_BASE/hidden"

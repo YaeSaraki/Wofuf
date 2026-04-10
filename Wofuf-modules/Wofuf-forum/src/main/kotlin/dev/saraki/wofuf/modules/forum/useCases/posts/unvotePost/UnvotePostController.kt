@@ -12,7 +12,7 @@ class UnvotePostController(
     private val unvotePostUseCase: UnvotePostUseCase
 ) : BaseController() {
 
-    @PutMapping
+    @PostMapping
     fun unvotePost(@PathVariable postId: String): ApiResponse<UnvotePostDto.Response> {
         // 从 SecurityContextHolder 获取当前用户的 userId
         val userId = requireCurrentUserId()

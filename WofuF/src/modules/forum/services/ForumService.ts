@@ -43,7 +43,6 @@ export interface IForumService {
   /* ---------------- 评论 ---------------- */
   getCommentsByPostSlug(postSlug: string, options?: RequestOptions): Promise<Result<GetCommentsResponse>>
   replyToPost(postId: string, data: ReplyToPostRequest, options?: RequestOptions): Promise<Result<void>>
-  replyToPostBySlug(postSlug: string, data: ReplyToPostRequest, options?: RequestOptions): Promise<Result<void>>
   replyToComment(commentId: string, data: ReplyToCommentRequest, options?: RequestOptions): Promise<Result<void>>
 }
 
@@ -292,7 +291,7 @@ export class ForumService implements IForumService {
         return Result.failure('请先登录')
       }
 
-      const response = await http.put<ApiResponse<VoteResponse>>(
+      const response = await http.post<ApiResponse<VoteResponse>>(
         `/api/v1/forum/posts/${postId}/upvote`,
         {},
         {
@@ -323,7 +322,7 @@ export class ForumService implements IForumService {
         return Result.failure('请先登录')
       }
 
-      const response = await http.put<ApiResponse<VoteResponse>>(
+      const response = await http.post<ApiResponse<VoteResponse>>(
         `/api/v1/forum/posts/${postId}/downvote`,
         {},
         {
@@ -354,7 +353,7 @@ export class ForumService implements IForumService {
         return Result.failure('请先登录')
       }
 
-      const response = await http.put<ApiResponse<VoteResponse>>(
+      const response = await http.post<ApiResponse<VoteResponse>>(
         `/api/v1/forum/posts/${postId}/unvote`,
         {},
         {
@@ -385,7 +384,7 @@ export class ForumService implements IForumService {
         return Result.failure('请先登录')
       }
 
-      const response = await http.put<ApiResponse<VoteResponse>>(
+      const response = await http.post<ApiResponse<VoteResponse>>(
         `/api/v1/forum/comments/${commentId}/upvote`,
         {},
         {
@@ -416,7 +415,7 @@ export class ForumService implements IForumService {
         return Result.failure('请先登录')
       }
 
-      const response = await http.put<ApiResponse<VoteResponse>>(
+      const response = await http.post<ApiResponse<VoteResponse>>(
         `/api/v1/forum/comments/${commentId}/downvote`,
         {},
         {
@@ -487,35 +486,6 @@ export class ForumService implements IForumService {
     try {
       const response = await http.post<ApiResponse<void>>(
         `/api/v1/forum/posts/${postId}/replies`,
-        data,
-        {
-          signal: options?.signal,
-          headers: authService.getAuthHeaders(),
-        }
-      )
-
-      if (response.data.success) {
-        cacheService.clearModule(ForumService.CACHE_MODULE)
-        return Result.success(undefined)
-      }
-      return Result.failure(response.data.message || '回复失败')
-    } catch (error) {
-      const err = error as { response?: { data?: { message?: string } }; message?: string }
-      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
-    }
-  }
-
-  /**
-   * 回复帖子（通过 Slug）
-   */
-  public async replyToPostBySlug(
-    postSlug: string,
-    data: ReplyToPostRequest,
-    options?: RequestOptions,
-  ): Promise<Result<void>> {
-    try {
-      const response = await http.post<ApiResponse<void>>(
-        `/api/v1/forum/posts/slug/${postSlug}/replies`,
         data,
         {
           signal: options?.signal,
