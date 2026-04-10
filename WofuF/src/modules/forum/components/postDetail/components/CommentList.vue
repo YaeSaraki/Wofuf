@@ -1,7 +1,10 @@
 <script lang="ts" setup>
-import { ref, watch, reactive } from 'vue'
+import { ref, watch, reactive, computed } from 'vue'
+import { useToast } from 'primevue/usetoast'
 import type { CommentDto } from '@M/forum/dtos/Post.ts'
 import { PlayerService } from '@M/players/services/PlayerService'
+import { adminService } from '@M/forum/admin/services/AdminService.ts'
+import { memberService } from '@M/auth/services/MemberService.ts'
 import MarkdownRenderer from '@M/forum/components/shared/MarkdownRenderer.vue'
 import { translate } from '@S/services/i18n'
 
@@ -9,10 +12,38 @@ const props = defineProps<{
   comments: CommentDto[]
 }>()
 
+const emit = defineEmits<{
+  (e: 'commentUpdated', commentId: string): void
+}>()
+
+const toast = useToast()
 const playerService = new PlayerService()
+
+// 管理员状态
+const isAdmin = ref(false)
+const isLoadingAdmin = ref(true)
+
+// 操作中的评论ID
+const operatingCommentId = ref<string | null>(null)
 
 // 评论头像
 const commentAvatars = reactive(new Map<string, string>())
+
+// 检查管理员权限
+async function checkAdminPermission() {
+  isLoadingAdmin.value = true
+  try {
+    isAdmin.value = await adminService.hasAnyPermission([
+      'ADMIN_ACCESS',
+      'COMMENT_DELETE_ANY',
+      'COMMENT_VIEW_HIDDEN',
+    ])
+  } catch (e) {
+    isAdmin.value = false
+  } finally {
+    isLoadingAdmin.value = false
+  }
+}
 
 async function loadCommentAvatar(playerId: string) {
   if (!playerId || commentAvatars.has(playerId)) return
@@ -36,6 +67,50 @@ const getCommentAvatar = (playerId: string | null): string | undefined => {
   return commentAvatars.get(playerId)
 }
 
+// 隐藏/显示评论（toggle）
+async function toggleComment(commentId: string, isCurrentlyHidden: boolean) {
+  operatingCommentId.value = commentId
+  try {
+    const result = isCurrentlyHidden
+      ? await adminService.showComment(commentId)
+      : await adminService.hideComment(commentId)
+
+    if (result.isSuccess) {
+      toast.add({
+        severity: 'success',
+        summary: isCurrentlyHidden ? translate('forum', 'admin.show') : translate('forum', 'admin.hide'),
+        detail: translate('forum', 'admin.operationSuccess'),
+        life: 2000,
+      })
+      // 通知父组件刷新评论列表
+      emit('commentUpdated', commentId)
+    } else {
+      // API 返回失败，刷新评论列表以获取最新状态
+      const errorMsg = String(result.error) || ''
+      toast.add({
+        severity: 'warn',
+        summary: translate('forum', 'admin.operationFailed'),
+        detail: errorMsg,
+        life: 5000,
+      })
+      // 通知父组件刷新评论列表
+      emit('commentUpdated', commentId)
+    }
+  } catch (e) {
+    // 发生异常（可能是后端抛出的错误），刷新评论列表
+    toast.add({
+      severity: 'error',
+      summary: translate('forum', 'error'),
+      detail: String(e),
+      life: 5000,
+    })
+    // 通知父组件刷新评论列表
+    emit('commentUpdated', commentId)
+  } finally {
+    operatingCommentId.value = null
+  }
+}
+
 // 监听评论变化加载头像
 watch(
   () => props.comments,
@@ -48,6 +123,9 @@ watch(
   },
   { immediate: true },
 )
+
+// 初始化检查管理员权限
+checkAdminPermission()
 </script>
 
 <template>
@@ -82,11 +160,41 @@ watch(
           <span class="bf-comment-date">{{
             new Date(comment.createdAt).toLocaleDateString()
           }}</span>
+          <!-- 隐藏标记 -->
+          <span v-if="comment.isHidden" class="bf-comment-hidden-badge">
+            {{ translate('forum', 'admin.hiddenComments') }}
+          </span>
         </div>
         <!-- 使用 Markdown 渲染评论 -->
-        <div class="bf-comment-text">
+        <div class="bf-comment-text" :class="{ 'bf-comment-text--hidden': comment.isHidden }">
           <MarkdownRenderer :content="comment.text" />
         </div>
+      </div>
+
+      <!-- 管理员操作按钮 -->
+      <div v-if="isAdmin && !isLoadingAdmin" class="bf-comment-actions">
+        <!-- 切换隐藏/显示按钮 -->
+        <button
+          class="bf-comment-action-btn"
+          :class="{
+            'bf-comment-action-btn--hidden': comment.isHidden,
+            'bf-comment-action-btn--loading': operatingCommentId === comment.commentId
+          }"
+          :disabled="operatingCommentId === comment.commentId"
+          :title="comment.isHidden ? translate('forum', 'admin.show') : translate('forum', 'admin.hide')"
+          @click="toggleComment(comment.commentId, !!comment.isHidden)"
+        >
+          <!-- 隐藏状态：显示眼睛图标 -->
+          <svg v-if="comment.isHidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <!-- 正常状态：显示闭眼图标 -->
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+            <line x1="1" y1="1" x2="23" y2="23" />
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -204,6 +312,86 @@ watch(
   line-height: 1.5;
   word-wrap: break-word;
   overflow-wrap: break-word;
+}
+
+.bf-comment-text--hidden {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.bf-comment-hidden-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #ef4444;
+  margin-left: 8px;
+}
+
+/* 管理员操作按钮 */
+.bf-comment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: var(--bf-space-sm, 8px);
+  flex-shrink: 0;
+}
+
+.bf-comment-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--bf-input-bg);
+  border: 1px solid var(--bf-border-default);
+  border-radius: var(--bf-input-radius, 8px);
+  color: var(--bf-text-muted);
+  cursor: pointer;
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-comment-action-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.bf-comment-action-btn--show:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.bf-comment-action-btn--hidden {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.bf-comment-action-btn--hidden:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.bf-comment-action-btn--loading {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bf-comment-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bf-comment-action-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* 响应式 */

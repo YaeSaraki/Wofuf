@@ -2,6 +2,7 @@ package dev.saraki.wofuf.modules.forum.mappers
 
 import dev.saraki.wofuf.modules.forum.domain.Post
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberDetails
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostStatus
 import dev.saraki.wofuf.modules.forum.dtos.MemberDto
 import dev.saraki.wofuf.modules.forum.dtos.PostDto
 
@@ -30,6 +31,7 @@ object PostDtoMapper {
             type = post.type,
             category = post.category,
             status = post.status,
+            isHidden = post.status == PostStatus.HIDDEN,
             isPinned = post.isPinned,
             isFeatured = post.isFeatured,
             wasUpvotedByMe = null,
@@ -61,6 +63,7 @@ object PostDtoMapper {
             type = post.type,
             category = post.category,
             status = post.status,
+            isHidden = post.status == PostStatus.HIDDEN,
             isPinned = post.isPinned,
             isFeatured = post.isFeatured,
             wasUpvotedByMe = wasUpvotedByMe,

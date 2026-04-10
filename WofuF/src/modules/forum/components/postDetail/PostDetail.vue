@@ -351,7 +351,7 @@ onMounted(() => {
             <CommentForm :post-slug="post.slug" @reply-added="fetchComments" />
 
             <!-- 评论列表 -->
-            <CommentList :comments="comments" />
+            <CommentList :comments="comments" @comment-updated="fetchComments" />
 
             <!-- 无评论提示 -->
             <div v-if="comments.length === 0" class="bf-empty-comments">

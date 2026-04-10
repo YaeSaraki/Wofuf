@@ -40,6 +40,6 @@ class ShowPostUseCase(
             return ShowPostErrors.SaveFailedError(request.postId)
         }
 
-        return Result.success(ShowPostDto.Response(postId = request.postId, status = "NORMAL"))
+        return Result.success(ShowPostDto.Response(postId = request.postId, status = "NORMAL", isHidden = false))
     }
 }

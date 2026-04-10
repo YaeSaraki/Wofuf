@@ -77,7 +77,7 @@ const formattedDate = computed(() => {
   </div>
 </template>
 
-<style src="@M/forum/assets/forum-shared.css" scoped>
+<style scoped>
 .bf-post-header {
   margin-bottom: var(--bf-space-lg, 24px);
 }
@@ -106,6 +106,46 @@ const formattedDate = computed(() => {
   flex-shrink: 0;
 }
 
+.bf-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.bf-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.bf-badge--pinned {
+  font-size: 20px;
+  color: #3B82F6;
+  text-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+  filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.6));
+}
+
+.bf-badge--featured {
+  font-size: 20px;
+  color: #f59e0b;
+  text-shadow: 0 0 6px rgba(245, 158, 11, 0.8);
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.6));
+}
+
+.bf-badge--hidden {
+  font-size: 14px;
+  color: #8B5CF6;
+  text-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.6));
+}
+
+.bf-badge--link {
+  color: #3B82F6;
+  opacity: 0.8;
+}
+
 /* 作者信息行 */
 .bf-author-row {
   display: flex;
@@ -120,7 +160,19 @@ const formattedDate = computed(() => {
 .bf-author-avatar {
   width: 36px;
   height: 36px;
+  background: var(--bf-fire-gradient);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 13px;
+  font-weight: 600;
+  color: white;
+}
+
+.bf-author-avatar--img {
+  background: transparent;
+  image-rendering: pixelated;
 }
 
 .bf-author-info {
@@ -129,8 +181,28 @@ const formattedDate = computed(() => {
   gap: 8px;
 }
 
+.bf-author-name {
+  font-weight: 600;
+  color: var(--bf-text-secondary, #b3b3b3);
+  font-size: 14px;
+}
+
+.bf-meta-rep {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: #FFB800;
+}
+
+.bf-meta-rep svg {
+  color: #FFB800;
+}
+
 .bf-post-time {
   margin-left: auto;
+  font-size: 12px;
+  color: var(--bf-text-muted, #666666);
 }
 
 /* 响应式 */

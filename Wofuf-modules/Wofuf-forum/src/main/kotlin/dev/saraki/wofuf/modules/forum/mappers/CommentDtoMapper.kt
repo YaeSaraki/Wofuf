@@ -30,6 +30,7 @@ object CommentDtoMapper {
             childComments = emptyList(),
             points = commentDetials.points,
             wasUpvotedByMe = wasUpvotedByMe,
-            wasDownvotedByMe = wasDownvotedByMe
+            wasDownvotedByMe = wasDownvotedByMe,
+            isHidden = comment.isHidden
         )
 }

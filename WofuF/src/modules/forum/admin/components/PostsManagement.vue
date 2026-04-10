@@ -492,7 +492,7 @@ onMounted(() => {
           <path stroke-linecap="round" stroke-linejoin="round" d="M13.657 6.343a3.857 3.857 0 00-4.114 0" />
           <path stroke-linecap="round" stroke-linejoin="round" d="M17.829 8.172a4.01 4.01 0 00-3.828-2.172" />
         </svg>
-        <h1>{{ translate('admin.management') }}</h1>
+        <h1>{{ translate('forum', 'admin.management') }}</h1>
       </div>
       <span class="admin-header__count">{{ translate('forum', 'posts') }}: {{ totalPosts }}</span>
     </div>
@@ -604,20 +604,10 @@ onMounted(() => {
               <h4 class="admin-card__title">{{ post.title }}</h4>
               <!-- 徽章组 -->
               <div class="admin-card__badges">
-                <span v-if="getIsPinned(post)" class="admin-badge admin-badge--pinned">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 17v5M9 10.5a3 3 0 115.196-3M5 21h14M12 3l-4 8h8l-4-8z" />
-                  </svg>
-                  置顶
-                </span>
-                <span v-if="getIsFeatured(post)" class="admin-badge admin-badge--featured">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                  精华
-                </span>
-                <span v-if="isHidden(post)" class="admin-badge admin-badge--hidden">已隐藏</span>
-                <span v-if="isUnderReview(post)" class="admin-badge admin-badge--review">待审核</span>
+                <span v-if="getIsPinned(post)" class="admin-badge admin-badge--pinned" title="置顶">◆</span>
+                <span v-if="getIsFeatured(post)" class="admin-badge admin-badge--featured" title="精华">★</span>
+                <span v-if="isHidden(post)" class="admin-badge admin-badge--hidden" title="已隐藏">◉</span>
+                <span v-if="isUnderReview(post)" class="admin-badge admin-badge--review" title="待审核">⚑</span>
               </div>
             </div>
           </div>
@@ -637,44 +627,34 @@ onMounted(() => {
         <!-- 操作按钮组 -->
         <div class="admin-card__actions">
           <button
-            class="admin-action-btn"
+            class="admin-action-btn admin-action-btn--pin"
             :class="{ 'admin-action-btn--active': getIsPinned(post) }"
             @click.stop="pinPost(post.postId!, getIsPinned(post))"
             :disabled="operatingPostId === post.postId"
             title="置顶"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 17v5M9 10.5a3 3 0 115.196-3M5 21h14M12 3l-4 8h8l-4-8z" />
-            </svg>
+            ◆
           </button>
 
           <button
-            class="admin-action-btn"
+            class="admin-action-btn admin-action-btn--feature"
             :class="{ 'admin-action-btn--active': getIsFeatured(post) }"
             @click.stop="featurePost(post.postId!, getIsFeatured(post))"
             :disabled="operatingPostId === post.postId"
             title="加精"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
+            ★
           </button>
 
           <button
-            class="admin-action-btn"
+            class="admin-action-btn admin-action-btn--hide"
             :class="{ 'admin-action-btn--active': isHidden(post) }"
             @click.stop="hidePost(post.postId!, isHidden(post))"
             :disabled="operatingPostId === post.postId"
-            title="隐藏"
+            :title="isHidden(post) ? '显示' : '隐藏'"
           >
-            <svg v-if="isHidden(post)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
-              <line x1="1" y1="1" x2="23" y2="23" />
-            </svg>
+            <span v-if="isHidden(post)" class="action-icon action-icon--show" style="color: #22c55e;">○</span>
+            <span v-else class="action-icon action-icon--hide">●</span>
           </button>
 
           <div class="admin-action-divider"></div>
@@ -686,9 +666,7 @@ onMounted(() => {
             :disabled="operatingPostId === post.postId"
             title="审核通过"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+            ✓
           </button>
 
           <button
@@ -698,10 +676,7 @@ onMounted(() => {
             :disabled="operatingPostId === post.postId"
             title="设为待审核"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 11l3 3L22 4" />
-              <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-            </svg>
+            ⚑
           </button>
         </div>
       </div>
@@ -1170,6 +1145,8 @@ onMounted(() => {
   color: var(--bf-text-secondary);
   cursor: pointer;
   transition: all var(--bf-transition-fast, 0.15s ease);
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .admin-action-btn:hover:not(:disabled) {
@@ -1178,37 +1155,53 @@ onMounted(() => {
   color: var(--bf-primary);
 }
 
-.admin-action-btn--active {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: #3b82f6;
-  color: #3b82f6;
+.admin-action-btn--pin {
+  color: var(--bf-text-muted);
 }
 
-.admin-action-btn--active:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.25);
+.admin-action-btn--pin.admin-action-btn--active,
+.admin-action-btn--pin:hover:not(:disabled) {
   color: #3b82f6;
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.admin-action-btn--feature {
+  color: var(--bf-text-muted);
+}
+
+.admin-action-btn--feature.admin-action-btn--active,
+.admin-action-btn--feature:hover:not(:disabled) {
+  color: #f59e0b;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+}
+
+.admin-action-btn--hide {
+  color: var(--bf-text-muted);
+}
+
+.admin-action-btn--hide.admin-action-btn--active,
+.admin-action-btn--hide:hover:not(:disabled) {
+  color: #ef4444;
+}
+
+.action-icon--hide {
+  color: #ef4444;
 }
 
 .admin-action-btn--approve {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.3);
   color: #22c55e;
 }
 
 .admin-action-btn--approve:hover:not(:disabled) {
-  background: rgba(34, 197, 94, 0.2);
-  color: #22c55e;
+  text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
 }
 
 .admin-action-btn--review {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.3);
   color: #f59e0b;
 }
 
 .admin-action-btn--review:hover:not(:disabled) {
-  background: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
 }
 
 .admin-action-btn:disabled {
@@ -1216,9 +1209,16 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-.admin-action-btn svg {
-  width: 18px;
-  height: 18px;
+.action-icon {
+  font-size: 14px;
+}
+
+.action-icon--show {
+  filter: none;
+}
+
+.action-icon--hide {
+  color: #ef4444;
 }
 
 /* === 分页 === */

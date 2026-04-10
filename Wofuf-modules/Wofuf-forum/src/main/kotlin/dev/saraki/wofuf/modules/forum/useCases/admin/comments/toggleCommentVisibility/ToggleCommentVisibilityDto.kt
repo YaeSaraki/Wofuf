@@ -1,6 +1,6 @@
-package dev.saraki.wofuf.modules.forum.useCases.admin.comments.hideComment
+package dev.saraki.wofuf.modules.forum.useCases.admin.comments.toggleCommentVisibility
 
-class HideCommentDto {
+class ToggleCommentVisibilityDto {
     data class Request(
         val commentId: String,
         val userId: String  // 当前操作用户的 ID

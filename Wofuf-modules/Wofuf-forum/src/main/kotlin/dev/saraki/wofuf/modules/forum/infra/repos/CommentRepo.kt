@@ -15,7 +15,7 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 interface CommentRepo {
     fun exists(commentId: CommentId): Boolean
     fun findCommentByCommentId(commentId: CommentId): Comment?
-    fun findCommentsByPostSlug(postSlug: PostSlug): List<Comment>
+    fun findCommentsByPostSlug(postSlug: PostSlug, includeHidden: Boolean = false): List<Comment>
     fun findCommentDetailsByCommentId(commentId: CommentId): CommentDetails?
     fun save(comment: Comment): Comment
     fun saveBulk(comments: List<Comment>)
@@ -37,4 +37,14 @@ interface CommentRepo {
      * 统计评论总数
      */
     fun countAll(): Long
+
+    /**
+     * 分页获取所有评论（不区分隐藏状态）
+     */
+    fun findAllComments(page: Int, size: Int): List<Comment>
+
+    /**
+     * 统计所有评论数量（不区分隐藏状态）
+     */
+    fun countAllComments(): Long
 }

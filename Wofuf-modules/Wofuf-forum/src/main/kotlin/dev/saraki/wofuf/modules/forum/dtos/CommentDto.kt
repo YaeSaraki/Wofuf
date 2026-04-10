@@ -1,5 +1,6 @@
 package dev.saraki.wofuf.modules.forum.dtos
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import java.time.LocalDateTime
 
@@ -9,6 +10,7 @@ import java.time.LocalDateTime
  *   @date 2026/2/7 15:55
  *   @description:
  */
+@JsonInclude(JsonInclude.Include.ALWAYS)
 data class CommentDto(
     val postSlug: String,
     val postTitle: String,
@@ -23,4 +25,5 @@ data class CommentDto(
     val points: Int,
     val wasUpvotedByMe: Boolean = false,
     val wasDownvotedByMe: Boolean = false,
+    val isHidden: Boolean,  // 评论是否被隐藏（管理功能），由 mapper 根据 domain 设置
 )

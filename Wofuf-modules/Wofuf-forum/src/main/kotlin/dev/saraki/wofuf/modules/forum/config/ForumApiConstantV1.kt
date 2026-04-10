@@ -180,6 +180,9 @@ object ForumApiConstantV1 {
             /** /api/v1/forum/admin/comments/{commentId}/show */
             const val SHOW = "$COMMENTS_BASE/{${Param.COMMENT_ID}}/show"
 
+            /** /api/v1/forum/admin/comments/{commentId}/toggle */
+            const val TOGGLE = "$COMMENTS_BASE/{${Param.COMMENT_ID}}/toggle"
+
             /** /api/v1/forum/admin/comments/hidden */
             const val HIDDEN = "$COMMENTS_BASE/hidden"
         }

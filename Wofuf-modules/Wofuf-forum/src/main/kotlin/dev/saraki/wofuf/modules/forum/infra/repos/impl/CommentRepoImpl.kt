@@ -24,8 +24,13 @@ class CommentRepoImpl(
             .map(CommentEntityMapper::toDomain)
             .orElse(null)
 
-    override fun findCommentsByPostSlug(postSlug: PostSlug): List<Comment> {
-        val comments = commentJpaRepo.findByPostEntity_Slug(postSlug.value)
+    override fun findCommentsByPostSlug(postSlug: PostSlug, includeHidden: Boolean): List<Comment> {
+        // 管理员/有权限用户：返回所有评论；普通用户：只返回未隐藏的评论
+        val comments = if (includeHidden) {
+            commentJpaRepo.findByPostEntity_Slug(postSlug.value)
+        } else {
+            commentJpaRepo.findByPostEntity_SlugAndIsHiddenFalse(postSlug.value)
+        }
         return comments.map(CommentEntityMapper::toDomain)
     }
 
@@ -65,5 +70,12 @@ class CommentRepoImpl(
         commentJpaRepo.countByIsHiddenTrue()
 
     override fun countAll(): Long =
+        commentJpaRepo.count()
+
+    override fun findAllComments(page: Int, size: Int): List<Comment> =
+        commentJpaRepo.findAllByOrderByCreatedAtDesc(PageRequest.of(page, size))
+            .map(CommentEntityMapper::toDomain)
+
+    override fun countAllComments(): Long =
         commentJpaRepo.count()
 }

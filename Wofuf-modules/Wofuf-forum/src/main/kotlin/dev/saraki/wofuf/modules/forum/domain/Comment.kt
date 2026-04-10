@@ -82,11 +82,13 @@ class Comment private constructor(
     // ==================== 管理功能方法 ====================
 
     /**
-     * 隐藏评论
+     * 隐藏评论（幂等操作）
+     * 如果已隐藏，直接返回当前评论（不报错）
      */
     fun hide(hiddenBy: MemberId): Result<Comment> {
         if (props.isHidden) {
-            return Result.failure(AppError("评论已被隐藏"))
+            // 幂等：已隐藏则直接返回成功
+            return Result.success(this)
         }
         val newProps = props.copy(
             isHidden = true,
@@ -97,11 +99,13 @@ class Comment private constructor(
     }
 
     /**
-     * 显示评论（取消隐藏）
+     * 显示评论（取消隐藏，幂等操作）
+     * 如果未隐藏，直接返回当前评论（不报错）
      */
     fun show(): Result<Comment> {
         if (!props.isHidden) {
-            return Result.failure(AppError("评论未被隐藏"))
+            // 幂等：未隐藏则直接返回成功
+            return Result.success(this)
         }
         val newProps = props.copy(
             isHidden = false,
@@ -109,6 +113,18 @@ class Comment private constructor(
             hiddenBy = null
         )
         return create(newProps, id)
+    }
+
+    /**
+     * 切换评论可见性（幂等操作）
+     * 如果已隐藏，则显示；如果可见，则隐藏
+     */
+    fun toggleVisibility(toggledBy: MemberId): Result<Comment> {
+        return if (props.isHidden) {
+            show()
+        } else {
+            hide(toggledBy)
+        }
     }
 
     companion object {

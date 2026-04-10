@@ -293,7 +293,7 @@ const imageCount = computed(() => {
   </article>
 </template>
 
-<style src="@M/forum/assets/forum-shared.css" scoped>
+<style scoped>
 /* === 卡片容器 === */
 .bf-post-card {
   display: flex;
@@ -398,6 +398,133 @@ const imageCount = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* === 标题 + 徽章 === */
+.bf-post-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.bf-post-card__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--bf-text-primary);
+  margin: 0;
+  line-height: 1.4;
+  transition: color var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-post-card:hover .bf-post-card__title {
+  color: var(--bf-primary);
+}
+
+.bf-post-card__badges {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.bf-meta-time {
+  font-size: 12px;
+  color: var(--bf-text-muted);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* === 头像 === */
+.bf-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--bf-fire-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+
+.bf-avatar--img {
+  background: var(--bf-input-bg);
+  image-rendering: pixelated;
+  padding: 2px;
+}
+
+/* === 徽章 === */
+.bf-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.bf-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.bf-badge--link {
+  color: #3B82F6;
+  opacity: 0.8;
+}
+
+.bf-badge--pinned {
+  font-size: 20px;
+  color: #3B82F6;
+  text-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+  filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.6));
+}
+
+.bf-badge--featured {
+  font-size: 18px;
+  color: #f59e0b;
+  text-shadow: 0 0 6px rgba(245, 158, 11, 0.8);
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.6));
+}
+
+.bf-badge--hidden {
+  font-size: 14px;
+  color: #8B5CF6;
+  text-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.6));
+}
+
+/* === 作者信息 === */
+.bf-post-card__author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bf-author-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bf-author-name {
+  font-weight: 600;
+  color: var(--bf-text-secondary);
+  font-size: 13px;
+}
+
+.bf-meta-rep {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: #FFB800;
+}
+
+.bf-meta-rep svg {
+  color: #FFB800;
 }
 
 /* === 标题 + 徽章 === */

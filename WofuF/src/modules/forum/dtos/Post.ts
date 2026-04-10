@@ -47,6 +47,7 @@ export interface PostDto {
   type: PostType
   category: PostCategory
   status?: PostStatus
+  isHidden?: boolean  // 管理功能：兼容 CommentDto 的 isHidden 命名
   isPinned?: boolean
   pinned?: boolean  // API 可能返回的字段名
   isFeatured?: boolean
@@ -67,7 +68,8 @@ export function getIsFeatured(post: PostDto): boolean {
 
 // 辅助函数：获取隐藏状态
 export function getIsHidden(post: PostDto): boolean {
-  return post.status === PostStatus.HIDDEN
+  // 优先使用 isHidden 字段（与 CommentDto 命名一致），否则回退到 status 检查
+  return post.isHidden ?? post.status === PostStatus.HIDDEN
 }
 
 // 评论 DTO (对应后端 CommentDto)

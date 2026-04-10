@@ -7,6 +7,7 @@ import { authService } from '@M/auth/services/AuthService'
 import { useAsyncLoader } from '@SU/async/useAsyncLoader'
 import { translate } from '@S/services/i18n'
 import PostCard from '@M/forum/components/postCard/PostCard.vue'
+import { cacheService } from '@S/infra/cache'
 
 const router = useRouter()
 const route = useRoute()
@@ -31,6 +32,9 @@ const pageSize = ref(10)
 
 // 加载更多状态
 const isLoadingMore = ref(false)
+
+// 防止重复获取的状态
+const isFetching = ref(false)
 
 // 虚拟分类：全部（不在枚举内）
 const ALL_CATEGORY = 'ALL' as const
@@ -90,6 +94,14 @@ const hasMore = computed(() => pageInfo.value[sortMode.value].hasMore)
 async function fetchPosts(append: boolean = false) {
   const mode = sortMode.value
 
+  // 防止重复获取
+  if (isFetching.value) {
+    console.debug('[PostList] fetchPosts 跳过：已有请求在进行中')
+    return
+  }
+
+  isFetching.value = true
+
   // 如果不是加载更多，则重置到第一页（page=0）
   const page = append ? pageInfo.value[mode].current : 0
 
@@ -136,6 +148,8 @@ async function fetchPosts(append: boolean = false) {
   } catch (err) {
     console.error('加载帖子失败:', err)
   } finally {
+    // 结束加载状态
+    isFetching.value = false
     // 结束加载更多状态
     if (append) {
       isLoadingMore.value = false
@@ -146,7 +160,7 @@ async function fetchPosts(append: boolean = false) {
 // 滚动到底加载下一页
 async function loadMore() {
   // 防重复触发
-  if (!hasMore.value || isLoadingMore.value || isLoading.value) return
+  if (!hasMore.value || isLoadingMore.value || isLoading.value || isFetching.value) return
   await fetchPosts(true)
 }
 
@@ -230,6 +244,8 @@ function handleScroll() {
 }
 
 onMounted(() => {
+  // 清除缓存以获取最新数据
+  cacheService.clearModule('forum_service')
   fetchPosts()
   window.addEventListener('scroll', handleScroll)
 })

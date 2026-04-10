@@ -26,6 +26,7 @@ export interface PostActionResponse {
   isPinned?: boolean
   isFeatured?: boolean
   status?: string
+  isHidden?: boolean
   message: string
 }
 
@@ -45,6 +46,19 @@ export interface GetPostsForReviewResponse {
 }
 
 // ==================== 评论管理 ====================
+export interface CommentSummary {
+  commentId: string
+  postId: string
+  postSlug: string
+  content: string
+  isHidden: boolean
+  hiddenAt: number | null
+  hiddenBy: string | null
+  authorId: string
+  authorNickname: string
+  createdAt: number
+}
+
 export interface HiddenComment {
   commentId: string
   postId: string
@@ -57,6 +71,13 @@ export interface HiddenComment {
 
 export interface GetHiddenCommentsResponse {
   comments: HiddenComment[]
+  total: number
+  page: number
+  size: number
+}
+
+export interface GetCommentsResponse {
+  comments: CommentSummary[]
   total: number
   page: number
   size: number

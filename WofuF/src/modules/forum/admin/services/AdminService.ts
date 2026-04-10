@@ -9,6 +9,7 @@ import type {
   GetPostsForReviewResponse,
   HiddenComment,
   GetHiddenCommentsResponse,
+  GetCommentsResponse,
   CommentActionResponse,
   BannedMember,
   GetBannedMembersResponse,
@@ -223,6 +224,29 @@ export class AdminService implements IAdminService {
       )
       if (response.data.success) return Result.success(response.data.data)
       return Result.failure(response.data.message || '获取隐藏评论失败')
+    } catch (error) {
+      return this.handleError(error)
+    }
+  }
+
+  public async getComments(
+    page: number = 0,
+    size: number = 20,
+    search?: string,
+    includeHidden: boolean = false,
+    options?: RequestOptions
+  ): Promise<Result<GetCommentsResponse>> {
+    try {
+      const response = await http.get<ApiResponse<GetCommentsResponse>>(
+        `${AdminService.ADMIN_BASE}/comments`,
+        {
+          signal: options?.signal,
+          headers: authService.getAuthHeaders(),
+          params: { page, size, search, includeHidden }
+        }
+      )
+      if (response.data.success) return Result.success(response.data.data)
+      return Result.failure(response.data.message || '获取评论失败')
     } catch (error) {
       return this.handleError(error)
     }

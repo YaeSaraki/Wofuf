@@ -51,6 +51,6 @@ class HidePostUseCase(
             return HidePostErrors.SaveFailedError(request.postId)
         }
 
-        return Result.success(HidePostDto.Response(postId = request.postId, status = "HIDDEN"))
+        return Result.success(HidePostDto.Response(postId = request.postId, status = "HIDDEN", isHidden = true))
     }
 }

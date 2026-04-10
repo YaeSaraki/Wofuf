@@ -132,6 +132,10 @@ const forumTranslations = {
     zh: '搜索帖子标题...',
     en: 'Search posts...',
   },
+  searchComments: {
+    zh: '搜索评论作者...',
+    en: 'Search by author...',
+  },
   // 发帖表单相关
   createPostFailed: {
     zh: '创建帖子失败',
@@ -420,6 +424,10 @@ const forumTranslations = {
   'admin.operationFailed': {
     zh: '操作失败',
     en: 'Operation failed',
+  },
+  'admin.operationSuccess': {
+    zh: '操作成功',
+    en: 'Operation successful',
   },
   // 操作进行中提示
   'admin.pinning': {

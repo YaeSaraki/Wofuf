@@ -46,7 +46,11 @@ function formatTime(timestamp: number | null): string {
 
 // 判断评论是否隐藏
 function isHidden(comment: CommentSummary): boolean {
-  return comment.isHidden
+  // 确保返回严格的布尔值
+  // 兼容后端省略 false 字段（undefined）或字段名差异（hidden / status）的情况
+  return Boolean(
+    comment.isHidden || (comment as any).hidden || (comment as any).status === 'HIDDEN',
+  )
 }
 
 // 跳转到帖子
@@ -69,7 +73,7 @@ async function loadComments() {
       currentPage.value,
       pageSize.value,
       searchQuery.value.trim() || undefined,
-      true // 包含隐藏评论，用于管理
+      true, // 包含隐藏评论，用于管理
     )
 
     if (result.isSuccess) {
@@ -86,23 +90,30 @@ async function loadComments() {
 }
 
 // ==================== 评论操作（与 PostsManagement 完全一致的逻辑） ====================
-
 // 隐藏/显示评论
 async function toggleHideComment(commentId: string, isCurrentlyHidden: boolean) {
   if (!commentId) return
 
-  // 乐观更新：立即翻转状态
-  const index = comments.value.findIndex(c => c.commentId === commentId)
+  const index = comments.value.findIndex((c) => c.commentId === commentId)
   if (index === -1) return
 
   const comment = comments.value[index]!
-  const previousHidden = comment.isHidden
+
+  // 使用修复后的 isHidden 函数记录上一个状态，用于失败时回滚
+  const previousHidden = isHidden(comment)
+
+  // 乐观更新：立即翻转状态（同时兼容可能存在的 hidden 字段）
   comment.isHidden = !isCurrentlyHidden
+  if ('hidden' in comment) {
+    ;(comment as any).hidden = !isCurrentlyHidden
+  }
 
   // 显示提示
   toast.add({
     severity: 'info',
-    summary: isCurrentlyHidden ? translate('forum', 'admin.showing') : translate('forum', 'admin.hiding'),
+    summary: isCurrentlyHidden
+      ? translate('forum', 'admin.showing')
+      : translate('forum', 'admin.hiding'),
     life: 2000,
   })
 
@@ -116,17 +127,24 @@ async function toggleHideComment(commentId: string, isCurrentlyHidden: boolean) 
       : await adminService.hideComment(commentId)
 
     if (result.isSuccess) {
-      // 成功：清除缓存，重新加载以获取最新状态
+      // 成功：清除缓存即可
       cacheService.clearModule('forum_service')
-      await loadComments()
+
+      // ⚠️ 核心修复：移除这里的 await loadComments() ⚠️
+      // 既然前端已经做了乐观更新，且后端返回了成功，就直接信任本地的最新状态。
+      // 避免因为后端数据库/搜索引擎延迟，立刻拉取到旧列表而导致状态又变回去。
+
       toast.add({
         severity: 'success',
-        summary: isCurrentlyHidden ? translate('forum', 'admin.showSuccess') : translate('forum', 'admin.hideSuccess'),
+        summary: isCurrentlyHidden
+          ? translate('forum', 'admin.showSuccess')
+          : translate('forum', 'admin.hideSuccess'),
         life: 2000,
       })
     } else {
       // 失败：回滚状态
       comment.isHidden = previousHidden
+      if ('hidden' in comment) (comment as any).hidden = previousHidden
       toast.add({
         severity: 'error',
         summary: translate('forum', 'admin.operationFailed'),
@@ -137,6 +155,7 @@ async function toggleHideComment(commentId: string, isCurrentlyHidden: boolean) 
   } catch (e) {
     // 异常：回滚状态
     comment.isHidden = previousHidden
+    if ('hidden' in comment) (comment as any).hidden = previousHidden
     toast.add({
       severity: 'error',
       summary: translate('forum', 'admin.operationFailed'),
@@ -189,7 +208,9 @@ onMounted(() => {
         </svg>
         <h1>{{ translate('forum', 'admin.commentsManagement') }}</h1>
       </div>
-      <span class="admin-header__count">{{ translate('forum', 'comments') }}: {{ totalComments }}</span>
+      <span class="admin-header__count"
+        >{{ translate('forum', 'comments') }}: {{ totalComments }}</span
+      >
     </div>
 
     <!-- 工具栏 -->
@@ -235,7 +256,11 @@ onMounted(() => {
     <!-- 错误提示 -->
     <div v-if="errorMsg" class="admin-error">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+        />
       </svg>
       <span>{{ errorMsg }}</span>
       <button class="admin-btn admin-btn--ghost" @click="errorMsg = ''">×</button>
@@ -250,7 +275,11 @@ onMounted(() => {
     <!-- 空状态 -->
     <div v-else-if="!isLoading && comments.length === 0" class="admin-empty">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+        />
       </svg>
       <h3>{{ translate('forum', 'noComments') }}</h3>
     </div>
@@ -280,7 +309,10 @@ onMounted(() => {
             <span class="admin-card__dot">·</span>
             <span class="admin-card__time">{{ formatTime(comment.createdAt) }}</span>
             <span class="admin-card__dot">·</span>
-            <span class="admin-card__post-link-text" @click.stop="goToPost(comment.postSlug || comment.postId)">
+            <span
+              class="admin-card__post-link-text"
+              @click.stop="goToPost(comment.postSlug || comment.postId)"
+            >
               帖子: {{ comment.postId.substring(0, 8) }}...
             </span>
           </div>
@@ -294,16 +326,28 @@ onMounted(() => {
             :class="{ 'admin-action-btn--active': isHidden(comment) }"
             @click.stop="toggleHideComment(comment.commentId, isHidden(comment))"
             :disabled="operatingCommentId === comment.commentId"
-            :title="isHidden(comment) ? translate('forum', 'admin.show') : translate('forum', 'admin.hide')"
+            :title="
+              isHidden(comment)
+                ? translate('forum', 'admin.show')
+                : translate('forum', 'admin.hide')
+            "
           >
             <!-- 隐藏状态：显示图标 (可恢复) -->
-            <svg v-if="isHidden(comment)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              v-if="isHidden(comment)"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
             <!-- 正常状态：显示图标 -->
             <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+              <path
+                d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"
+              />
               <line x1="1" y1="1" x2="23" y2="23" />
             </svg>
           </button>
@@ -313,11 +357,19 @@ onMounted(() => {
 
     <!-- 分页 -->
     <div v-if="totalPages > 1" class="admin-pagination">
-      <button class="admin-btn admin-btn--secondary" :disabled="currentPage === 0" @click="prevPage">
+      <button
+        class="admin-btn admin-btn--secondary"
+        :disabled="currentPage === 0"
+        @click="prevPage"
+      >
         {{ translate('forum', 'prevPage') }}
       </button>
       <span class="admin-pagination__info">{{ currentPage + 1 }} / {{ totalPages }}</span>
-      <button class="admin-btn admin-btn--secondary" :disabled="currentPage >= totalPages - 1" @click="nextPage">
+      <button
+        class="admin-btn admin-btn--secondary"
+        :disabled="currentPage >= totalPages - 1"
+        @click="nextPage"
+      >
         {{ translate('forum', 'nextPage') }}
       </button>
     </div>

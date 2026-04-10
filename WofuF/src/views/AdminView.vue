@@ -6,6 +6,7 @@ import type { PermissionPoint } from '@M/forum/admin/dtos/Admin.ts'
 import { translate } from '@S/services/i18n'
 import router from '@S/infra/router'
 import PostsManagement from '@M/forum/admin/components/PostsManagement.vue'
+import CommentsManagement from '@M/forum/admin/components/CommentsManagement.vue'
 
 const route = useRoute()
 const internalRouter = useRouter()
@@ -300,18 +301,8 @@ const permissionNames: Record<PermissionPoint, string> = {
         </section>
 
         <!-- 评论管理 -->
-        <section v-else-if="activeTab === 'comments'" class="bf-content-section">
-          <h3 class="bf-section-title">
-            <span class="bf-text-gradient">{{ translate('forum', 'admin.commentsManagement') }}</span>
-          </h3>
-          <div class="bf-coming-soon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            <p>{{ translate('forum', 'admin.comingSoon') }}</p>
-            <span>{{ translate('forum', 'admin.commentsComingSoonDesc') }}</span>
-          </div>
+        <section v-else-if="activeTab === 'comments'" class="bf-content-section bf-no-padding">
+          <CommentsManagement />
         </section>
 
         <!-- 成员管理 -->
