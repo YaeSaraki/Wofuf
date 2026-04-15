@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, watch, reactive, computed, onBeforeMount } from 'vue'
+import { ref, onMounted, watch, computed, onBeforeMount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { PostDto, CommentDto } from '@M/forum/dtos/Post.ts'
 import { forumService } from '@M/forum/services/ForumService.ts'
@@ -49,6 +49,9 @@ const showComments = ref(true)
 // 回复状态
 const replyingToCommentId = ref<string | null>(null)
 
+// 跨页滚动目标评论ID
+const targetScrollCommentId = ref<string | null>(null)
+
 // 获取正在回复的评论数据
 const replyingToComment = computed(() => {
   if (!replyingToCommentId.value) return null
@@ -77,6 +80,65 @@ function handleReply(commentId: string) {
 // 处理回复表单取消
 function handleReplyCancelled() {
   replyingToCommentId.value = null
+}
+
+// 处理回复成功
+async function handleReplyAdded() {
+  const replyTargetId = replyingToCommentId.value
+
+  // 关闭弹窗
+  replyingToCommentId.value = null
+
+  if (!replyTargetId) return
+
+  // 先清空旧定位，避免之后重用同一 ID 无法触发
+  targetScrollCommentId.value = null
+
+  // 刷新评论
+  await fetchComments()
+  await nextTick()
+
+  // 评论完成后跳转到被回复的当前评论位置，而不是新回复的位置
+  targetScrollCommentId.value = replyTargetId
+}
+
+// 处理滚动到评论事件（子评论跨页跳转）
+function handleScrollToComment(commentId: string) {
+  // 找到目标评论
+  const targetComment = findCommentById(commentId)
+  if (!targetComment) return
+
+  // 如果是主评论，直接设置目标滚动ID
+  if (!targetComment.parentCommentId) {
+    targetScrollCommentId.value = commentId
+    return
+  }
+
+  // 子评论：找到其所属的主评论
+  const mainComment = comments.value.find(main =>
+    main.childComments && main.childComments.some(child => child.commentId === commentId)
+  )
+
+  if (mainComment) {
+    // 设置目标滚动ID，让主评论的 watch 处理分页和滚动
+    targetScrollCommentId.value = commentId
+  }
+}
+
+// 查找评论
+function findCommentByIdRecursive(comments: any[], commentId: string): any {
+  for (const comment of comments) {
+    if (comment.commentId === commentId) return comment
+    if (comment.childComments) {
+      const found = findCommentByIdRecursive(comment.childComments, commentId)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+function findCommentById(commentId: string): any {
+  return findCommentByIdRecursive(comments.value, commentId)
 }
 
 /* ---------------- 使用独立的加载状态 ---------------- */
@@ -204,6 +266,8 @@ async function fetchComments() {
     comments.value = result.comments
   }
 }
+
+
 
 // 投票
 async function vote(direction: 'up' | 'down') {
@@ -379,12 +443,12 @@ onMounted(() => {
               :post-slug="post.slug"
               :parent-comment-id="replyingToCommentId ?? undefined"
               :parent-comment="replyingToComment"
-              @reply-added="fetchComments(); replyingToCommentId = null"
+              @reply-added="handleReplyAdded"
               @reply-cancelled="handleReplyCancelled"
             />
 
             <!-- 评论列表 -->
-            <CommentList :comments="comments" :replying-to-comment-id="replyingToCommentId" @reply="handleReply" @reply-cancelled="handleReplyCancelled" @comment-updated="fetchComments" />
+            <CommentList :comments="comments" :replying-to-comment-id="replyingToCommentId" :target-scroll-comment-id="targetScrollCommentId" @scroll-to-comment="handleScrollToComment" @reply="handleReply" @reply-cancelled="handleReplyCancelled" @comment-updated="fetchComments" />
 
             <!-- 无评论提示 -->
             <div v-if="comments.length === 0" class="bf-empty-comments">

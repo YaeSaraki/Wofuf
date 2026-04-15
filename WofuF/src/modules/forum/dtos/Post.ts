@@ -23,7 +23,7 @@ export interface MemberDto {
   memberId: string
   nickname: string
   reputation: number
-  playerId: string | null  // 玩家UUID，用于获取皮肤
+  playerId: string | null // 玩家UUID，用于获取皮肤
 }
 
 // 帖子状态枚举
@@ -47,11 +47,11 @@ export interface PostDto {
   type: PostType
   category: PostCategory
   status?: PostStatus
-  isHidden?: boolean  // 管理功能：兼容 CommentDto 的 isHidden 命名
+  isHidden?: boolean // 管理功能：兼容 CommentDto 的 isHidden 命名
   isPinned?: boolean
-  pinned?: boolean  // API 可能返回的字段名
+  pinned?: boolean // API 可能返回的字段名
   isFeatured?: boolean
-  featured?: boolean  // API 可能返回的字段名
+  featured?: boolean // API 可能返回的字段名
   wasUpvotedByMe: boolean | null
   wasDownvotedByMe: boolean | null
 }
@@ -77,18 +77,24 @@ export interface CommentDto {
   postSlug: string
   postTitle: string
   commentId: string
-  parentCommentId: string | null
+  shortId: string | null // 短 ID（用于显示和引用）
+  parentCommentId: string | null // 直接回复的评论ID
+  rootCommentId: string | null // 所属主评论ID（用于Bilibili风格）
   text: string
   memberId: string
-  memberNickname: string  // 用户昵称
-  playerId: string | null  // 玩家UUID，用于获取皮肤
-  memberPlayerSkin: string | null  // 用户头像皮肤 (base64) - 可能不再由后端返回
+  memberNickname: string // 用户昵称
+  playerId: string | null // 玩家UUID，用于获取皮肤
+  memberPlayerSkin: string | null // 用户头像皮肤 (base64) - 可能不再由后端返回
   createdAt: string
-  childComments: CommentDto[]
+  childComments: CommentDto[] // 子评论列表（后端返回，扁平结构）
+  children?: CommentDto[] // 前端嵌套渲染用
   points: number
-  wasUpvotedByMe: boolean  // 当前用户是否点赞
-  wasDownvotedByMe: boolean  // 当前用户是否点踩
-  isHidden?: boolean  // 评论是否被隐藏（管理功能）
+  wasUpvotedByMe: boolean // 当前用户是否点赞
+  wasDownvotedByMe: boolean // 当前用户是否点踩
+  isHidden?: boolean // 评论是否被隐藏（管理功能）
+  replyToMemberNickname?: string | null // 被回复者的昵称（用于显示"回复 @xxx"）
+  replyToShortId?: string | null // 被回复者的短 ID（用于点击跳转）
+  replyToParentCommentId?: string | null // 被回复者的评论 ID（用于点击跳转定位）
 }
 
 // ========== 请求/响应类型 ==========

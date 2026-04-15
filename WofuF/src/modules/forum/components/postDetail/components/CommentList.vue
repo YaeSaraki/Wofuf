@@ -3,9 +3,14 @@
  * CommentList.vue - 评论列表组件
  *
  * 功能：
- * - 管理评论列表渲染
+ * - 管理评论列表渲染（Bilibili 风格：后端返回扁平结构）
  * - 提供管理员权限检查
  * - 处理回复和隐藏/显示评论事件
+ *
+ * 注意：Bilibili 风格下，后端已处理好：
+ * - 主评论列表（parentCommentId IS NULL）作为根节点
+ * - 每个主评论的 childComments 包含其所有子评论（扁平结构）
+ * - 前端只需要直接渲染后端返回的结构
  */
 import { ref, computed, onMounted, watch } from 'vue'
 import { authService } from '@M/auth/services/AuthService.ts'
@@ -16,52 +21,44 @@ import CommentItem from './CommentItem.vue'
 const props = defineProps<{
   comments: CommentDto[]
   replyingToCommentId?: string | null  // 当前正在回复的评论ID
+  targetScrollCommentId?: string | null  // 目标滚动评论ID
 }>()
 
 const emit = defineEmits<{
   (e: 'reply', commentId: string): void
   (e: 'replyCancelled'): void
   (e: 'commentUpdated', commentId: string): void
+  (e: 'scrollToComment', commentId: string): void
 }>()
 
 // 管理员状态
 const isAdmin = ref(false)
 
-// 将扁平评论列表构建为树结构
-interface CommentNode extends CommentDto {
-  children: CommentNode[]
+// 标准化评论数据（兼容 isHidden/hidden 字段）
+// 用于处理旧数据中可能使用 hidden 而不是 isHidden 的情况
+interface LegacyCommentDto extends CommentDto {
+  hidden?: boolean
 }
 
-function buildCommentTree(comments: CommentDto[]): CommentNode[] {
-  const commentMap = new Map<string, CommentNode>()
-  const rootComments: CommentNode[] = []
-
-  // 先把所有评论转换为节点
-  comments.forEach(comment => {
-    commentMap.set(comment.commentId, {
+function normalizeComments(comments: CommentDto[]): CommentDto[] {
+  return comments.map(comment => {
+    const legacyComment = comment as LegacyCommentDto
+    return {
       ...comment,
-      children: []
-    })
-  })
-
-  // 再遍历一次，构建树结构
-  comments.forEach(comment => {
-    const node = commentMap.get(comment.commentId)!
-    if (comment.parentCommentId && commentMap.has(comment.parentCommentId)) {
-      // 有父评论，加入父评论的 children
-      const parent = commentMap.get(comment.parentCommentId)!
-      parent.children.push(node)
-    } else {
-      // 顶级评论
-      rootComments.push(node)
+      isHidden: comment.isHidden ?? legacyComment.hidden ?? false,
+      childComments: comment.childComments?.map(child => {
+        const legacyChild = child as LegacyCommentDto
+        return {
+          ...child,
+          isHidden: child.isHidden ?? legacyChild.hidden ?? false
+        }
+      }) ?? []
     }
   })
-
-  return rootComments
 }
 
-// 计算属性：构建好的评论树
-const commentTree = computed(() => buildCommentTree(props.comments))
+// 计算属性：标准化后的评论列表（后端已处理好树结构）
+const normalizedComments = computed(() => normalizeComments(props.comments))
 
 // 检查管理员权限
 async function checkAdminPermission() {
@@ -71,10 +68,9 @@ async function checkAdminPermission() {
   }
 
   try {
-    // 使用 forceRefresh: true 强制刷新成员数据，确保权限最新
     const hasPermission = await adminService.hasAnyPermission(
       ['ADMIN_ACCESS', 'COMMENT_DELETE_ANY', 'COMMENT_VIEW_HIDDEN'],
-      true // forceRefresh
+      true
     )
     isAdmin.value = hasPermission
   } catch (e) {
@@ -88,43 +84,51 @@ onMounted(() => {
   checkAdminPermission()
 })
 
-// 监听 comments 变化，重新检查权限（确保评论更新后权限状态正确）
+// 监听 comments 变化，重新检查权限
 watch(
   () => props.comments.length,
   () => {
-    checkAdminPermission()
+    void checkAdminPermission()
   }
 )
 
-// 处理回复事件（透传给父组件）
+// 处理回复事件
 function handleReply(commentId: string) {
   emit('reply', commentId)
 }
 
-// 处理取消回复事件（透传给父组件）
+// 处理取消回复事件
 function handleReplyCancelled() {
   emit('replyCancelled')
 }
 
-// 处理评论更新事件（透传给父组件）
+// 处理评论更新事件
 async function handleCommentUpdated(commentId: string) {
   await checkAdminPermission()
   emit('commentUpdated', commentId)
+}
+
+// 处理滚动到评论事件（子评论跨页跳转）
+function handleScrollToComment(commentId: string) {
+  emit('scrollToComment', commentId)
 }
 </script>
 
 <template>
   <div class="bf-comments-list">
     <CommentItem
-      v-for="comment in commentTree"
+      v-for="comment in normalizedComments"
       :key="comment.commentId"
       :comment="comment"
       :is-admin="isAdmin"
       :depth="0"
       :is-replying-to="replyingToCommentId === comment.commentId"
+      :replying-to-comment-id="replyingToCommentId"
+      :target-scroll-comment-id="targetScrollCommentId"
       @reply="handleReply"
       @reply-cancelled="handleReplyCancelled"
       @comment-updated="handleCommentUpdated"
+      @scroll-to-comment="handleScrollToComment"
     />
   </div>
 </template>

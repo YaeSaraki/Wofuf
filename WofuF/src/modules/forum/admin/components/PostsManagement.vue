@@ -49,6 +49,39 @@ const operatingPostId = ref<string | null>(null)
 // 头像缓存
 const avatarCache = ref<Record<string, string>>({})
 
+// ==================== 权限状态 ====================
+const permissions = ref<Set<string>>(new Set())
+const isLoadingPermissions = ref(false)
+
+async function loadPermissions() {
+  isLoadingPermissions.value = true
+  try {
+    // 获取当前用户权限
+    const hasPin = await adminService.hasPermission('POST_PIN')
+    const hasFeature = await adminService.hasPermission('POST_FEATURE')
+    const hasHide = await adminService.hasPermission('POST_HIDE')
+    const hasReview = await adminService.hasPermission('POST_REVIEW')
+    const hasDelete = await adminService.hasPermission('POST_DELETE_ANY')
+
+    const perms = new Set<string>()
+    if (hasPin) perms.add('POST_PIN')
+    if (hasFeature) perms.add('POST_FEATURE')
+    if (hasHide) perms.add('POST_HIDE')
+    if (hasReview) perms.add('POST_REVIEW')
+    if (hasDelete) perms.add('POST_DELETE_ANY')
+
+    permissions.value = perms
+  } catch (e) {
+    console.warn('[PostsManagement] Failed to load permissions:', e)
+  } finally {
+    isLoadingPermissions.value = false
+  }
+}
+
+function hasPermission(perm: string): boolean {
+  return permissions.value.has(perm)
+}
+
 // ==================== 辅助函数 ====================
 function getPostStatus(post: PostDto): string {
   return post.status || PostStatus.NORMAL
@@ -163,6 +196,17 @@ async function loadPosts() {
 async function pinPost(postId: string, isCurrentlyPinned: boolean) {
   if (!postId) return
 
+  // 权限检查
+  if (!hasPermission('POST_PIN')) {
+    toast.add({
+      severity: 'warn',
+      summary: '无权限',
+      detail: '您没有置顶帖子的权限',
+      life: 3000,
+    })
+    return
+  }
+
   // 乐观更新：立即翻转状态
   const index = posts.value.findIndex(p => p.postId === postId)
   if (index === -1) return
@@ -217,6 +261,17 @@ async function pinPost(postId: string, isCurrentlyPinned: boolean) {
 // 加精/取消加精
 async function featurePost(postId: string, isCurrentlyFeatured: boolean) {
   if (!postId) return
+
+  // 权限检查
+  if (!hasPermission('POST_FEATURE')) {
+    toast.add({
+      severity: 'warn',
+      summary: '无权限',
+      detail: '您没有加精帖子的权限',
+      life: 3000,
+    })
+    return
+  }
 
   // 乐观更新：立即翻转状态
   const index = posts.value.findIndex(p => p.postId === postId)
@@ -273,6 +328,17 @@ async function featurePost(postId: string, isCurrentlyFeatured: boolean) {
 async function hidePost(postId: string, isCurrentlyHidden: boolean) {
   if (!postId) return
 
+  // 权限检查
+  if (!hasPermission('POST_HIDE')) {
+    toast.add({
+      severity: 'warn',
+      summary: '无权限',
+      detail: '您没有隐藏帖子的权限',
+      life: 3000,
+    })
+    return
+  }
+
   // 乐观更新：立即翻转状态
   const index = posts.value.findIndex(p => p.postId === postId)
   if (index === -1) return
@@ -298,8 +364,9 @@ async function hidePost(postId: string, isCurrentlyHidden: boolean) {
       : await adminService.hidePost(postId)
 
     if (result.isSuccess) {
-      // 成功：清除缓存
+      // 成功：清除缓存并重新加载
       cacheService.clearModule('forum_service')
+      await loadPosts()
     } else {
       // 失败：回滚状态
       post.status = previousStatus
@@ -329,6 +396,18 @@ async function reviewPost(postId: string) {
     errorMsg.value = 'Post ID is missing'
     return
   }
+
+  // 权限检查
+  if (!hasPermission('POST_REVIEW')) {
+    toast.add({
+      severity: 'warn',
+      summary: '无权限',
+      detail: '您没有审核帖子的权限',
+      life: 3000,
+    })
+    return
+  }
+
   operatingPostId.value = postId
   try {
     const result = await adminService.setPostUnderReview(postId)
@@ -369,6 +448,18 @@ async function approvePost(postId: string) {
     errorMsg.value = 'Post ID is missing'
     return
   }
+
+  // 权限检查
+  if (!hasPermission('POST_REVIEW')) {
+    toast.add({
+      severity: 'warn',
+      summary: '无权限',
+      detail: '您没有审核帖子的权限',
+      life: 3000,
+    })
+    return
+  }
+
   operatingPostId.value = postId
   try {
     const result = await adminService.approvePost(postId)
@@ -478,6 +569,7 @@ watch(() => route.query, (newQuery) => {
 // ==================== 生命周期 ====================
 onMounted(() => {
   loadPosts()
+  loadPermissions()
 })
 </script>
 
@@ -627,6 +719,7 @@ onMounted(() => {
         <!-- 操作按钮组 -->
         <div class="admin-card__actions">
           <button
+            v-if="hasPermission('POST_PIN')"
             class="admin-action-btn admin-action-btn--pin"
             :class="{ 'admin-action-btn--active': getIsPinned(post) }"
             @click.stop="pinPost(post.postId!, getIsPinned(post))"
@@ -637,6 +730,7 @@ onMounted(() => {
           </button>
 
           <button
+            v-if="hasPermission('POST_FEATURE')"
             class="admin-action-btn admin-action-btn--feature"
             :class="{ 'admin-action-btn--active': getIsFeatured(post) }"
             @click.stop="featurePost(post.postId!, getIsFeatured(post))"
@@ -647,6 +741,7 @@ onMounted(() => {
           </button>
 
           <button
+            v-if="hasPermission('POST_HIDE')"
             class="admin-action-btn admin-action-btn--hide"
             :class="{ 'admin-action-btn--active': isHidden(post) }"
             @click.stop="hidePost(post.postId!, isHidden(post))"
@@ -657,10 +752,10 @@ onMounted(() => {
             <span v-else class="action-icon action-icon--hide">●</span>
           </button>
 
-          <div class="admin-action-divider"></div>
+          <div v-if="hasPermission('POST_REVIEW')" class="admin-action-divider"></div>
 
           <button
-            v-if="isUnderReview(post)"
+            v-if="hasPermission('POST_REVIEW') && isUnderReview(post)"
             class="admin-action-btn admin-action-btn--approve"
             @click.stop="approvePost(post.postId!)"
             :disabled="operatingPostId === post.postId"
@@ -670,7 +765,7 @@ onMounted(() => {
           </button>
 
           <button
-            v-if="!isUnderReview(post)"
+            v-if="hasPermission('POST_REVIEW') && !isUnderReview(post)"
             class="admin-action-btn admin-action-btn--review"
             @click.stop="reviewPost(post.postId!)"
             :disabled="operatingPostId === post.postId"
@@ -1071,9 +1166,12 @@ onMounted(() => {
 }
 
 .admin-badge--hidden {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+  font-size: 14px;
+  color: #8B5CF6;
+  text-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.6));
+  border: none;
+  background: none;
 }
 
 .admin-badge--featured {

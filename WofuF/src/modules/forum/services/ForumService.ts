@@ -505,6 +505,35 @@ export class ForumService implements IForumService {
   }
 
   /**
+   * 根据 slug 回复帖子
+   */
+  public async replyToPostBySlug(
+    postSlug: string,
+    data: ReplyToPostRequest,
+    options?: RequestOptions,
+  ): Promise<Result<void>> {
+    try {
+      const response = await http.post<ApiResponse<void>>(
+        `/api/v1/forum/posts/slug/${postSlug}/replies`,
+        data,
+        {
+          signal: options?.signal,
+          headers: authService.getAuthHeaders(),
+        }
+      )
+
+      if (response.data.success) {
+        cacheService.clearModule(ForumService.CACHE_MODULE)
+        return Result.success(undefined)
+      }
+      return Result.failure(response.data.message || '回复失败')
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+    }
+  }
+
+  /**
    * 回复评论
    */
   public async replyToComment(

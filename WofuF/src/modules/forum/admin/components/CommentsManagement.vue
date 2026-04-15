@@ -17,9 +17,14 @@ const currentPage = ref(0)
 const pageSize = ref(20)
 const totalComments = ref(0)
 const searchQuery = ref('')
+const contentSearchQuery = ref('')
 
 // 操作中的评论ID
 const operatingCommentId = ref<string | null>(null)
+
+// 批量选择状态
+const selectedCommentIds = ref<Set<string>>(new Set())
+const isBatchOperating = ref(false)
 
 // ==================== 计算属性 ====================
 const totalPages = computed(() => Math.ceil(totalComments.value / pageSize.value))
@@ -49,7 +54,7 @@ function isHidden(comment: CommentSummary): boolean {
   // 确保返回严格的布尔值
   // 兼容后端省略 false 字段（undefined）或字段名差异（hidden / status）的情况
   return Boolean(
-    comment.isHidden || (comment as any).hidden || (comment as any).status === 'HIDDEN',
+    comment.isHidden === true || (comment as any).hidden === true || (comment as any).status === 'HIDDEN',
   )
 }
 
@@ -73,12 +78,15 @@ async function loadComments() {
       currentPage.value,
       pageSize.value,
       searchQuery.value.trim() || undefined,
+      contentSearchQuery.value.trim() || undefined,
       true, // 包含隐藏评论，用于管理
     )
 
     if (result.isSuccess) {
       comments.value = result.getValue().comments
       totalComments.value = result.getValue().total
+      // 清空选择
+      selectedCommentIds.value.clear()
     } else {
       errorMsg.value = String(result.error) || translate('forum', 'error')
     }
@@ -93,20 +101,6 @@ async function loadComments() {
 // 隐藏/显示评论
 async function toggleHideComment(commentId: string, isCurrentlyHidden: boolean) {
   if (!commentId) return
-
-  const index = comments.value.findIndex((c) => c.commentId === commentId)
-  if (index === -1) return
-
-  const comment = comments.value[index]!
-
-  // 使用修复后的 isHidden 函数记录上一个状态，用于失败时回滚
-  const previousHidden = isHidden(comment)
-
-  // 乐观更新：立即翻转状态（同时兼容可能存在的 hidden 字段）
-  comment.isHidden = !isCurrentlyHidden
-  if ('hidden' in comment) {
-    ;(comment as any).hidden = !isCurrentlyHidden
-  }
 
   // 显示提示
   toast.add({
@@ -127,13 +121,6 @@ async function toggleHideComment(commentId: string, isCurrentlyHidden: boolean) 
       : await adminService.hideComment(commentId)
 
     if (result.isSuccess) {
-      // 成功：清除缓存即可
-      cacheService.clearModule('forum_service')
-
-      // ⚠️ 核心修复：移除这里的 await loadComments() ⚠️
-      // 既然前端已经做了乐观更新，且后端返回了成功，就直接信任本地的最新状态。
-      // 避免因为后端数据库/搜索引擎延迟，立刻拉取到旧列表而导致状态又变回去。
-
       toast.add({
         severity: 'success',
         summary: isCurrentlyHidden
@@ -141,10 +128,9 @@ async function toggleHideComment(commentId: string, isCurrentlyHidden: boolean) 
           : translate('forum', 'admin.hideSuccess'),
         life: 2000,
       })
+      // 重新加载评论列表，确保数据一致
+      await loadComments()
     } else {
-      // 失败：回滚状态
-      comment.isHidden = previousHidden
-      if ('hidden' in comment) (comment as any).hidden = previousHidden
       toast.add({
         severity: 'error',
         summary: translate('forum', 'admin.operationFailed'),
@@ -153,9 +139,6 @@ async function toggleHideComment(commentId: string, isCurrentlyHidden: boolean) 
       })
     }
   } catch (e) {
-    // 异常：回滚状态
-    comment.isHidden = previousHidden
-    if ('hidden' in comment) (comment as any).hidden = previousHidden
     toast.add({
       severity: 'error',
       summary: translate('forum', 'admin.operationFailed'),
@@ -164,6 +147,122 @@ async function toggleHideComment(commentId: string, isCurrentlyHidden: boolean) 
     })
   } finally {
     operatingCommentId.value = null
+  }
+}
+
+// ==================== 批量选择操作 ====================
+// 切换评论选择状态
+function toggleCommentSelection(commentId: string) {
+  if (selectedCommentIds.value.has(commentId)) {
+    selectedCommentIds.value.delete(commentId)
+  } else {
+    selectedCommentIds.value.add(commentId)
+  }
+  // 触发响应式更新
+  selectedCommentIds.value = new Set(selectedCommentIds.value)
+}
+
+// 全选/取消全选
+function toggleSelectAll() {
+  if (selectedCommentIds.value.size === comments.value.length) {
+    selectedCommentIds.value.clear()
+  } else {
+    selectedCommentIds.value = new Set(comments.value.map(c => c.commentId))
+  }
+  selectedCommentIds.value = new Set(selectedCommentIds.value)
+}
+
+// 是否全选
+const isAllSelected = computed(() => {
+  return comments.value.length > 0 && selectedCommentIds.value.size === comments.value.length
+})
+
+// 是否有选中
+const hasSelection = computed(() => selectedCommentIds.value.size > 0)
+
+// 批量隐藏
+async function batchHide() {
+  if (!hasSelection.value) return
+
+  isBatchOperating.value = true
+  const ids = Array.from(selectedCommentIds.value)
+
+  toast.add({
+    severity: 'info',
+    summary: translate('forum', 'admin.hiding'),
+    life: 2000,
+  })
+
+  try {
+    const result = await adminService.batchHideComments(ids)
+    if (result.isSuccess) {
+      const data = result.getValue()
+      toast.add({
+        severity: 'success',
+        summary: `批量隐藏完成: ${data.successCount} 成功, ${data.failCount} 失败`,
+        life: 3000,
+      })
+      await loadComments()
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: translate('forum', 'admin.operationFailed'),
+        detail: String(result.error),
+        life: 5000,
+      })
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: translate('forum', 'admin.operationFailed'),
+      detail: String(e),
+      life: 5000,
+    })
+  } finally {
+    isBatchOperating.value = false
+  }
+}
+
+// 批量显示
+async function batchShow() {
+  if (!hasSelection.value) return
+
+  isBatchOperating.value = true
+  const ids = Array.from(selectedCommentIds.value)
+
+  toast.add({
+    severity: 'info',
+    summary: translate('forum', 'admin.showing'),
+    life: 2000,
+  })
+
+  try {
+    const result = await adminService.batchShowComments(ids)
+    if (result.isSuccess) {
+      const data = result.getValue()
+      toast.add({
+        severity: 'success',
+        summary: `批量显示完成: ${data.successCount} 成功, ${data.failCount} 失败`,
+        life: 3000,
+      })
+      await loadComments()
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: translate('forum', 'admin.operationFailed'),
+        detail: String(result.error),
+        life: 5000,
+      })
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: translate('forum', 'admin.operationFailed'),
+      detail: String(e),
+      life: 5000,
+    })
+  } finally {
+    isBatchOperating.value = false
   }
 }
 
@@ -215,7 +314,7 @@ onMounted(() => {
 
     <!-- 工具栏 -->
     <div class="admin-toolbar">
-      <!-- 搜索 -->
+      <!-- 作者搜索 -->
       <div class="admin-search">
         <svg
           class="admin-search__icon"
@@ -230,7 +329,27 @@ onMounted(() => {
         <input
           v-model="searchQuery"
           type="text"
-          :placeholder="translate('forum', 'searchComments')"
+          :placeholder="translate('forum', 'searchByAuthor') || '按作者搜索'"
+          class="admin-search__input"
+          @input="onSearchInput"
+        />
+      </div>
+
+      <!-- 内容搜索 -->
+      <div class="admin-search">
+        <svg
+          class="admin-search__icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+        </svg>
+        <input
+          v-model="contentSearchQuery"
+          type="text"
+          placeholder="按内容搜索..."
           class="admin-search__input"
           @input="onSearchInput"
         />
@@ -252,6 +371,40 @@ onMounted(() => {
         {{ translate('forum', 'refresh') }}
       </button>
     </div>
+
+    <!-- 批量操作栏 -->
+    <Transition name="bf-slide">
+      <div v-if="hasSelection" class="admin-batch-bar">
+        <div class="admin-batch-bar__info">
+          <span class="admin-batch-bar__count">{{ selectedCommentIds.size }}</span>
+          <span class="admin-batch-bar__label">已选择</span>
+        </div>
+        <div class="admin-batch-bar__actions">
+          <button
+            class="admin-btn admin-btn--hide"
+            @click="batchHide"
+            :disabled="isBatchOperating"
+          >
+            <span class="admin-btn__symbol">⊘</span>
+            隐藏
+          </button>
+          <button
+            class="admin-btn admin-btn--show"
+            @click="batchShow"
+            :disabled="isBatchOperating"
+          >
+            <span class="admin-btn__symbol">⊙</span>
+            显示
+          </button>
+          <button
+            class="admin-btn admin-btn--cancel"
+            @click="selectedCommentIds.clear(); selectedCommentIds = new Set()"
+          >
+            <span class="admin-btn__symbol">×</span>
+          </button>
+        </div>
+      </div>
+    </Transition>
 
     <!-- 错误提示 -->
     <div v-if="errorMsg" class="admin-error">
@@ -290,8 +443,21 @@ onMounted(() => {
         v-for="comment in comments"
         :key="comment.commentId"
         class="admin-card"
-        :class="{ 'admin-card--hidden': isHidden(comment) }"
+        :class="{
+          'admin-card--hidden': isHidden(comment),
+          'admin-card--selected': selectedCommentIds.has(comment.commentId)
+        }"
       >
+        <!-- 选择框 -->
+        <div class="admin-card__checkbox">
+          <input
+            type="checkbox"
+            :checked="selectedCommentIds.has(comment.commentId)"
+            @click.stop="toggleCommentSelection(comment.commentId)"
+            class="admin-checkbox"
+          />
+        </div>
+
         <!-- 卡片主体 -->
         <div class="admin-card__main" @click="goToPost(comment.postSlug || comment.postId)">
           <!-- 顶部：内容预览 + 徽章 -->
@@ -299,7 +465,7 @@ onMounted(() => {
             <p class="admin-card__text">{{ comment.content }}</p>
             <!-- 徽章 -->
             <div class="admin-card__badges">
-              <span v-if="isHidden(comment)" class="admin-badge admin-badge--hidden">已隐藏</span>
+              <span v-if="isHidden(comment)" class="admin-badge admin-badge--hidden" title="已隐藏">◉</span>
             </div>
           </div>
 
@@ -434,7 +600,7 @@ onMounted(() => {
 /* 搜索框 */
 .admin-search {
   flex: 1;
-  min-width: 200px;
+  min-width: 180px;
   position: relative;
 }
 
@@ -468,6 +634,132 @@ onMounted(() => {
 .admin-search__input:focus {
   border-color: var(--bf-border-accent);
   background: var(--bf-btn-secondary-bg);
+}
+
+/* === 批量操作栏 === */
+.admin-batch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--bf-space-sm, 12px) var(--bf-space-lg, 20px);
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(255, 159, 28, 0.08) 100%);
+  border: 1px solid rgba(255, 107, 53, 0.25);
+  border-radius: var(--bf-card-radius, 16px);
+  backdrop-filter: blur(10px);
+}
+
+.admin-batch-bar__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-batch-bar__count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  background: var(--bf-fire-gradient);
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.admin-batch-bar__label {
+  font-size: 14px;
+  color: var(--bf-text-secondary);
+}
+
+.admin-batch-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 符号按钮 */
+.admin-btn__symbol {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* 按钮变体 */
+.admin-btn--hide {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 1rem;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 100px;
+  color: #a78bfa;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-btn--hide:hover:not(:disabled) {
+  background: rgba(139, 92, 246, 0.25);
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #c4b5fd;
+}
+
+.admin-btn--show {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 1rem;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 100px;
+  color: #4ade80;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-btn--show:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #86efac;
+}
+
+.admin-btn--cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--bf-border-default);
+  border-radius: 100px;
+  color: var(--bf-text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-btn--cancel:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--bf-border-accent);
+  color: var(--bf-text-primary);
+}
+
+/* 批量操作栏过渡动画 */
+.bf-slide-enter-active,
+.bf-slide-leave-active {
+  transition: all 0.25s ease;
+}
+
+.bf-slide-enter-from,
+.bf-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 /* 按钮 */
@@ -638,6 +930,33 @@ onMounted(() => {
   opacity: 1;
 }
 
+.admin-card--selected {
+  border-color: rgba(255, 107, 53, 0.4);
+  background: rgba(255, 107, 53, 0.03);
+}
+
+.admin-card--selected::before {
+  background: var(--bf-fire-gradient);
+  opacity: 1;
+}
+
+/* 选择框 */
+.admin-card__checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--bf-space-sm, 10px);
+  flex-shrink: 0;
+}
+
+.admin-card__checkbox .admin-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--bf-primary);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
 /* 卡片主体 */
 .admin-card__main {
   flex: 1;
@@ -683,9 +1002,12 @@ onMounted(() => {
 }
 
 .admin-badge--hidden {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+  font-size: 14px;
+  color: #8B5CF6;
+  text-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.6));
+  border: none;
+  background: none;
 }
 
 .admin-card__meta {
