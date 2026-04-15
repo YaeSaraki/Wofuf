@@ -363,6 +363,17 @@
   border: none;
 }
 
+/* 隐藏徽章（统一样式） */
+.bf-badge--hidden {
+  font-size: 14px;
+  color: #8B5CF6;
+  text-shadow: 0 0 8px rgba(139, 92, 246, 0.8);
+  filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.6));
+  border: none;
+  background: none;
+  padding: 0;
+}
+
 /* === 分割线 === */
 .bf-divider {
   height: 1px;

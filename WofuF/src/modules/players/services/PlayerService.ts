@@ -51,7 +51,7 @@ export class PlayerService implements IPlayerService {
       cacheKey,
       async () => {
         try {
-          const response = await http.get<ApiResponse<PlayerNameList>>('/v1/players/random-profile', {
+          const response = await http.get<ApiResponse<PlayerNameList>>('/api/v1/players/random-profile', {
             signal: options?.signal,
             params,
           })

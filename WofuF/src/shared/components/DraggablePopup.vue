@@ -22,11 +22,14 @@ const props = withDefaults(
     maxHeight?: string | number
     // z-index 层级
     zIndex?: number
+    // 点击外部是否关闭（默认 true）
+    closeOnExternalClick?: boolean
   }>(),
   {
     width: 320,
     maxHeight: 400,
     zIndex: 10000,
+    closeOnExternalClick: true,
   },
 )
 
@@ -60,8 +63,6 @@ let cleanupExternalClick: (() => void) | null = null
 
 // 计算弹窗样式（核心：边界检测 + 拖拽位置计算）
 const popupStyle = computed(() => {
-  if (!props.visible) return { display: 'none' }
-
   // 获取弹窗实际尺寸（优先 DOM 渲染值，其次默认值/Props 值）
   const menuWidth = typeof props.width === 'number' ? props.width : parseInt(props.width) || 320
   const menuHeight = popupRef.value?.offsetHeight || parseInt(props.maxHeight as string) || 400
@@ -86,13 +87,14 @@ const popupStyle = computed(() => {
   const transform = dragState.value.isDragging ? 'scale(0.98)' : 'scale(1)'
 
   return {
+    position: 'fixed' as const,
     left: `${x}px`,
     top: `${y}px`,
     width: typeof props.width === 'string' ? props.width : `${props.width}px`,
     maxHeight: typeof props.maxHeight === 'string' ? props.maxHeight : `${props.maxHeight}px`,
     transform,
     display: 'block',
-    zIndex: props.zIndex,
+    zIndex: props.zIndex + 1, // popup above overlay
   }
 })
 
@@ -117,6 +119,9 @@ const initPopup = () => {
 
 // 设置外部点击关闭监听
 const setupExternalClickHandler = () => {
+  // 如果不需要外部点击关闭，跳过
+  if (!props.closeOnExternalClick) return
+
   // 清理旧监听
   if (cleanupExternalClick) {
     cleanupExternalClick()
@@ -125,7 +130,7 @@ const setupExternalClickHandler = () => {
   const handleClickOutside = (event: MouseEvent | TouchEvent) => {
     // 拖拽时不关闭
     if (dragState.value.isDragging) return
-    
+
     if (popupRef.value && !popupRef.value.contains(event.target as Node)) {
       emit('close')
     }
@@ -134,7 +139,7 @@ const setupExternalClickHandler = () => {
   // 同时监听 mouseup 和 touchend 以支持移动端
   document.addEventListener('mouseup', handleClickOutside)
   document.addEventListener('touchend', handleClickOutside)
-  
+
   cleanupExternalClick = () => {
     document.removeEventListener('mouseup', handleClickOutside)
     document.removeEventListener('touchend', handleClickOutside)
@@ -283,19 +288,40 @@ defineExpose({
 </script>
 
 <template>
-  <!-- 通用可拖拽弹窗容器 - 液态玻璃效果 -->
-  <div
-    ref="popupRef"
-    :style="popupStyle"
-    class="draggable-popup shadow-xl rounded-2xl overflow-y-auto no-scrollbar flex flex-col"
-    :class="{ 'draggable-popup--dark': isDark }"
-    @click.stop
-  >
-    <slot :closePopup="closePopup" :handleDragStart="handleDragStart" name="content" />
+  <!-- 遮罩层 + 通用可拖拽弹窗容器 -->
+  <div v-if="visible" class="draggable-popup-wrapper">
+    <div class="draggable-popup-overlay" @click.self="$emit('close')"></div>
+    <div
+      ref="popupRef"
+      :style="popupStyle"
+      class="draggable-popup shadow-xl rounded-2xl overflow-y-auto no-scrollbar flex flex-col"
+      :class="{ 'draggable-popup--dark': isDark }"
+      @click.stop
+    >
+      <slot :closePopup="closePopup" :handleDragStart="handleDragStart" name="content" />
+    </div>
   </div>
 </template>
 
 <style scoped>
+.draggable-popup-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+}
+
+.draggable-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
 .draggable-popup {
   position: fixed;
   /* 液态玻璃效果 - 增强版 */

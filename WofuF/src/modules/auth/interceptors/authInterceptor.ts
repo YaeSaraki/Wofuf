@@ -59,9 +59,18 @@ export function setupAuthInterceptor(): void {
   // 请求拦截器
   http.interceptors.request.use(
     async (config) => {
-      // 公开 API 不需要认证
+      // 即使是公开 API，也要尝试添加认证头（用于识别管理员）
+      // 如果用户已登录，添加认证头让后端能识别用户身份
       if (isPublicPath(config.url)) {
-        console.debug('[AuthInterceptor] 公开路径，跳过认证:', config.url)
+        console.debug('[AuthInterceptor] 公开路径，尝试添加认证头:', config.url)
+        // 即使是公开路径，如果用户已登录，也添加认证头
+        const authHeaders = authService.getAuthHeaders()
+        if (authHeaders['MeoKey']) {
+          Object.entries(authHeaders).forEach(([key, value]) => {
+            config.headers.set(key, value)
+          })
+          console.debug('[AuthInterceptor] 已为公开路径添加认证头')
+        }
         return config
       }
 

@@ -98,6 +98,7 @@ export const PlayerApiConstantV1 = {
   Param: {
     PLAYER_ID: ApiParam.PLAYER_ID,
     PLAYER_NAME_OR_UUID: ApiParam.PLAYER_NAME_OR_UUID,
+    PLAYER_UUID: 'playerUuid',
   },
 
   // 基础路径
@@ -106,6 +107,21 @@ export const PlayerApiConstantV1 = {
     BY_ID: `${API_BASE_PATH}/players/{${ApiParam.PLAYER_ID}}`,
     BY_NAME_OR_UUID: `${API_BASE_PATH}/players/playerNameOrUuid/{${ApiParam.PLAYER_NAME_OR_UUID}}`,
     RANDOM: `${API_BASE_PATH}/players/random`,
+  },
+
+  // 玩家数据路径
+  Data: {
+    ADVANCEMENTS: `${API_BASE_PATH}/players/advancements/{playerUuid}`,
+    STATISTICS: `${API_BASE_PATH}/players/statistics/{playerUuid}`,
+    SKINS: `${API_BASE_PATH}/players/skins/{playerUuid}`,
+  },
+
+  // 特殊功能路径
+  Features: {
+    RANDOM_PROFILE: `${API_BASE_PATH}/players/random-profile`,
+    YESTERDAY_ONLINE: `${API_BASE_PATH}/players/yesterday`,
+    SEARCH: `${API_BASE_PATH}/players/search`,
+    SERVER_STATUS: `${API_BASE_PATH}/players/server-status`,
   },
 
   // 玩家相关路径

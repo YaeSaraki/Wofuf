@@ -103,7 +103,7 @@ export class AuthService implements IAuthService {
   ): Promise<Result<LoginResponse>> {
     try {
       const response = await http.post<ApiResponse<LoginResponse>>(
-        '/api/v1/users/me/sessions',
+        UserApiConstantV1.Me.SESSIONS,
         data,
         { signal: options?.signal }
       )
@@ -132,7 +132,7 @@ export class AuthService implements IAuthService {
   ): Promise<Result<RefreshTokenResponse>> {
     try {
       const response = await http.post<ApiResponse<RefreshTokenResponse>>(
-        '/api/v1/users/me/tokens',
+        UserApiConstantV1.Me.TOKENS,
         { refreshToken },
         {
           signal: options?.signal,
@@ -164,7 +164,7 @@ export class AuthService implements IAuthService {
   public async logout(options?: RequestOptions): Promise<Result<void>> {
     try {
       const response = await http.delete<ApiResponse<void>>(
-        '/api/v1/users/me/sessions',
+        UserApiConstantV1.Me.SESSIONS,
         {
           signal: options?.signal,
           headers: this.getAuthHeaders(),
@@ -197,7 +197,7 @@ export class AuthService implements IAuthService {
 
     try {
       const response = await http.get<ApiResponse<User>>(
-        '/api/v1/users/me',
+        UserApiConstantV1.Base.ME,
         {
           signal: options?.signal,
           headers: this.getAuthHeaders(),
@@ -220,7 +220,7 @@ export class AuthService implements IAuthService {
   public async deleteUser(options?: RequestOptions): Promise<Result<void>> {
     try {
       const response = await http.delete<ApiResponse<void>>(
-        '/api/v1/users',
+        UserApiConstantV1.Base.ROOT,
         {
           signal: options?.signal,
           headers: this.getAuthHeaders(),
