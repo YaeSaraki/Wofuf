@@ -15,11 +15,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.security.MessageDigest
 
-/**
- * 图片上传UseCase
- * @author YaeSaraki
- * @email ikaraswork@iCloud.com
- */
 @Service
 class UploadImageUseCase(
     private val imageStorageService: ImageStorageService,
@@ -29,9 +24,6 @@ class UploadImageUseCase(
 
     private val logger = LoggerFactory.getLogger(UploadImageUseCase::class.java)
 
-    /**
-     * 请求包装类，包含文件和文件夹信息
-     */
     data class Request(
         val file: MultipartFile,
         val folder: String = "posts"
@@ -41,60 +33,78 @@ class UploadImageUseCase(
         val file = request.file
         val baseFolder = request.folder
 
-        // 验证文件是否为空
         if (file.isEmpty) {
             return UploadImageErrors.FileEmptyError()
         }
 
         try {
-            // 计算文件MD5
             val fileBytes = file.bytes
             val md5 = calculateMD5(fileBytes)
 
-            // 先检查数据库是否已存在相同MD5的图片（真正的全局去重）
             val existingImage = imageRepo.findByMd5(md5)
             if (existingImage != null) {
-                logger.info("Image with MD5 $md5 already exists in database, returning existing URL: ${existingImage.url}")
-                val markdown = "![${file.originalFilename ?: "image"}](${existingImage.url})"
-                return Result.success(
-                    UploadImageDto.Response(
-                        url = existingImage.url,
-                        markdown = markdown,
-                        md5 = md5,
-                        isDuplicate = true
+                if (existingImage.objectName.isNotBlank()) {
+                    // 有有效objectName，返回干净的URL
+                    val cleanUrl = "/api/v1/forum/images/" + md5
+                    logger.info("Image with MD5 $md5 already exists in database, returning clean URL")
+                    val markdown = "![" + (file.originalFilename ?: "image") + "](" + cleanUrl + ")"
+                    return Result.success(
+                        UploadImageDto.Response(
+                            url = cleanUrl,
+                            markdown = markdown,
+                            md5 = md5,
+                            isDuplicate = true
+                        )
                     )
-                )
+                } else {
+                    // 有记录但objectName为空（旧数据），需要更新
+                    logger.info("Image with MD5 $md5 exists but has empty objectName, will update")
+                }
             }
 
-            // 获取当前用户ID并构建成员专属文件夹
             val memberId = getCurrentMemberId()
             val folder = if (memberId != null) "members/$memberId/$baseFolder" else baseFolder
 
-            // 上传图片到MinIO
             val uploadResult = imageStorageService.uploadImage(file, folder)
 
-            // 保存图片元数据到数据库
-            val image = Image.create(
-                url = uploadResult.url,
-                md5 = md5,
-                folder = folder,
-                uploaderId = memberId,
-                fileSize = file.size,
-                contentType = file.contentType ?: "image/jpeg",
-                fileName = file.originalFilename ?: "image"
-            )
+            val image = if (existingImage != null) {
+                // 更新已有记录
+                Image.createWithId(
+                    id = dev.saraki.wofuf.shared.domain.UniqueEntityId(existingImage.imageId),
+                    objectName = uploadResult.objectName,
+                    md5 = md5,
+                    folder = folder,
+                    uploaderId = memberId ?: existingImage.uploaderId,
+                    uploadedAt = existingImage.uploadedAt,
+                    fileSize = file.size,
+                    contentType = file.contentType ?: "image/jpeg",
+                    fileName = file.originalFilename ?: existingImage.fileName
+                )
+            } else {
+                // 创建新记录
+                Image.create(
+                    objectName = uploadResult.objectName,
+                    md5 = md5,
+                    folder = folder,
+                    uploaderId = memberId,
+                    fileSize = file.size,
+                    contentType = file.contentType ?: "image/jpeg",
+                    fileName = file.originalFilename ?: "image"
+                )
+            }
             imageRepo.save(image)
             logger.info("Image uploaded successfully (MD5: $md5, folder: $folder)")
 
-            // 生成Markdown格式
-            val markdown = "![${file.originalFilename ?: "image"}](${uploadResult.url})"
+            // 返回干净的URL格式
+            val cleanUrl = "/api/v1/forum/images/" + md5
+            val markdown = "![" + (file.originalFilename ?: "image") + "](" + cleanUrl + ")"
 
             return Result.success(
                 UploadImageDto.Response(
-                    url = uploadResult.url,
+                    url = cleanUrl,
                     markdown = markdown,
                     md5 = md5,
-                    isDuplicate = false
+                    isDuplicate = existingImage != null
                 )
             )
         } catch (e: ImageUploadException) {
@@ -111,9 +121,6 @@ class UploadImageUseCase(
         }
     }
 
-    /**
-     * 获取当前成员的ID
-     */
     private fun getCurrentMemberId(): String? {
         val userId = JwtAuthFilter.getCurrentUserId() ?: return null
         return try {
@@ -125,9 +132,6 @@ class UploadImageUseCase(
         }
     }
 
-    /**
-     * 计算文件的MD5哈希值
-     */
     private fun calculateMD5(bytes: ByteArray): String {
         val md = MessageDigest.getInstance("MD5")
         val digest = md.digest(bytes)

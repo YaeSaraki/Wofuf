@@ -13,7 +13,7 @@ class Image private constructor(
     id: UniqueEntityId?,
 ) : AggregateRoot<ImageProps>(props, id) {
 
-    val url: String get() = props.url
+    val objectName: String get() = props.objectName
     val md5: String get() = props.md5
     val folder: String get() = props.folder
     val uploaderId: String? get() = props.uploaderId
@@ -25,7 +25,7 @@ class Image private constructor(
 
     companion object {
         fun create(
-            url: String,
+            objectName: String,
             md5: String,
             folder: String,
             uploaderId: String?,
@@ -35,7 +35,7 @@ class Image private constructor(
         ): Image {
             return Image(
                 props = ImageProps(
-                    url = url,
+                    objectName = objectName,
                     md5 = md5,
                     folder = folder,
                     uploaderId = uploaderId,
@@ -50,7 +50,7 @@ class Image private constructor(
 
         fun createWithId(
             id: UniqueEntityId,
-            url: String,
+            objectName: String,
             md5: String,
             folder: String,
             uploaderId: String?,
@@ -61,7 +61,7 @@ class Image private constructor(
         ): Image {
             return Image(
                 props = ImageProps(
-                    url = url,
+                    objectName = objectName,
                     md5 = md5,
                     folder = folder,
                     uploaderId = uploaderId,
@@ -80,7 +80,7 @@ class Image private constructor(
  * 图片属性
  */
 data class ImageProps(
-    val url: String,
+    val objectName: String,
     val md5: String,
     val folder: String,
     val uploaderId: String?,

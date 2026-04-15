@@ -24,7 +24,7 @@ class GetImagesUseCase(
         val imageSummaries = images.map { image ->
             GetImagesDto.ImageSummary(
                 imageId = image.imageId,
-                url = image.url,
+                objectName = image.objectName,
                 md5 = image.md5,
                 folder = image.folder,
                 uploaderId = image.uploaderId,

@@ -12,7 +12,7 @@ object ImageEntityMapper {
     fun toDomain(entity: ImageEntity): Image {
         return Image.createWithId(
             id = UniqueEntityId(entity.imageId),
-            url = entity.url,
+            objectName = entity.objectName,
             md5 = entity.md5,
             folder = entity.folder,
             uploaderId = entity.uploaderId,
@@ -26,7 +26,7 @@ object ImageEntityMapper {
     fun toEntity(image: Image): ImageEntity {
         return ImageEntity(
             imageId = image.imageId,
-            url = image.url,
+            objectName = image.objectName,
             md5 = image.md5,
             folder = image.folder,
             uploaderId = image.uploaderId,

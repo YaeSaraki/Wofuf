@@ -40,7 +40,7 @@ class ImageStorageService(
      * 上传结果
      */
     data class UploadResult(
-        val url: String,
+        val objectName: String,
         val md5: String,
         val isDuplicate: Boolean = false
     )
@@ -49,7 +49,7 @@ class ImageStorageService(
      * 上传图片到MinIO
      * @param file 上传的文件
      * @param folder 存储文件夹 (如 "posts", "avatars")
-     * @return 上传结果，包含URL和MD5
+     * @return 上传结果，包含objectName和MD5
      */
     fun uploadImage(file: MultipartFile, folder: String = "posts"): UploadResult {
         // 验证文件
@@ -69,9 +69,9 @@ class ImageStorageService(
         try {
             // 检查文件是否已存在
             if (imageExists(objectName)) {
-                logger.info("Image already exists, returning existing URL: $objectName")
+                logger.info("Image already exists, returning objectName: $objectName")
                 return UploadResult(
-                    url = getPresignedUrl(objectName),
+                    objectName = objectName,
                     md5 = md5,
                     isDuplicate = true
                 )
@@ -90,7 +90,7 @@ class ImageStorageService(
             logger.info("Uploaded image: $objectName (MD5: $md5)")
 
             return UploadResult(
-                url = getPresignedUrl(objectName),
+                objectName = objectName,
                 md5 = md5,
                 isDuplicate = false
             )
@@ -98,6 +98,22 @@ class ImageStorageService(
             logger.error("Failed to upload image: ${e.message}")
             throw ImageUploadException("图片上传失败: ${e.message}")
         }
+    }
+
+    /**
+     * 生成图片预签名URL (有效期5分钟)
+     * @param objectName MinIO对象名称
+     * @return 预签名URL
+     */
+    fun generatePresignedUrl(objectName: String): String {
+        return minioClient.getPresignedObjectUrl(
+            GetPresignedObjectUrlArgs.builder()
+                .method(Method.GET)
+                .bucket(minioProperties.bucketName)
+                .`object`(objectName)
+                .expiry(5, TimeUnit.MINUTES)
+                .build()
+        )
     }
 
     /**
@@ -124,20 +140,6 @@ class ImageStorageService(
         val md = MessageDigest.getInstance("MD5")
         val digest = md.digest(bytes)
         return digest.joinToString("") { "%02x".format(it) }
-    }
-
-    /**
-     * 获取图片的预签名URL (有效期1小时)
-     */
-    private fun getPresignedUrl(objectName: String): String {
-        return minioClient.getPresignedObjectUrl(
-            GetPresignedObjectUrlArgs.builder()
-                .method(Method.GET)
-                .bucket(minioProperties.bucketName)
-                .`object`(objectName)
-                .expiry(1, TimeUnit.HOURS)
-                .build()
-        )
     }
 
     /**
@@ -197,6 +199,22 @@ class ImageStorageService(
         } catch (e: Exception) {
             logger.error("Failed to delete image from storage: ${e.message}")
             throw ImageUploadException("Failed to delete image: ${e.message}")
+        }
+    }
+
+    /**
+     * 获取图片字节数据
+     * @param objectName MinIO对象名称
+     * @return 图片字节数组
+     */
+    fun getImageBytes(objectName: String): ByteArray {
+        return minioClient.getObject(
+            io.minio.GetObjectArgs.builder()
+                .bucket(minioProperties.bucketName)
+                .`object`(objectName)
+                .build()
+        ).use { inputStream ->
+            inputStream.readAllBytes()
         }
     }
 }

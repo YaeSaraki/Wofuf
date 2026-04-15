@@ -26,9 +26,8 @@ class DeleteImageUseCase(
             ?: return Result.failure("Image not found: $imageId")
 
         try {
-            // Delete from MinIO storage
-            val objectName = "${image.folder}/${image.md5}${getExtension(image.contentType)}"
-            imageStorageService.deleteImage(objectName)
+            // Delete from MinIO storage using stored objectName
+            imageStorageService.deleteImage(image.objectName)
 
             // Delete from database
             imageRepo.delete(image.md5)

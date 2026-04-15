@@ -17,7 +17,7 @@ class GetImagesDto {
 
     data class ImageSummary(
         val imageId: String,
-        val url: String,
+        val objectName: String,
         val md5: String,
         val folder: String,
         val uploaderId: String?,

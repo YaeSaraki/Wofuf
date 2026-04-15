@@ -19,8 +19,8 @@ data class ImageEntity(
     @Column(name = "image_id", nullable = false)
     val imageId: String,
 
-    @Column(name = "url", nullable = false, length = 1024)
-    val url: String,
+    @Column(name = "object_name", nullable = false, length = 512)
+    val objectName: String,
 
     @Column(name = "md5", nullable = false, unique = true, length = 32)
     val md5: String,
