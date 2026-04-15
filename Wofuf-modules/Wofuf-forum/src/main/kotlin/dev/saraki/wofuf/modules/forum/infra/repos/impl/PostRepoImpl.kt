@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.impl
 
 import dev.saraki.wofuf.modules.forum.domain.Post
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
@@ -127,4 +128,21 @@ class PostRepoImpl(
 
     override fun countByStatus(status: PostStatus): Long =
         postJpaRepo.countByStatus(status.name)
+
+    override fun findPostsByMemberId(memberId: MemberId, page: Int, size: Int): List<Post> =
+        postJpaRepo.findByMemberEntity_MemberIdOrderByDateTimePostedDesc(
+            memberId.stringValue,
+            org.springframework.data.domain.PageRequest.of(page, size)
+        ).map(PostEntityMapper::toDomain)
+
+    // ==================== 统计方法实现 ====================
+
+    override fun countPosts(): Long =
+        postJpaRepo.count()
+
+    override fun countPostsUnderReview(): Long =
+        postJpaRepo.countByStatus(PostStatus.UNDER_REVIEW.name)
+
+    override fun countHiddenPosts(): Long =
+        postJpaRepo.countByStatus(PostStatus.HIDDEN.name)
 }

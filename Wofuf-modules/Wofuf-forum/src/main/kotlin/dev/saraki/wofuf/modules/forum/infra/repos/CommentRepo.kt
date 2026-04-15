@@ -16,7 +16,26 @@ interface CommentRepo {
     fun exists(commentId: CommentId): Boolean
     fun findCommentByCommentId(commentId: CommentId): Comment?
     fun findCommentsByPostSlug(postSlug: PostSlug, includeHidden: Boolean = false): List<Comment>
+
+    /**
+     * 获取帖子的所有主评论（parentCommentId IS NULL）
+     * 用于 Bilibili 风格评论
+     */
+    fun findRootCommentsByPostSlug(postSlug: PostSlug, includeHidden: Boolean = false): List<Comment>
     fun findCommentDetailsByCommentId(commentId: CommentId): CommentDetails?
+
+    /**
+     * 批量查询评论详情（消除 N+1 查询）
+     */
+    fun findCommentDetailsByCommentIds(commentIds: List<CommentId>): Map<CommentId, CommentDetails>
+
+    /**
+     * 按主评论ID查询所有子评论（用于 Bilibili 风格评论）
+     * @param rootCommentId 主评论ID
+     * @param includeHidden 是否包含隐藏评论
+     */
+    fun findChildCommentsByRootId(rootCommentId: CommentId, includeHidden: Boolean = false): List<Comment>
+
     fun save(comment: Comment): Comment
     fun saveBulk(comments: List<Comment>)
     fun deleteComment(commentId: CommentId)
@@ -47,4 +66,14 @@ interface CommentRepo {
      * 统计所有评论数量（不区分隐藏状态）
      */
     fun countAllComments(): Long
+
+    /**
+     * 按内容关键词搜索评论（模糊匹配）
+     */
+    fun findCommentsByContentSearch(contentSearch: String, page: Int, size: Int, includeHidden: Boolean): List<Comment>
+
+    /**
+     * 统计按内容关键词搜索的评论数量
+     */
+    fun countCommentsByContentSearch(contentSearch: String, includeHidden: Boolean): Long
 }

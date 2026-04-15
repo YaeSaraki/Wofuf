@@ -84,4 +84,21 @@ class MemberRepoImpl(
             }
             .map(MemberEntityMapper::toDomain)
     }
+
+    override fun findActiveMembers(page: Int, size: Int): List<Member> =
+        memberJpaRepo.findByIsBannedFalse(PageRequest.of(page, size))
+            .map(MemberEntityMapper::toDomain)
+
+    override fun countActiveMembers(): Long =
+        memberJpaRepo.countByIsBannedFalse()
+
+    override fun countAllMembers(): Long =
+        memberJpaRepo.count()
+
+    override fun findMembersByNickname(nickname: String, page: Int, size: Int): List<Member> =
+        memberJpaRepo.findByNicknameContainingIgnoreCase(nickname, PageRequest.of(page, size))
+            .map(MemberEntityMapper::toDomain)
+
+    override fun countMembersByNickname(nickname: String): Long =
+        memberJpaRepo.countByNicknameContainingIgnoreCase(nickname)
 }

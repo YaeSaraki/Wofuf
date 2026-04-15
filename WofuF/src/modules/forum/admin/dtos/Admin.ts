@@ -14,6 +14,7 @@ export type PermissionPoint =
   | 'CATEGORY_MANAGE'
   | 'USER_BAN'
   | 'USER_VIEW_BANNED'
+  | 'VIEW_MEMBER_PROFILES'
   | 'ADMIN_ACCESS'
   | 'PERMISSION_GRANT'
 
@@ -89,6 +90,22 @@ export interface CommentActionResponse {
   message: string
 }
 
+// 批量操作单个结果
+export interface BatchCommentResult {
+  commentId: string
+  isHidden: boolean
+  success: boolean
+  message: string
+}
+
+// 批量隐藏/显示评论响应
+export interface BatchCommentActionResponse {
+  successCount: number
+  failCount: number
+  results: BatchCommentResult[]
+  message: string
+}
+
 // ==================== 成员管理 ====================
 export interface BannedMember {
   memberId: string
@@ -115,6 +132,52 @@ export interface MemberActionResponse {
   granted?: boolean
   revoked?: boolean
   message: string
+}
+
+export interface MemberPostSummary {
+  postId: string
+  slug: string
+  title: string
+  category: string
+  points: number
+  numComments: number
+  status: string
+  isPinned: boolean
+  isFeatured: boolean
+  createdAt: string
+}
+
+export interface MemberSummary {
+  memberId: string
+  userId: string
+  playerId: string
+  nickname: string
+  reputation: number
+  isBanned: boolean
+  permissions: string[]
+}
+
+export interface GetMembersListResponse {
+  members: MemberSummary[]
+  total: number
+  page: number
+  size: number
+}
+
+export interface MemberProfile {
+  memberId: string
+  userId: string
+  playerId: string
+  nickname: string
+  reputation: number
+  permissions: string[]
+  isBanned: boolean
+  bannedAt: string | null
+  bannedUntil: string | null
+  bannedReason: string | null
+  bannedBy: string | null
+  postHistory: MemberPostSummary[]
+  totalPosts: number
 }
 
 // ==================== 统计数据 ====================

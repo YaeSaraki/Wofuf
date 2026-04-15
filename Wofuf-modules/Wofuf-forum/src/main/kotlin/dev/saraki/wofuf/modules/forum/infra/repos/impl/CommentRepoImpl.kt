@@ -7,6 +7,7 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.CommentJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.CommentEntityMapper
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
@@ -25,18 +26,22 @@ class CommentRepoImpl(
             .orElse(null)
 
     override fun findCommentsByPostSlug(postSlug: PostSlug, includeHidden: Boolean): List<Comment> {
-        // JPA 查询获取所有评论（不过滤隐藏状态）
-        val allComments = commentJpaRepo.findByPostEntity_Slug(postSlug.value)
-
-        // Repository 层根据 includeHidden 决定是否过滤隐藏评论
-        // 注意：这是基础设施层的最低限度业务逻辑，用于数据可见性控制
-        val filteredComments = if (includeHidden) {
-            allComments
+        // 使用数据库查询过滤，而不是内存过滤
+        val entities = if (includeHidden) {
+            commentJpaRepo.findByPostEntity_Slug(postSlug.value)
         } else {
-            allComments.filter { !it.isHidden }
+            commentJpaRepo.findByPostEntity_SlugAndIsHiddenFalse(postSlug.value)
         }
+        return entities.map(CommentEntityMapper::toDomain)
+    }
 
-        return filteredComments.map(CommentEntityMapper::toDomain)
+    override fun findRootCommentsByPostSlug(postSlug: PostSlug, includeHidden: Boolean): List<Comment> {
+        val entities = if (includeHidden) {
+            commentJpaRepo.findByPostEntity_SlugAndParentCommentIdIsNull(postSlug.value)
+        } else {
+            commentJpaRepo.findByPostEntity_SlugAndParentCommentIdIsNullAndIsHiddenFalse(postSlug.value)
+        }
+        return entities.map(CommentEntityMapper::toDomain)
     }
 
     override fun findCommentDetailsByCommentId(commentId: CommentId): CommentDetails? {
@@ -45,12 +50,41 @@ class CommentRepoImpl(
         return CommentEntityMapper.toCommentDetails(entity)
     }
 
+    override fun findCommentDetailsByCommentIds(commentIds: List<CommentId>): Map<CommentId, CommentDetails> {
+        if (commentIds.isEmpty()) return emptyMap()
+
+        val entities = commentJpaRepo.findByCommentIdIn(commentIds.map { it.stringValue })
+        return entities.associate { entity ->
+            val commentId = CommentId.create(UniqueEntityId(entity.commentId)).getOrThrow()
+            val details = CommentEntityMapper.toCommentDetails(entity)
+            commentId to details
+        }
+    }
+
+    override fun findChildCommentsByRootId(rootCommentId: CommentId, includeHidden: Boolean): List<Comment> {
+        val entities = if (includeHidden) {
+            commentJpaRepo.findByRootCommentId(rootCommentId.stringValue)
+        } else {
+            commentJpaRepo.findByRootCommentIdAndIsHiddenFalse(rootCommentId.stringValue)
+        }
+        return entities.map(CommentEntityMapper::toDomain)
+    }
+
     @Transactional
     override fun save(comment: Comment): Comment {
+        val existingEntity = commentJpaRepo.findById(comment.commentId.stringValue).orElse(null)
+
+        if (existingEntity != null) {
+            // 更新现有实体的可变字段，保留 replies 关系
+            existingEntity.isHidden = comment.isHidden
+            existingEntity.hiddenAt = comment.hiddenAt
+            existingEntity.hiddenBy = comment.hiddenBy?.stringValue
+            return CommentEntityMapper.toDomain(commentJpaRepo.save(existingEntity))
+        }
+
+        // 新评论使用完整构建
         val entity = CommentEntityMapper.toEntity(comment)
-        // 不再保存 votes，因为 votes 现在由独立的 CommentVote 聚合管理
-        val savedEntity = commentJpaRepo.saveAndFlush(entity)
-        return CommentEntityMapper.toDomain(savedEntity)
+        return CommentEntityMapper.toDomain(commentJpaRepo.save(entity))
     }
 
     @Transactional
@@ -83,4 +117,22 @@ class CommentRepoImpl(
 
     override fun countAllComments(): Long =
         commentJpaRepo.count()
+
+    override fun findCommentsByContentSearch(contentSearch: String, page: Int, size: Int, includeHidden: Boolean): List<Comment> {
+        val pageable = PageRequest.of(page, size)
+        val entities = if (includeHidden) {
+            commentJpaRepo.findByTextContainingIgnoreCase(contentSearch, pageable)
+        } else {
+            commentJpaRepo.findByTextContainingIgnoreCaseAndIsHidden(contentSearch, false, pageable)
+        }
+        return entities.map(CommentEntityMapper::toDomain)
+    }
+
+    override fun countCommentsByContentSearch(contentSearch: String, includeHidden: Boolean): Long {
+        return if (includeHidden) {
+            commentJpaRepo.countByTextContainingIgnoreCase(contentSearch)
+        } else {
+            commentJpaRepo.countByTextContainingIgnoreCaseAndIsHidden(contentSearch, false)
+        }
+    }
 }

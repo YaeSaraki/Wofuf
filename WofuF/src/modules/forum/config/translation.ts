@@ -1,5 +1,5 @@
 // 论坛翻译
-import {registerTranslations} from '@S/services/i18n'
+import { registerTranslations } from '@S/services/i18n'
 
 const forumTranslations = {
   // 页面标题
@@ -561,6 +561,38 @@ const forumTranslations = {
     zh: '总成员数',
     en: 'Total Members',
   },
+  'admin.stats.totalPosts': {
+    zh: '帖子总数',
+    en: 'Total Posts',
+  },
+  'admin.stats.totalComments': {
+    zh: '评论总数',
+    en: 'Total Comments',
+  },
+  'admin.stats.hiddenPosts': {
+    zh: '隐藏帖子',
+    en: 'Hidden Posts',
+  },
+  'admin.quickActions': {
+    zh: '快捷操作',
+    en: 'Quick Actions',
+  },
+  'admin.myPermissions': {
+    zh: '我的权限',
+    en: 'My Permissions',
+  },
+  'admin.noPermissions': {
+    zh: '您没有任何管理权限',
+    en: 'You have no admin permissions',
+  },
+  'admin.loadingStats': {
+    zh: '加载中...',
+    en: 'Loading...',
+  },
+  'admin.allPermissions': {
+    zh: '权限说明',
+    en: 'All Permissions',
+  },
   // 权限名称
   'admin.perm.pin': {
     zh: '置顶帖子',
@@ -602,6 +634,10 @@ const forumTranslations = {
     zh: '查看封禁用户',
     en: 'View Banned Users',
   },
+  'admin.perm.viewProfile': {
+    zh: '查看用户资料',
+    en: 'View Member Profiles',
+  },
   'admin.perm.adminAccess': {
     zh: '管理后台访问',
     en: 'Admin Access',
@@ -609,6 +645,14 @@ const forumTranslations = {
   'admin.perm.grantPermission': {
     zh: '授予权限',
     en: 'Grant Permissions',
+  },
+  'admin.members': {
+    zh: '成员',
+    en: 'Members',
+  },
+  searchByNickname: {
+    zh: '按昵称搜索...',
+    en: 'Search by nickname...',
   },
 }
 

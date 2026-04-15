@@ -1,12 +1,14 @@
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { adminService } from '@M/forum/admin/services/AdminService.ts'
-import type { PermissionPoint } from '@M/forum/admin/dtos/Admin.ts'
+import { memberService } from '@M/auth/services/MemberService.ts'
+import type { PermissionPoint, AdminStats } from '@M/forum/admin/dtos/Admin.ts'
 import { translate } from '@S/services/i18n'
 import router from '@S/infra/router'
 import PostsManagement from '@M/forum/admin/components/PostsManagement.vue'
 import CommentsManagement from '@M/forum/admin/components/CommentsManagement.vue'
+import MemberManagement from '@M/forum/admin/components/MemberManagement.vue'
 
 const route = useRoute()
 const internalRouter = useRouter()
@@ -31,6 +33,9 @@ watch(() => route.query.tab, (newTab) => {
 // 权限状态
 const hasAdminAccess = ref(false)
 const isLoading = ref(true)
+const isLoadingStats = ref(false)
+const stats = ref<AdminStats | null>(null)
+const userPermissions = ref<PermissionPoint[]>([])
 
 // 检查权限
 async function checkPermissions() {
@@ -49,14 +54,51 @@ async function checkPermissions() {
   isLoading.value = false
 }
 
-// 动画效果
-const isVisible = ref(false)
+// 加载统计数据
+async function loadStats() {
+  if (!hasAdminAccess.value) return
+  isLoadingStats.value = true
+  try {
+    const result = await adminService.getAdminStats()
+    if (result.isSuccess) {
+      stats.value = result.getValue()
+    }
+  } catch (e) {
+    console.warn('[AdminView] Failed to load stats:', e)
+  } finally {
+    isLoadingStats.value = false
+  }
+}
 
-onMounted(async () => {
-  await checkPermissions()
-  setTimeout(() => {
-    isVisible.value = true
-  }, 100)
+// 加载用户权限
+async function loadUserPermissions() {
+  try {
+    const memberResult = await memberService.getCurrentMember()
+    if (memberResult.isSuccess) {
+      const member = memberResult.getValue()
+      userPermissions.value = (member.permissions || []) as PermissionPoint[]
+    }
+  } catch (e) {
+    console.warn('[AdminView] Failed to load user permissions:', e)
+  }
+}
+
+// 快捷操作
+const quickActions = computed(() => {
+  const actions = []
+  if (userPermissions.value.includes('POST_REVIEW') || hasAdminAccess.value) {
+    actions.push({ key: 'posts', label: translate('forum', 'admin.stats.pendingReview'), icon: '◆', count: stats.value?.pendingReview, color: 'blue' })
+  }
+  if (userPermissions.value.includes('COMMENT_VIEW_HIDDEN') || hasAdminAccess.value) {
+    actions.push({ key: 'comments', label: translate('forum', 'admin.stats.hiddenComments'), icon: '●', count: stats.value?.hiddenComments, color: 'red' })
+  }
+  if (userPermissions.value.includes('USER_BAN') || hasAdminAccess.value) {
+    actions.push({ key: 'members', label: translate('forum', 'admin.stats.bannedUsers'), icon: '⊘', count: stats.value?.bannedMembers, color: 'yellow' })
+  }
+  if (userPermissions.value.includes('VIEW_MEMBER_PROFILES') || hasAdminAccess.value) {
+    actions.push({ key: 'members', label: translate('forum', 'admin.stats.totalMembers'), icon: '◎', count: stats.value?.totalMembers, color: 'green' })
+  }
+  return actions
 })
 
 // 导航项
@@ -79,6 +121,7 @@ const permissionColors: Record<PermissionPoint, string> = {
   CATEGORY_MANAGE: 'bf-perm-cyan',
   USER_BAN: 'bf-perm-rose',
   USER_VIEW_BANNED: 'bf-perm-pink',
+  VIEW_MEMBER_PROFILES: 'bf-perm-teal',
   ADMIN_ACCESS: 'bf-perm-emerald',
   PERMISSION_GRANT: 'bf-perm-indigo',
 }
@@ -95,9 +138,24 @@ const permissionNames: Record<PermissionPoint, string> = {
   CATEGORY_MANAGE: translate('forum', 'admin.perm.manageCategory'),
   USER_BAN: translate('forum', 'admin.perm.banUser'),
   USER_VIEW_BANNED: translate('forum', 'admin.perm.viewBanned'),
+  VIEW_MEMBER_PROFILES: translate('forum', 'admin.perm.viewProfile'),
   ADMIN_ACCESS: translate('forum', 'admin.perm.adminAccess'),
   PERMISSION_GRANT: translate('forum', 'admin.perm.grantPermission'),
 }
+
+// 动画效果
+const isVisible = ref(false)
+
+onMounted(async () => {
+  await checkPermissions()
+  if (hasAdminAccess.value) {
+    loadStats()
+    loadUserPermissions()
+  }
+  setTimeout(() => {
+    isVisible.value = true
+  }, 100)
+})
 </script>
 
 <template>
@@ -227,8 +285,15 @@ const permissionNames: Record<PermissionPoint, string> = {
           <h3 class="bf-section-title">
             <span class="bf-text-gradient">{{ translate('forum', 'admin.overview') }}</span>
           </h3>
-          <div class="bf-stats-grid">
-            <div class="bf-stat-card">
+
+          <!-- 加载状态 -->
+          <div v-if="isLoadingStats" class="bf-loading-inline">
+            <div class="bf-loading-spinner-small"></div>
+            <span>{{ translate('forum', 'admin.loadingStats') }}</span>
+          </div>
+
+          <div v-else class="bf-stats-grid">
+            <div class="bf-stat-card" @click="activeTab = 'posts'" style="cursor: pointer;">
               <div class="bf-stat-icon bf-stat-icon--blue">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -236,22 +301,35 @@ const permissionNames: Record<PermissionPoint, string> = {
                 </svg>
               </div>
               <div class="bf-stat-content">
-                <span class="bf-stat-value">--</span>
+                <span class="bf-stat-value">{{ stats?.pendingReview ?? '--' }}</span>
                 <span class="bf-stat-label">{{ translate('forum', 'admin.stats.pendingReview') }}</span>
               </div>
             </div>
-            <div class="bf-stat-card">
+            <div class="bf-stat-card" @click="activeTab = 'posts'" style="cursor: pointer;">
+              <div class="bf-stat-icon bf-stat-icon--gray">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+              </div>
+              <div class="bf-stat-content">
+                <span class="bf-stat-value">{{ stats?.totalPosts ?? '--' }}</span>
+                <span class="bf-stat-label">{{ translate('forum', 'admin.stats.totalPosts') }}</span>
+              </div>
+            </div>
+            <div class="bf-stat-card" @click="activeTab = 'comments'" style="cursor: pointer;">
               <div class="bf-stat-icon bf-stat-icon--red">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
               </div>
               <div class="bf-stat-content">
-                <span class="bf-stat-value">--</span>
+                <span class="bf-stat-value">{{ stats?.hiddenComments ?? '--' }}</span>
                 <span class="bf-stat-label">{{ translate('forum', 'admin.stats.hiddenComments') }}</span>
               </div>
             </div>
-            <div class="bf-stat-card">
+            <div class="bf-stat-card" @click="activeTab = 'members'" style="cursor: pointer;">
               <div class="bf-stat-icon bf-stat-icon--yellow">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/>
@@ -260,11 +338,11 @@ const permissionNames: Record<PermissionPoint, string> = {
                 </svg>
               </div>
               <div class="bf-stat-content">
-                <span class="bf-stat-value">--</span>
+                <span class="bf-stat-value">{{ stats?.bannedMembers ?? '--' }}</span>
                 <span class="bf-stat-label">{{ translate('forum', 'admin.stats.bannedUsers') }}</span>
               </div>
             </div>
-            <div class="bf-stat-card">
+            <div class="bf-stat-card" @click="activeTab = 'members'" style="cursor: pointer;">
               <div class="bf-stat-icon bf-stat-icon--green">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -274,20 +352,68 @@ const permissionNames: Record<PermissionPoint, string> = {
                 </svg>
               </div>
               <div class="bf-stat-content">
-                <span class="bf-stat-value">--</span>
+                <span class="bf-stat-value">{{ stats?.totalMembers ?? '--' }}</span>
                 <span class="bf-stat-label">{{ translate('forum', 'admin.stats.totalMembers') }}</span>
+              </div>
+            </div>
+            <div class="bf-stat-card" style="cursor: default;">
+              <div class="bf-stat-icon bf-stat-icon--purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+              </div>
+              <div class="bf-stat-content">
+                <span class="bf-stat-value">{{ stats?.totalComments ?? '--' }}</span>
+                <span class="bf-stat-label">{{ translate('forum', 'admin.stats.totalComments') }}</span>
               </div>
             </div>
           </div>
 
+          <!-- 快捷操作入口 -->
+          <div v-if="quickActions.length > 0" class="bf-quick-actions">
+            <h4 class="bf-info-title">{{ translate('forum', 'admin.quickActions') }}</h4>
+            <div class="bf-quick-actions-grid">
+              <button
+                v-for="action in quickActions"
+                :key="action.key + action.label"
+                class="bf-quick-action-btn"
+                :class="`bf-quick-action--${action.color}`"
+                @click="activeTab = action.key"
+              >
+                <span class="bf-quick-action-icon">{{ action.icon }}</span>
+                <span class="bf-quick-action-label">{{ action.label }}</span>
+                <span v-if="action.count !== undefined" class="bf-quick-action-count">{{ action.count }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 我的权限 -->
           <div class="bf-info-section">
-            <h4 class="bf-info-title">{{ translate('forum', 'admin.permissions') }}</h4>
-            <div class="bf-permission-list">
-              <span 
-                v-for="(name, permission) in permissionNames" 
-                :key="permission" 
+            <h4 class="bf-info-title">{{ translate('forum', 'admin.myPermissions') }}</h4>
+            <div v-if="userPermissions.length === 0" class="bf-empty-permissions">
+              {{ translate('forum', 'admin.noPermissions') }}
+            </div>
+            <div v-else class="bf-permission-list">
+              <span
+                v-for="permission in userPermissions"
+                :key="permission"
                 class="bf-permission-tag"
-                :class="permissionColors[permission as PermissionPoint]"
+                :class="permissionColors[permission]"
+              >
+                {{ permissionNames[permission] }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 全部权限说明 -->
+          <div class="bf-info-section bf-info-section--muted">
+            <h4 class="bf-info-title">{{ translate('forum', 'admin.allPermissions') }}</h4>
+            <div class="bf-permission-list">
+              <span
+                v-for="(name, permission) in permissionNames"
+                :key="permission"
+                class="bf-permission-tag"
+                :class="[permissionColors[permission as PermissionPoint], { 'bf-permission-tag--owned': userPermissions.includes(permission as PermissionPoint) }]"
               >
                 {{ name }}
               </span>
@@ -306,18 +432,8 @@ const permissionNames: Record<PermissionPoint, string> = {
         </section>
 
         <!-- 成员管理 -->
-        <section v-else-if="activeTab === 'members'" class="bf-content-section">
-          <h3 class="bf-section-title">
-            <span class="bf-text-gradient">{{ translate('forum', 'admin.membersManagement') }}</span>
-          </h3>
-          <div class="bf-coming-soon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            <p>{{ translate('forum', 'admin.comingSoon') }}</p>
-            <span>{{ translate('forum', 'admin.membersComingSoonDesc') }}</span>
-          </div>
+        <section v-else-if="activeTab === 'members'" class="bf-content-section bf-no-padding">
+          <MemberManagement />
         </section>
       </main>
     </div>
@@ -705,6 +821,16 @@ const permissionNames: Record<PermissionPoint, string> = {
   color: #22c55e;
 }
 
+.bf-stat-icon--purple {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+.bf-stat-icon--gray {
+  background: rgba(107, 114, 128, 0.15);
+  color: #6b7280;
+}
+
 .bf-stat-content {
   display: flex;
   flex-direction: column;
@@ -905,5 +1031,146 @@ const permissionNames: Record<PermissionPoint, string> = {
 :root:not(.dark) .bf-mobile-tab.bf-active {
   background: rgba(255, 107, 53, 0.1);
   border-color: rgba(255, 107, 53, 0.3);
+}
+
+/* === 内联加载状态 === */
+.bf-loading-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: var(--bf-text-muted, #666666);
+  font-size: 0.875rem;
+}
+
+.bf-loading-spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--bf-border-default, rgba(255, 255, 255, 0.08));
+  border-top-color: var(--bf-primary, #ff6b35);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* === 快捷操作 === */
+.bf-quick-actions {
+  margin-bottom: 1.5rem;
+}
+
+.bf-quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.bf-quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1rem;
+  background: var(--bf-input-bg, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--bf-radius-lg, 10px);
+  color: var(--bf-text-primary, #ffffff);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bf-quick-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.bf-quick-action-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.bf-quick-action-label {
+  flex: 1;
+  text-align: left;
+}
+
+.bf-quick-action-count {
+  padding: 0.125rem 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--bf-radius-full, 999px);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.bf-quick-action--blue {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+.bf-quick-action--blue:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+.bf-quick-action--blue .bf-quick-action-count {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.bf-quick-action--red {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.bf-quick-action--red:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+.bf-quick-action--red .bf-quick-action-count {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.bf-quick-action--yellow {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.bf-quick-action--yellow:hover {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.5);
+}
+.bf-quick-action--yellow .bf-quick-action-count {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.bf-quick-action--green {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+.bf-quick-action--green:hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+.bf-quick-action--green .bf-quick-action-count {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+/* === 权限标签高亮 === */
+.bf-permission-tag--owned {
+  border: 1px solid currentColor;
+  opacity: 1;
+}
+
+.bf-info-section--muted .bf-permission-tag {
+  opacity: 0.5;
+}
+
+.bf-info-section--muted .bf-permission-tag--owned {
+  opacity: 1;
+}
+
+/* === 空权限状态 === */
+.bf-empty-permissions {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--bf-text-muted, #666666);
+  font-size: 0.875rem;
+  background: var(--bf-input-bg, rgba(255, 255, 255, 0.02));
+  border: 1px dashed var(--bf-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--bf-radius-lg, 10px);
 }
 </style>
