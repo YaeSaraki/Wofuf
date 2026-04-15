@@ -12,6 +12,10 @@ class ImageRepoImpl(
     private val imageJpaRepo: ImageJpaRepo
 ) : ImageRepo {
 
+    override fun findById(imageId: String): Image? {
+        return imageJpaRepo.findById(imageId).orElse(null)?.let(ImageEntityMapper::toDomain)
+    }
+
     override fun findByMd5(md5: String): Image? {
         return imageJpaRepo.findByMd5(md5)?.let(ImageEntityMapper::toDomain)
     }

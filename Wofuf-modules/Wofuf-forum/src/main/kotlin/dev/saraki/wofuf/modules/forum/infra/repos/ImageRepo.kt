@@ -7,6 +7,11 @@ import dev.saraki.wofuf.modules.forum.domain.Image
  */
 interface ImageRepo {
     /**
+     * 根据ID查找图片
+     */
+    fun findById(imageId: String): Image?
+
+    /**
      * 根据MD5查找图片
      */
     fun findByMd5(md5: String): Image?

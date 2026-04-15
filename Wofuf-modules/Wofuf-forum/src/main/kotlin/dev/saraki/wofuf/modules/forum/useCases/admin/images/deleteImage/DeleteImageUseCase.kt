@@ -22,7 +22,7 @@ class DeleteImageUseCase(
         val imageId = request.imageId
 
         // Find image by ID
-        val image = imageRepo.findByMd5(imageId)
+        val image = imageRepo.findById(imageId)
             ?: return Result.failure("Image not found: $imageId")
 
         try {
