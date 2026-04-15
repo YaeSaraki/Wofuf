@@ -687,6 +687,10 @@ const forumTranslations = {
     zh: '未找到成员',
     en: 'No members found',
   },
+  'admin.searching': {
+    zh: '搜索中...',
+    en: 'Searching...',
+  },
   'admin.delete': {
     zh: '删除',
     en: 'Delete',

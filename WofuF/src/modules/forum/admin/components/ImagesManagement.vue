@@ -9,7 +9,6 @@ const toast = useToast()
 
 /* ---------------- 状态 ---------------- */
 const images = ref<ImageSummary[]>([])
-const members = ref<MemberSummary[]>([])
 const isLoading = ref(false)
 const isDeleting = ref(false)
 const selectedImages = ref<Set<string>>(new Set())
@@ -19,20 +18,14 @@ const totalImages = ref(0)
 
 // 筛选状态
 const filterMemberId = ref<string | null>(null)
-const filterMemberNickname = ref('')
+const memberSearchQuery = ref('')
+const searchResults = ref<MemberSummary[]>([])
+const isSearchingMember = ref(false)
 
 /* ---------------- 计算属性 ---------------- */
 const totalPages = computed(() => Math.ceil(totalImages.value / pageSize.value))
 const hasImages = computed(() => images.value.length > 0)
-
-// 过滤后的成员列表（用于搜索）
-const filteredMembers = computed(() => {
-  if (!filterMemberNickname.value) return members.value.slice(0, 20)
-  const query = filterMemberNickname.value.toLowerCase()
-  return members.value.filter(m =>
-    m.nickname.toLowerCase().includes(query)
-  ).slice(0, 20)
-})
+const hasSelectedMember = computed(() => filterMemberId.value !== null)
 
 // 按上传者分组的图片
 const groupedImages = computed(() => {
@@ -52,26 +45,14 @@ const groupedImages = computed(() => {
 // 选中的成员信息
 const selectedMember = computed(() => {
   if (!filterMemberId.value) return null
-  return members.value.find(m => m.memberId === filterMemberId.value)
+  return searchResults.value.find(m => m.memberId === filterMemberId.value) || null
 })
 
 /* ---------------- 方法 ---------------- */
-async function loadMembers() {
-  try {
-    const result = await adminService.getMembersList(0, 100)
-    if (result.isSuccess) {
-      members.value = result.getValue().members
-    }
-  } catch (e) {
-    console.warn('[ImagesManagement] Failed to load members:', e)
-  }
-}
-
 async function loadImages() {
   isLoading.value = true
   try {
-    // 根据是否有成员筛选来调用不同的API
-    const result = await adminService.getImages(currentPage.value, pageSize.value, filterMemberId.value || undefined)
+    const result = await adminService.getImages(currentPage.value, pageSize.value, undefined, filterMemberId.value || undefined)
     if (result.isSuccess) {
       const data = result.getValue()
       images.value = data.images
@@ -89,24 +70,43 @@ async function loadImages() {
   }
 }
 
-function selectMember(memberId: string | null) {
-  filterMemberId.value = memberId
-  filterMemberNickname.value = ''
+// 搜索成员（防抖）
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+async function onMemberSearchInput() {
+  if (searchTimeout) clearTimeout(searchTimeout)
+
+  if (!memberSearchQuery.value.trim()) {
+    searchResults.value = []
+    return
+  }
+
+  searchTimeout = setTimeout(async () => {
+    isSearchingMember.value = true
+    try {
+      const result = await adminService.getMembersList(memberSearchQuery.value.trim(), 0, 20)
+      if (result.isSuccess) {
+        searchResults.value = result.getValue().members
+      }
+    } catch (e) {
+      console.warn('[ImagesManagement] Failed to search members:', e)
+    } finally {
+      isSearchingMember.value = false
+    }
+  }, 300)
+}
+
+function selectMember(member: MemberSummary) {
+  filterMemberId.value = member.memberId
+  memberSearchQuery.value = member.nickname
+  searchResults.value = []
   currentPage.value = 0
   loadImages()
 }
 
-function onMemberSearchInput(event: Event) {
-  const value = (event.target as HTMLInputElement).value
-  filterMemberNickname.value = value
-  if (!value) {
-    filterMemberId.value = null
-  }
-}
-
-function selectSearchResult(member: MemberSummary) {
-  filterMemberId.value = member.memberId
-  filterMemberNickname.value = member.nickname
+function clearMemberFilter() {
+  filterMemberId.value = null
+  memberSearchQuery.value = ''
+  searchResults.value = []
   currentPage.value = 0
   loadImages()
 }
@@ -188,15 +188,6 @@ function selectAllInGroup(groupKey: string) {
   selectedImages.value = new Set(selectedImages.value)
 }
 
-function selectAll() {
-  if (selectedImages.value.size === images.value.length) {
-    selectedImages.value.clear()
-  } else {
-    selectedImages.value = new Set(images.value.map(img => img.imageId))
-  }
-  selectedImages.value = new Set(selectedImages.value)
-}
-
 function goToPage(page: number) {
   if (page < 0 || page >= totalPages.value) return
   currentPage.value = page
@@ -215,13 +206,12 @@ function formatDate(timestamp: number): string {
 
 function getMemberLabel(memberId: string | null): string {
   if (!memberId) return 'Anonymous'
-  const member = members.value.find(m => m.memberId === memberId)
+  const member = searchResults.value.find(m => m.memberId === memberId)
   return member ? member.nickname : `Member: ${memberId.slice(0, 8)}...`
 }
 
 onMounted(() => {
   loadImages()
-  loadMembers()
 })
 </script>
 
@@ -265,36 +255,35 @@ onMounted(() => {
         <input
           type="text"
           class="bf-search-input"
-          :placeholder="translate('forum', 'admin.searchMember') || '搜索成员...'"
-          :value="filterMemberNickname"
+          :placeholder="translate('forum', 'admin.searchMember') || '输入成员昵称搜索...'"
+          v-model="memberSearchQuery"
           @input="onMemberSearchInput"
+          @focus="onMemberSearchInput"
         />
 
         <!-- 搜索结果下拉 -->
-        <div v-if="filterMemberNickname && !filterMemberId" class="bf-search-results">
+        <div v-if="searchResults.length > 0" class="bf-search-results">
           <div
-            v-for="member in filteredMembers"
+            v-for="member in searchResults"
             :key="member.memberId"
             class="bf-search-result-item"
-            @click="selectSearchResult(member)"
+            @click="selectMember(member)"
           >
             <span class="bf-member-nickname">{{ member.nickname }}</span>
             <span class="bf-member-id">{{ member.memberId.slice(0, 8) }}...</span>
           </div>
-          <div v-if="filteredMembers.length === 0" class="bf-search-no-results">
-            {{ translate('forum', 'admin.noMembersFound') || '未找到成员' }}
-          </div>
+        </div>
+
+        <!-- 搜索加载中 -->
+        <div v-else-if="isSearchingMember" class="bf-search-loading">
+          {{ translate('forum', 'admin.searching') || '搜索中...' }}
         </div>
       </div>
 
       <!-- 选中的成员标签 -->
-      <div v-if="selectedMember" class="bf-selected-member">
-        <span class="bf-member-name">{{ selectedMember.nickname }}</span>
-        <button class="bf-clear-filter" @click="selectMember(null)">&#10005;</button>
-      </div>
-      <div v-else-if="filterMemberId" class="bf-selected-member">
-        <span class="bf-member-name">{{ filterMemberId.slice(0, 8) }}...</span>
-        <button class="bf-clear-filter" @click="selectMember(null)">&#10005;</button>
+      <div v-if="hasSelectedMember" class="bf-selected-member">
+        <span class="bf-member-name">{{ selectedMember?.nickname || memberSearchQuery }}</span>
+        <button class="bf-clear-filter" @click="clearMemberFilter">&#10005;</button>
       </div>
     </div>
 
@@ -524,11 +513,18 @@ onMounted(() => {
   font-size: 0.75rem;
 }
 
-.bf-search-no-results {
+.bf-search-loading {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
   padding: 0.5rem 0.75rem;
+  background: var(--bf-card-bg);
+  border: 1px solid var(--bf-border-default);
+  border-radius: var(--bf-radius-md, 8px);
   color: var(--bf-text-muted);
   font-size: 0.875rem;
-  text-align: center;
 }
 
 .bf-selected-member {
