@@ -1,7 +1,6 @@
 package dev.saraki.wofuf.modules.forum.useCases.admin.comments.getComments
 
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.infra.annotation.RequirePermission
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
@@ -23,28 +22,39 @@ class GetCommentsUseCase(
         val page = request.page.coerceAtLeast(0)
         val size = request.size.coerceIn(1, 100)
 
-        // 获取所有评论（分页）
-        val allComments = commentRepo.findAllComments(page, size)
-        val total = commentRepo.countAllComments()
+        val hasContentSearch = !request.contentSearch.isNullOrBlank()
+        val hasAuthorSearch = !request.search.isNullOrBlank()
 
-        // 过滤隐藏/非隐藏
-        val filteredComments = if (request.includeHidden) {
-            allComments
+        // 如果有内容搜索，使用数据库 LIKE 查询
+        val (comments, total) = if (hasContentSearch) {
+            val contentSearch = request.contentSearch!!
+            val foundComments = commentRepo.findCommentsByContentSearch(contentSearch, page, size, request.includeHidden)
+            val count = commentRepo.countCommentsByContentSearch(contentSearch, request.includeHidden)
+            foundComments to count
         } else {
-            allComments.filter { !it.isHidden }
+            // 否则使用原有的分页查询
+            val allComments = commentRepo.findAllComments(page, size)
+            val totalCount = commentRepo.countAllComments()
+
+            // 过滤隐藏/非隐藏
+            val filteredComments = if (request.includeHidden) {
+                allComments
+            } else {
+                allComments.filter { !it.isHidden }
+            }
+            filteredComments to (if (request.includeHidden) totalCount else totalCount - commentRepo.countHiddenComments())
         }
 
-        // 如果有搜索条件，按作者昵称过滤
-        val searchFilteredComments = if (!request.search.isNullOrBlank()) {
-            val searchLower = request.search.lowercase()
-            filteredComments.filter { comment ->
-                // 获取评论作者的昵称
+        // 如果有作者昵称搜索，在结果中过滤
+        val searchFilteredComments = if (hasAuthorSearch) {
+            val searchLower = request.search!!.lowercase()
+            comments.filter { comment ->
                 val member = memberRepo.findMemberById(comment.memberId)
                 val nickname = member?.nickname?.value?.lowercase() ?: ""
                 nickname.contains(searchLower)
             }
         } else {
-            filteredComments
+            comments
         }
 
         val commentSummaries = searchFilteredComments.map { comment ->
@@ -66,7 +76,7 @@ class GetCommentsUseCase(
 
         return Result.success(GetCommentsDto.Response(
             comments = commentSummaries,
-            total = if (request.includeHidden) total else total - commentRepo.countHiddenComments(),
+            total = if (hasAuthorSearch) commentSummaries.size.toLong() else total,
             page = page,
             size = size
         ))

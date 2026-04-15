@@ -106,7 +106,18 @@ class Member private constructor(
     }
 
     /**
-     * 封禁用户
+     * 撤销所有权限（封禁用户时调用）
+     */
+    fun revokeAllPermissions(): Result<Member> {
+        if (props.permissions.isEmpty()) {
+            return Result.success(this)
+        }
+        val newProps = props.copy(permissions = emptySet())
+        return Member.create(newProps, _id)
+    }
+
+    /**
+     * 封禁用户（同时撤销所有权限）
      */
     fun ban(until: LocalDateTime, reason: String, by: MemberId): Result<Member> {
         if (props.isBanned) {
@@ -117,7 +128,8 @@ class Member private constructor(
             bannedAt = LocalDateTime.now(),
             bannedUntil = until,
             bannedReason = reason,
-            bannedBy = by
+            bannedBy = by,
+            permissions = emptySet() // 封禁时清空所有权限
         )
         return Member.create(newProps, _id)
     }

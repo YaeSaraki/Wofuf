@@ -26,6 +26,7 @@ enum class PermissionPoint {
     // 用户管理权限
     USER_BAN,           // 封禁用户
     USER_VIEW_BANNED,   // 查看封禁用户
+    VIEW_MEMBER_PROFILES, // 查看用户资料
 
     // 系统管理权限
     ADMIN_ACCESS,       // 管理后台访问

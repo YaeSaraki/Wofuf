@@ -1,5 +1,6 @@
 package dev.saraki.wofuf.modules.forum.useCases.posts.editPost
 
+import dev.saraki.wofuf.auth.infra.JwtAuthFilter
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLink
@@ -10,7 +11,6 @@ import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.infra.storage.MarkdownImageUtils
 import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
-import dev.saraki.wofuf.modules.users.infra.repos.UserRepo
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service
 class EditPostUseCase(
     private val postRepo: PostRepo,
     private val memberRepo: MemberRepo,
-    private val userRepo: UserRepo,
 ) : UseCase<EditPostDto.Request, EditPostDto.Response> {
 
     override fun execute(request: EditPostDto.Request): Result<EditPostDto.Response> {
@@ -66,9 +65,9 @@ class EditPostUseCase(
         val member = memberRepo.findMemberByUserId(userId)
             ?: return EditPostErrors.MemberNotFoundError()
 
-        // 7. 检查权限：是帖子作者或管理员
+        // 7. 检查权限：是帖子作者或管理员（JWT claim 来自 users 服务）
         val isAuthor = post.memberId.stringValue == member.memberId.stringValue
-        val isAdmin = userRepo.findUserByUserId(userId)?.isAdminUser == true
+        val isAdmin = JwtAuthFilter.isAdmin()
 
         if (!isAuthor && !isAdmin) {
             return EditPostErrors.ForbiddenError()

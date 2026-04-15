@@ -28,6 +28,8 @@ object CommentEntityMapper {
                 text = CommentText.create(entity.text).getOrThrow(),
                 postId = PostId.create(UniqueEntityId(entity.postId)).getOrThrow(),
                 parentCommentId = entity.parentCommentId?.let { CommentId.create(UniqueEntityId(it)).getOrThrow() },
+                rootCommentId = entity.rootCommentId?.let { CommentId.create(UniqueEntityId(it)).getOrThrow() },
+                shortId = entity.shortId,
                 points = entity.points,
                 // 管理功能相关字段
                 isHidden = entity.isHidden,
@@ -54,6 +56,8 @@ object CommentEntityMapper {
                 postSlug = PostSlug.createFromExisting(commentEntity.postEntity!!.slug).getOrThrow(),
                 postTitle = PostTitle.create(commentEntity.postEntity!!.title).getOrThrow(),
                 parentCommentId = commentEntity.parentCommentId?.let { CommentId.create(UniqueEntityId(it)).getOrThrow() },
+                rootCommentId = commentEntity.rootCommentId?.let { CommentId.create(UniqueEntityId(it)).getOrThrow() },
+                shortId = commentEntity.shortId,
                 points = commentEntity.points,
                 createdAt = commentEntity.createdAt,
             )
@@ -63,10 +67,12 @@ object CommentEntityMapper {
     fun toEntity(domain: Comment): CommentEntity {
         return CommentEntity(
             commentId = domain.commentId.stringValue,
+            shortId = domain.shortId,
             memberId = domain.memberId.stringValue,
             text = domain.text.value,
             postId = domain.postId.stringValue,
             parentCommentId = domain.parentCommentId?.stringValue,
+            rootCommentId = domain.rootCommentId?.stringValue,
             points = domain.points,
             // 管理功能相关字段
             isHidden = domain.isHidden,

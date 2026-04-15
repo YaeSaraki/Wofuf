@@ -18,4 +18,12 @@ interface MemberJpaRepo : JpaRepository<MemberEntity, String> {
     // 管理功能方法
     fun findByIsBannedTrue(pageable: Pageable): List<MemberEntity>
     fun countByIsBannedTrue(): Long
+
+    // 活跃成员查询
+    fun findByIsBannedFalse(pageable: Pageable): List<MemberEntity>
+    fun countByIsBannedFalse(): Long
+
+    // 按昵称搜索（不区分大小写）
+    fun findByNicknameContainingIgnoreCase(nickname: String, pageable: Pageable): List<MemberEntity>
+    fun countByNicknameContainingIgnoreCase(nickname: String): Long
 }

@@ -19,6 +19,8 @@ data class CommentDetailsProps(
     val postSlug: PostSlug,
     val postTitle: PostTitle,
     val parentCommentId: CommentId?,
+    val rootCommentId: CommentId?,  // 所属主评论ID（用于Bilibili风格）
+    val shortId: String?,           // 短 ID（用于显示和引用）
     val points: Int,
     val createdAt: LocalDateTime,
 )
@@ -43,6 +45,20 @@ class CommentDetails private constructor(
 
     val parentCommentId: CommentId?
         get() = props.parentCommentId
+
+    /**
+     * 所属主评论ID（用于Bilibili风格评论）
+     * 主评论返回 null
+     * 子评论返回所属主评论的ID
+     */
+    val rootCommentId: CommentId?
+        get() = props.rootCommentId
+
+    /**
+     * 短 ID（用于显示和引用）
+     */
+    val shortId: String?
+        get() = props.shortId
 
     val points: Int
         get() = props.points

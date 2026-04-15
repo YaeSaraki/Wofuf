@@ -185,11 +185,23 @@ object ForumApiConstantV1 {
 
             /** /api/v1/forum/admin/comments/hidden */
             const val HIDDEN = "$COMMENTS_BASE/hidden"
+
+            /** /api/v1/forum/admin/comments/batch-hide */
+            const val BATCH_HIDE = "$COMMENTS_BASE/batch-hide"
+
+            /** /api/v1/forum/admin/comments/batch-show */
+            const val BATCH_SHOW = "$COMMENTS_BASE/batch-show"
         }
 
         // -------------------- 成员管理 --------------------
         object Members {
             private const val MEMBERS_BASE = "$ADMIN_BASE/members"
+
+            /** /api/v1/forum/admin/members */
+            const val LIST = MEMBERS_BASE
+
+            /** /api/v1/forum/admin/members/{memberId}/profile */
+            const val PROFILE = "$MEMBERS_BASE/{${Param.MEMBER_ID}}/profile"
 
             /** /api/v1/forum/admin/members/{memberId}/ban */
             const val BAN = "$MEMBERS_BASE/{${Param.MEMBER_ID}}/ban"

@@ -2,6 +2,7 @@ package dev.saraki.wofuf.modules.forum.useCases.comments.replyToComment
 
 import dev.saraki.wofuf.modules.forum.domain.Comment
 import dev.saraki.wofuf.modules.forum.domain.CommentProps
+import dev.saraki.wofuf.modules.forum.domain.utils.ShortIdGenerator
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.*
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
@@ -66,12 +67,22 @@ class ReplyToCommentUseCase(
         }
         val commentText = commentTextOrError.getOrThrow()
 
+        // 计算 rootCommentId（用于 Bilibili 风格评论）
+        // 如果父评论已经是子评论（rootCommentId != null），则沿用 rootCommentId
+        // 如果父评论是主评论（rootCommentId == null），则 rootCommentId = 父评论ID
+        val effectiveRootCommentId = parentComment.rootCommentId ?: parentComment.commentId
+
+        // 生成短 ID（使用父评论 ID 作为盐值确保在同一帖子内唯一）
+        val shortId = ShortIdGenerator.generateFromString("${post.postId.stringValue}_${parentCommentId.stringValue}_${System.nanoTime()}")
+
         // Create comment as a reply
         val commentProps = CommentProps(
             memberId = member.memberId,
             text = commentText,
             postId = post.postId,
             parentCommentId = parentCommentId,
+            rootCommentId = effectiveRootCommentId,
+            shortId = shortId,
             points = 0
         )
         val commentOrError = Comment.create(commentProps)

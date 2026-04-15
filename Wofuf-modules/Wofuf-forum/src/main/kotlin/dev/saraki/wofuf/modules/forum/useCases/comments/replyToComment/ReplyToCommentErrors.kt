@@ -50,4 +50,12 @@ class ReplyToCommentErrors {
             message = "Comment text cannot be empty"
         )
     )
+
+    // Max nesting depth exceeded (max 3 levels: depth 0, 1)
+    class MaxNestingDepthExceededError() : Result.Failure<ReplyToCommentDto.Response>(
+        exception = UseCaseError(
+            code = "MAX_NESTING_DEPTH_EXCEEDED",
+            message = "Cannot reply to depth 2 comments - maximum nesting depth (3 levels: depth 0, 1) exceeded"
+        )
+    )
 }

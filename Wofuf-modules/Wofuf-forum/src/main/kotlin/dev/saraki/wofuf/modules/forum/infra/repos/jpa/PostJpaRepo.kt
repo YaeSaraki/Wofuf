@@ -155,4 +155,7 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
             ))
         ).content.filter { it.category == category }.take(size)
     }
+
+    // 按 memberId 查询帖子（管理功能）
+    fun findByMemberEntity_MemberIdOrderByDateTimePostedDesc(memberId: String, pageable: Pageable): List<PostEntity>
 }

@@ -3,6 +3,7 @@ package dev.saraki.wofuf.modules.forum.useCases.comments.replyToPost
 import dev.saraki.wofuf.modules.forum.domain.Comment
 import dev.saraki.wofuf.modules.forum.domain.CommentProps
 import dev.saraki.wofuf.modules.forum.domain.Post
+import dev.saraki.wofuf.modules.forum.domain.utils.ShortIdGenerator
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.*
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
@@ -58,12 +59,17 @@ class ReplyToPostUseCase(
         }
         val commentText = commentTextOrError.getOrThrow()
 
+        // 生成短 ID
+        val shortId = ShortIdGenerator.generateFromString("${post.postId.stringValue}_${System.nanoTime()}")
+
         // 创建评论 (不再需要 votes)
         val commentProps = CommentProps(
             postId = post.postId,
             text = commentText,
             memberId = member.memberId,
             parentCommentId = null,
+            rootCommentId = null,
+            shortId = shortId,
             points = 0
         )
         val comment = Comment.create(commentProps).getOrThrow()

@@ -5,6 +5,7 @@ class GetCommentsDto {
         val page: Int = 0,
         val size: Int = 20,
         val search: String? = null,  // 按作者昵称搜索
+        val contentSearch: String? = null,  // 按评论内容搜索
         val includeHidden: Boolean = false  // 是否包含隐藏评论
     )
 

@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.dtos
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostStatus
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostType
@@ -27,6 +28,7 @@ data class PostDto(
     val category: PostCategory = PostCategory.DISCUSSION,
     val status: PostStatus = PostStatus.NORMAL,
     // 管理功能：兼容 CommentDto 的 isHidden 命名，直接从 status 推断
+    @JsonProperty("isHidden")
     val isHidden: Boolean,  // 由 mapper 根据 status 设置，不能有默认值
     val isPinned: Boolean = false,
     val isFeatured: Boolean = false,
