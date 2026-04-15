@@ -127,7 +127,7 @@ class ImageStorageService(
     }
 
     /**
-     * 获取图片的预签名URL (有效期7天)
+     * 获取图片的预签名URL (有效期1小时)
      */
     private fun getPresignedUrl(objectName: String): String {
         return minioClient.getPresignedObjectUrl(
@@ -135,7 +135,7 @@ class ImageStorageService(
                 .method(Method.GET)
                 .bucket(minioProperties.bucketName)
                 .`object`(objectName)
-                .expiry(7, TimeUnit.DAYS)
+                .expiry(1, TimeUnit.HOURS)
                 .build()
         )
     }
