@@ -9,6 +9,7 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostStatus
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.PostJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.PostEntityMapper
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
 
 /**
@@ -145,4 +146,22 @@ class PostRepoImpl(
 
     override fun countHiddenPosts(): Long =
         postJpaRepo.countByStatus(PostStatus.HIDDEN.name)
+
+    // ==================== 搜索功能实现 ====================
+
+    override fun searchPosts(query: String, page: Int, size: Int, category: PostCategory?): List<Post> {
+        val safeSize = size.coerceAtLeast(1)
+        val pageable = PageRequest.of(page, safeSize)
+
+        val posts = if (category == null) {
+            postJpaRepo.searchPosts(query, pageable)
+        } else {
+            postJpaRepo.searchPostsByCategory(query, category.name, pageable)
+        }
+
+        // 只返回正常状态的帖子
+        return posts
+            .filter { it.status == PostStatus.NORMAL.name }
+            .map(PostEntityMapper::toDomain)
+    }
 }

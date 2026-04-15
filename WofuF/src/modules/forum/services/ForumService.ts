@@ -22,15 +22,39 @@ import { authService } from '@M/auth/services/AuthService.ts'
 
 export interface IForumService {
   /* ---------------- 帖子列表 ---------------- */
-  getRecentPosts(page: number, size: number, category?: PostCategory, options?: RequestOptions): Promise<Result<GetPostsResponse>>
-  getPopularPosts(page: number, size: number, category?: PostCategory, options?: RequestOptions): Promise<Result<GetPostsResponse>>
+  getRecentPosts(
+    page: number,
+    size: number,
+    category?: PostCategory,
+    options?: RequestOptions,
+  ): Promise<Result<GetPostsResponse>>
+  getPopularPosts(
+    page: number,
+    size: number,
+    category?: PostCategory,
+    options?: RequestOptions,
+  ): Promise<Result<GetPostsResponse>>
+  searchPosts(
+    query: string,
+    page: number,
+    size: number,
+    category?: PostCategory,
+    options?: RequestOptions,
+  ): Promise<Result<GetPostsResponse>>
 
   /* ---------------- 帖子详情 ---------------- */
   getPostBySlug(slug: string, options?: RequestOptions): Promise<Result<GetPostResponse>>
 
   /* ---------------- 帖子操作 ---------------- */
-  createPost(postData: CreatePostRequest, options?: RequestOptions): Promise<Result<CreatePostResponse>>
-  editPost(postId: string, data: { title?: string; text?: string; link?: string }, options?: RequestOptions): Promise<Result<void>>
+  createPost(
+    postData: CreatePostRequest,
+    options?: RequestOptions,
+  ): Promise<Result<CreatePostResponse>>
+  editPost(
+    postId: string,
+    data: { title?: string; text?: string; link?: string },
+    options?: RequestOptions,
+  ): Promise<Result<void>>
   deletePost(postId: string, options?: RequestOptions): Promise<Result<void>>
 
   /* ---------------- 投票 ---------------- */
@@ -41,9 +65,20 @@ export interface IForumService {
   downvoteComment(commentId: string, options?: RequestOptions): Promise<Result<VoteResponse>>
 
   /* ---------------- 评论 ---------------- */
-  getCommentsByPostSlug(postSlug: string, options?: RequestOptions): Promise<Result<GetCommentsResponse>>
-  replyToPost(postId: string, data: ReplyToPostRequest, options?: RequestOptions): Promise<Result<void>>
-  replyToComment(commentId: string, data: ReplyToCommentRequest, options?: RequestOptions): Promise<Result<void>>
+  getCommentsByPostSlug(
+    postSlug: string,
+    options?: RequestOptions,
+  ): Promise<Result<GetCommentsResponse>>
+  replyToPost(
+    postId: string,
+    data: ReplyToPostRequest,
+    options?: RequestOptions,
+  ): Promise<Result<void>>
+  replyToComment(
+    commentId: string,
+    data: ReplyToCommentRequest,
+    options?: RequestOptions,
+  ): Promise<Result<void>>
 }
 
 export class ForumService implements IForumService {
@@ -55,8 +90,8 @@ export class ForumService implements IForumService {
    * 获取最新帖子
    */
   public async getRecentPosts(
-    page: number = 0,       // 页码 1 开始
-    size: number = 10,      // 每页条数
+    page: number = 0, // 页码 1 开始
+    size: number = 10, // 每页条数
     category?: PostCategory,
     options?: RequestOptions,
   ): Promise<Result<GetPostsResponse>> {
@@ -82,7 +117,7 @@ export class ForumService implements IForumService {
             {
               signal: options?.signal,
               params,
-            }
+            },
           )
 
           if (response.data.success) {
@@ -93,7 +128,7 @@ export class ForumService implements IForumService {
           const err = error as { response?: { data?: { message?: string } }; message?: string }
           return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
         }
-      }
+      },
     )
   }
 
@@ -128,7 +163,7 @@ export class ForumService implements IForumService {
             {
               signal: options?.signal,
               params,
-            }
+            },
           )
 
           if (response.data.success) {
@@ -139,12 +174,54 @@ export class ForumService implements IForumService {
           const err = error as { response?: { data?: { message?: string } }; message?: string }
           return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
         }
-      }
+      },
+    )
+  }
+
+  /**
+   * 搜索帖子
+   */
+  public async searchPosts(
+    query: string,
+    page: number = 0,
+    size: number = 10,
+    category?: PostCategory,
+    options?: RequestOptions,
+  ): Promise<Result<GetPostsResponse>> {
+    const cacheKey = `search_posts_${query}_${page}_${size}_${category || 'all'}`
+
+    return cacheService.withCacheAndDeduplication<Result<GetPostsResponse>>(
+      ForumService.CACHE_MODULE,
+      cacheKey,
+      async () => {
+        try {
+          const params: Record<string, string | number> = { query, page, size }
+
+          if (category) {
+            params.category = category
+          }
+
+          const response = await http.get<ApiResponse<GetPostsResponse>>(
+            '/api/v1/forum/posts/search',
+            {
+              signal: options?.signal,
+              params,
+            },
+          )
+
+          if (response.data.success) {
+            return Result.success(response.data.data)
+          }
+          return Result.failure(response.data.message || '搜索帖子失败')
+        } catch (error) {
+          const err = error as { response?: { data?: { message?: string } }; message?: string }
+          return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+        }
+      },
     )
   }
 
   /* ==================== 帖子详情 ==================== */
-
 
   /**
    * 根据 Slug 获取帖子
@@ -172,7 +249,7 @@ export class ForumService implements IForumService {
             {
               signal: options?.signal,
               params,
-            }
+            },
           )
 
           console.debug('[ForumService] 帖子响应:', response.data)
@@ -183,11 +260,19 @@ export class ForumService implements IForumService {
           console.error('[ForumService] API 返回失败:', response.data.message)
           return Result.failure(response.data.message || '获取帖子失败')
         } catch (error) {
-          const err = error as { response?: { data?: { message?: string }; status?: number }; message?: string }
-          console.error('[ForumService] 请求异常:', err.response?.status, err.message, err.response?.data)
+          const err = error as {
+            response?: { data?: { message?: string }; status?: number }
+            message?: string
+          }
+          console.error(
+            '[ForumService] 请求异常:',
+            err.response?.status,
+            err.message,
+            err.response?.data,
+          )
           return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
         }
-      }
+      },
     )
   }
 
@@ -207,7 +292,7 @@ export class ForumService implements IForumService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {
@@ -236,7 +321,7 @@ export class ForumService implements IForumService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {
@@ -253,18 +338,12 @@ export class ForumService implements IForumService {
   /**
    * 删除帖子
    */
-  public async deletePost(
-    postId: string,
-    options?: RequestOptions,
-  ): Promise<Result<void>> {
+  public async deletePost(postId: string, options?: RequestOptions): Promise<Result<void>> {
     try {
-      const response = await http.delete<ApiResponse<void>>(
-        `/api/v1/forum/posts/${postId}`,
-        {
-          signal: options?.signal,
-          headers: authService.getAuthHeaders(),
-        }
-      )
+      const response = await http.delete<ApiResponse<void>>(`/api/v1/forum/posts/${postId}`, {
+        signal: options?.signal,
+        headers: authService.getAuthHeaders(),
+      })
 
       if (response.data.success) {
         cacheService.clearModule(ForumService.CACHE_MODULE)
@@ -282,10 +361,7 @@ export class ForumService implements IForumService {
   /**
    * 给帖子点赞
    */
-  public async upvotePost(
-    postId: string,
-    options?: RequestOptions,
-  ): Promise<Result<VoteResponse>> {
+  public async upvotePost(postId: string, options?: RequestOptions): Promise<Result<VoteResponse>> {
     try {
       if (!authService.isAuthenticated()) {
         return Result.failure('请先登录')
@@ -297,7 +373,7 @@ export class ForumService implements IForumService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {
@@ -328,7 +404,7 @@ export class ForumService implements IForumService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {
@@ -344,10 +420,7 @@ export class ForumService implements IForumService {
   /**
    * 取消帖子投票
    */
-  public async unvotePost(
-    postId: string,
-    options?: RequestOptions,
-  ): Promise<Result<VoteResponse>> {
+  public async unvotePost(postId: string, options?: RequestOptions): Promise<Result<VoteResponse>> {
     try {
       if (!authService.isAuthenticated()) {
         return Result.failure('请先登录')
@@ -359,7 +432,7 @@ export class ForumService implements IForumService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {
@@ -390,7 +463,7 @@ export class ForumService implements IForumService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {
@@ -421,7 +494,7 @@ export class ForumService implements IForumService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {
@@ -460,7 +533,7 @@ export class ForumService implements IForumService {
             {
               signal: options?.signal,
               params,
-            }
+            },
           )
 
           if (response.data.success) {
@@ -471,7 +544,7 @@ export class ForumService implements IForumService {
           const err = error as { response?: { data?: { message?: string } }; message?: string }
           return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
         }
-      }
+      },
     )
   }
 
@@ -490,7 +563,7 @@ export class ForumService implements IForumService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {
@@ -519,7 +592,7 @@ export class ForumService implements IForumService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {
@@ -548,7 +621,7 @@ export class ForumService implements IForumService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {

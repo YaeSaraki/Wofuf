@@ -84,6 +84,9 @@ object ForumApiConstantV1 {
 
         /** /api/v1/forum/posts/popular */
         const val POPULAR = "$ROOT/popular"
+
+        /** /api/v1/forum/posts/search */
+        const val SEARCH = "$ROOT/search"
     }
 
     // ===================== 评论相关路径 =====================
@@ -120,6 +123,9 @@ object ForumApiConstantV1 {
 
         /** /api/v1/forum/images/upload */
         const val UPLOAD = "$ROOT/upload"
+
+        /** /api/v1/forum/images/{md5} */
+        const val BY_MD5 = "$ROOT/{md5}"
     }
 
     // ===================== 管理功能路径 =====================

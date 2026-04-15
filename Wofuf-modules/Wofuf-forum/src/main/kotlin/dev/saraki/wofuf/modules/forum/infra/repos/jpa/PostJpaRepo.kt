@@ -158,4 +158,29 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
 
     // 按 memberId 查询帖子（管理功能）
     fun findByMemberEntity_MemberIdOrderByDateTimePostedDesc(memberId: String, pageable: Pageable): List<PostEntity>
+
+    // ==================== 搜索功能 ====================
+
+    /**
+     * 搜索帖子（按标题或内容模糊搜索）
+     */
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT p FROM PostEntity p WHERE " +
+        "(LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+        "LOWER(p.text) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+        "ORDER BY p.isPinned DESC, p.dateTimePosted DESC"
+    )
+    fun searchPosts(query: String, pageable: Pageable): List<PostEntity>
+
+    /**
+     * 按分类搜索帖子
+     */
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT p FROM PostEntity p WHERE " +
+        "(LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+        "LOWER(p.text) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+        "AND p.category = :category " +
+        "ORDER BY p.isPinned DESC, p.dateTimePosted DESC"
+    )
+    fun searchPostsByCategory(query: String, category: String, pageable: Pageable): List<PostEntity>
 }

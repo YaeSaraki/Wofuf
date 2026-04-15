@@ -164,6 +164,13 @@ const imageCount = computed(() => {
   const matches = props.post.text.match(/!\[.*?\]\(.*?\)/g)
   return matches ? matches.length : 0
 })
+
+// 提取第一张图片URL作为缩略图
+const thumbnailUrl = computed(() => {
+  if (!props.post.text) return null
+  const match = props.post.text.match(/!\[.*?\]\((.*?)\)/)
+  return match ? match[1] : null
+})
 </script>
 
 <template>
@@ -242,8 +249,13 @@ const imageCount = computed(() => {
 
       <!-- 内容预览 -->
       <div v-if="post.type === 'TEXT' && (previewText || hasImages)" class="bf-post-card__preview-wrapper">
+        <!-- 缩略图 -->
+        <div v-if="thumbnailUrl" class="bf-post-card__thumbnail">
+          <img :src="thumbnailUrl" :alt="'缩略图'" class="bf-thumbnail-img" loading="lazy" />
+          <span v-if="imageCount > 1" class="bf-thumbnail-count">+{{ imageCount - 1 }}</span>
+        </div>
         <p class="bf-post-card__preview">{{ previewText }}</p>
-        <span v-if="hasImages" class="bf-image-indicator">
+        <span v-if="hasImages && !thumbnailUrl" class="bf-image-indicator">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
             <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -581,12 +593,13 @@ const imageCount = computed(() => {
 /* === 内容预览 === */
 .bf-post-card__preview-wrapper {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--bf-space-sm, 10px);
 }
 
 .bf-post-card__preview {
   flex: 1;
+  min-width: 0;
   font-size: 14px;
   color: var(--bf-text-secondary);
   line-height: 1.6;
@@ -615,6 +628,43 @@ const imageCount = computed(() => {
 .bf-image-indicator svg {
   width: 12px;
   height: 12px;
+}
+
+/* === 缩略图 === */
+.bf-post-card__thumbnail {
+  position: relative;
+  width: 80px;
+  height: 60px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.bf-thumbnail-img {
+  display: block;
+  width: 80px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+
+.bf-thumbnail-img:hover {
+  transform: scale(1.05);
+}
+
+.bf-thumbnail-count {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: white;
 }
 
 /* === 链接预览 === */

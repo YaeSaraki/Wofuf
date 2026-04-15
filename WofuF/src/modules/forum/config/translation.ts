@@ -73,6 +73,11 @@ const forumTranslations = {
     zh: '热门',
     en: 'Popular',
   },
+  // 搜索
+  search: {
+    zh: '搜索',
+    en: 'Search',
+  },
   // 投票
   upvote: {
     zh: '点赞',

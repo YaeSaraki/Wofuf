@@ -71,4 +71,11 @@ interface PostRepo {
      * 统计隐藏帖子数量
      */
     fun countHiddenPosts(): Long
+
+    // ==================== 搜索功能 ====================
+
+    /**
+     * 搜索帖子（按标题或内容模糊搜索）
+     */
+    fun searchPosts(query: String, page: Int, size: Int, category: PostCategory?): List<Post>
 }

@@ -16,6 +16,10 @@ const { isLoading, errorMsg } = useAsyncLoader()
 // 帖子列表数据
 const posts = ref<PostDto[]>([])
 
+// 搜索关键词
+const searchQuery = ref('')
+const isSearching = ref(false)
+
 // 当前排序模式：最新 / 热门 - 从 URL 初始化
 const sortMode = ref<'recent' | 'popular'>(
   (route.query.sort as 'recent' | 'popular') || 'recent'
@@ -25,6 +29,7 @@ const sortMode = ref<'recent' | 'popular'>(
 const pageInfo = ref({
   recent: { current: 0, hasMore: true },
   popular: { current: 0, hasMore: true },
+  search: { current: 0, hasMore: true },
 })
 
 // 每页加载数量
@@ -90,6 +95,9 @@ const isLoggedIn = computed(() => authService.isAuthenticated())
 // 当前是否还有更多数据可加载
 const hasMore = computed(() => pageInfo.value[sortMode.value].hasMore)
 
+// 是否为搜索模式
+const isInSearchMode = computed(() => searchQuery.value.trim().length > 0)
+
 // 获取帖子列表核心方法
 async function fetchPosts(append: boolean = false) {
   const mode = sortMode.value
@@ -120,10 +128,17 @@ async function fetchPosts(append: boolean = false) {
     // 全部分类传 undefined，后端查询所有
     const category = selectedCategory.value === ALL_CATEGORY ? undefined : selectedCategory.value
 
-    // 根据排序模式调用对应接口
-    const result = await (mode === 'recent'
-      ? forumService.getRecentPosts(page, pageSize.value, category)
-      : forumService.getPopularPosts(page, pageSize.value, category))
+    let result
+    if (isInSearchMode.value) {
+      // 搜索模式
+      isSearching.value = true
+      result = await forumService.searchPosts(searchQuery.value.trim(), page, pageSize.value, category)
+    } else {
+      // 根据排序模式调用对应接口
+      result = await (mode === 'recent'
+        ? forumService.getRecentPosts(page, pageSize.value, category)
+        : forumService.getPopularPosts(page, pageSize.value, category))
+    }
 
     if (result?.isSuccess) {
       const newPosts = result.getValue().posts
@@ -150,6 +165,7 @@ async function fetchPosts(append: boolean = false) {
   } finally {
     // 结束加载状态
     isFetching.value = false
+    isSearching.value = false
     // 结束加载更多状态
     if (append) {
       isLoadingMore.value = false
@@ -176,10 +192,26 @@ function setCategory(categoryId: CategoryValue) {
   if (categoryId === selectedCategory.value) return
   selectedCategory.value = categoryId
 
-  // 切换分类后，两个排序的分页都重置
+  // 切换分类后，所有分页都重置
   pageInfo.value.recent = { current: 0, hasMore: true }
   pageInfo.value.popular = { current: 0, hasMore: true }
+  pageInfo.value.search = { current: 0, hasMore: true }
 
+  fetchPosts(false)
+}
+
+// 执行搜索
+function performSearch() {
+  // 搜索时重置分页
+  pageInfo.value.search = { current: 0, hasMore: true }
+  fetchPosts(false)
+}
+
+// 清除搜索
+function clearSearch() {
+  searchQuery.value = ''
+  // 清除搜索后重置分页
+  pageInfo.value.search = { current: 0, hasMore: true }
   fetchPosts(false)
 }
 
@@ -257,6 +289,38 @@ onUnmounted(() => {
 
 <template>
   <div class="bf-post-list-container">
+    <!-- 搜索栏 -->
+    <div class="bf-search-bar">
+      <div class="bf-search-input-wrapper">
+        <svg class="bf-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="搜索帖子标题或内容..."
+          class="bf-search-input"
+          @keydown.enter="performSearch"
+        />
+        <button v-if="searchQuery" class="bf-search-clear" @click="clearSearch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <button class="bf-search-btn" @click="performSearch">
+        {{ translate('forum', 'search') }}
+      </button>
+    </div>
+
+    <!-- 搜索结果提示 -->
+    <div v-if="isInSearchMode" class="bf-search-result-hint">
+      <span>搜索 "{{ searchQuery }}" 的结果</span>
+      <button class="bf-clear-search" @click="clearSearch">清除</button>
+    </div>
+
     <div class="bf-categories">
       <button
         v-for="category in categories"
@@ -384,6 +448,123 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--bf-space-md, 16px);
+}
+
+/* === 搜索栏 === */
+.bf-search-bar {
+  display: flex;
+  gap: var(--bf-space-sm, 8px);
+  padding: var(--bf-space-md, 16px) var(--bf-space-lg, 20px);
+  background: var(--bf-card-bg);
+  border: 1px solid var(--bf-card-border);
+  border-radius: var(--bf-card-radius, 16px);
+}
+
+.bf-search-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-sm, 8px);
+  padding: 10px 14px;
+  background: var(--bf-input-bg);
+  border: 1px solid var(--bf-border-default);
+  border-radius: var(--bf-input-radius, 12px);
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-search-input-wrapper:focus-within {
+  border-color: var(--bf-primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+}
+
+.bf-search-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--bf-text-muted);
+  flex-shrink: 0;
+}
+
+.bf-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--bf-text-primary);
+  font-size: 14px;
+  outline: none;
+}
+
+.bf-search-input::placeholder {
+  color: var(--bf-text-muted);
+}
+
+.bf-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--bf-text-muted);
+  cursor: pointer;
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-search-clear:hover {
+  background: var(--bf-btn-secondary-bg);
+  color: var(--bf-text-primary);
+}
+
+.bf-search-clear svg {
+  width: 14px;
+  height: 14px;
+}
+
+.bf-search-btn {
+  padding: 10px 20px;
+  background: var(--bf-fire-gradient);
+  border: none;
+  border-radius: var(--bf-input-radius, 12px);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-search-btn:hover {
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+  transform: translateY(-1px);
+}
+
+/* === 搜索结果提示 === */
+.bf-search-result-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--bf-space-sm, 10px) var(--bf-space-md, 16px);
+  background: rgba(255, 107, 53, 0.08);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  border-radius: var(--bf-card-radius-sm, 12px);
+  font-size: 13px;
+  color: var(--bf-primary);
+}
+
+.bf-clear-search {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--bf-primary);
+  border-radius: 6px;
+  color: var(--bf-primary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-clear-search:hover {
+  background: var(--bf-primary);
+  color: white;
 }
 
 /* === 分类标签 === */
