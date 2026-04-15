@@ -44,7 +44,7 @@ class Image private constructor(
                     contentType = contentType,
                     fileName = fileName,
                 ),
-                id = null,
+                id = UniqueEntityId(),
             )
         }
 
