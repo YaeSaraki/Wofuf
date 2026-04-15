@@ -6,6 +6,7 @@ import dev.saraki.wofuf.modules.forum.infra.repos.jpa.ImageJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.ImageEntityMapper
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 @Repository
 class ImageRepoImpl(
@@ -35,6 +36,7 @@ class ImageRepoImpl(
         return ImageEntityMapper.toDomain(imageJpaRepo.save(entity))
     }
 
+    @Transactional
     override fun delete(md5: String) {
         imageJpaRepo.deleteByMd5(md5)
     }

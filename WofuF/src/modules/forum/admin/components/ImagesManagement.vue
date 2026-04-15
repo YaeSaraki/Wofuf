@@ -15,18 +15,31 @@ const selectedImages = ref<Set<string>>(new Set())
 const currentPage = ref(0)
 const pageSize = ref(24)
 const totalImages = ref(0)
-const folderFilter = ref<string | undefined>(undefined)
 
 /* ---------------- 计算属性 ---------------- */
 const totalPages = computed(() => Math.ceil(totalImages.value / pageSize.value))
 const hasImages = computed(() => images.value.length > 0)
 
+// 按上传者分组的图片
+const groupedImages = computed(() => {
+  const groups: Record<string, { memberId: string | null, images: ImageSummary[] }> = {}
+
+  for (const img of images.value) {
+    const key = img.uploaderId || 'anonymous'
+    if (!groups[key]) {
+      groups[key] = { memberId: img.uploaderId, images: [] }
+    }
+    groups[key].images.push(img)
+  }
+
+  return groups
+})
+
 /* ---------------- 方法 ---------------- */
-// 加载图片列表
 async function loadImages() {
   isLoading.value = true
   try {
-    const result = await adminService.getImages(currentPage.value, pageSize.value, folderFilter.value)
+    const result = await adminService.getImages(currentPage.value, pageSize.value)
     if (result.isSuccess) {
       const data = result.getValue()
       images.value = data.images
@@ -44,7 +57,6 @@ async function loadImages() {
   }
 }
 
-// 删除图片
 async function deleteImage(imageId: string) {
   isDeleting.value = true
   try {
@@ -56,7 +68,6 @@ async function deleteImage(imageId: string) {
         detail: result.getValue().message,
         life: 3000,
       })
-      // 从列表中移除
       images.value = images.value.filter(img => img.imageId !== imageId)
       totalImages.value--
       selectedImages.value.delete(imageId)
@@ -73,7 +84,6 @@ async function deleteImage(imageId: string) {
   }
 }
 
-// 批量删除
 async function batchDeleteImages() {
   if (selectedImages.value.size === 0) return
 
@@ -94,7 +104,6 @@ async function batchDeleteImages() {
       life: 3000,
     })
 
-    // 重新加载
     await loadImages()
     selectedImages.value.clear()
   } finally {
@@ -102,18 +111,29 @@ async function batchDeleteImages() {
   }
 }
 
-// 选择图片
 function toggleSelect(imageId: string) {
   if (selectedImages.value.has(imageId)) {
     selectedImages.value.delete(imageId)
   } else {
     selectedImages.value.add(imageId)
   }
-  // 触发响应式更新
   selectedImages.value = new Set(selectedImages.value)
 }
 
-// 全选
+function selectAllInGroup(groupKey: string) {
+  const group = groupedImages.value[groupKey]
+  if (!group) return
+
+  const allSelected = group.images.every(img => selectedImages.value.has(img.imageId))
+
+  if (allSelected) {
+    group.images.forEach(img => selectedImages.value.delete(img.imageId))
+  } else {
+    group.images.forEach(img => selectedImages.value.add(img.imageId))
+  }
+  selectedImages.value = new Set(selectedImages.value)
+}
+
 function selectAll() {
   if (selectedImages.value.size === images.value.length) {
     selectedImages.value.clear()
@@ -123,30 +143,24 @@ function selectAll() {
   selectedImages.value = new Set(selectedImages.value)
 }
 
-// 翻页
 function goToPage(page: number) {
   if (page < 0 || page >= totalPages.value) return
   currentPage.value = page
   loadImages()
 }
 
-// 格式化文件大小
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-// 格式化日期
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString()
 }
 
-// 获取图片类型图标
-function getImageTypeIcon(contentType: string): string {
-  if (contentType.includes('gif')) return '🎞️'
-  if (contentType.includes('webp')) return '🖼️'
-  return '🖼️'
+function getMemberLabel(memberId: string | null): string {
+  return memberId ? `Member: ${memberId.slice(0, 8)}...` : 'Anonymous'
 }
 
 onMounted(() => {
@@ -159,12 +173,8 @@ onMounted(() => {
     <!-- 头部操作栏 -->
     <div class="bf-images-header">
       <div class="bf-header-left">
+        <span class="bf-icon">&#9745;</span>
         <h3 class="bf-section-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
           {{ translate('forum', 'admin.images.title') || '图片管理' }}
         </h3>
         <span class="bf-image-count">{{ totalImages }} {{ translate('forum', 'admin.images.count') || '张图片' }}</span>
@@ -177,17 +187,11 @@ onMounted(() => {
           :disabled="isDeleting"
           @click="batchDeleteImages"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-          </svg>
-          {{ translate('forum', 'admin.batchDelete') || `删除选中 (${selectedImages.size})` }}
+          <span class="bf-icon">&#10005;</span>
+          {{ translate('forum', 'admin.batchDelete') || `删除 (${selectedImages.size})` }}
         </button>
         <button class="bf-btn bf-btn--ghost" @click="loadImages" :disabled="isLoading">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-            <polyline points="23 4 23 10 17 10"/>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-          </svg>
+          <span class="bf-icon">&#8635;</span>
           {{ translate('forum', 'admin.refresh') || '刷新' }}
         </button>
       </div>
@@ -201,56 +205,66 @@ onMounted(() => {
 
     <!-- 空状态 -->
     <div v-else-if="!hasImages" class="bf-empty-state">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-        <circle cx="8.5" cy="8.5" r="1.5"/>
-        <polyline points="21 15 16 10 5 21"/>
-      </svg>
+      <span class="bf-icon bf-icon--large">&#9744;</span>
       <span>{{ translate('forum', 'admin.images.empty') || '暂无图片' }}</span>
     </div>
 
-    <!-- 图片网格 -->
-    <div v-else class="bf-images-grid">
+    <!-- 按成员分组的图片 -->
+    <div v-else class="bf-images-container">
       <div
-        v-for="image in images"
-        :key="image.imageId"
-        class="bf-image-card"
-        :class="{ 'bf-image-card--selected': selectedImages.has(image.imageId) }"
-        @click="toggleSelect(image.imageId)"
+        v-for="(group, groupKey) in groupedImages"
+        :key="groupKey"
+        class="bf-image-group"
       >
-        <!-- 选择指示器 -->
-        <div class="bf-image-checkbox">
-          <svg v-if="selectedImages.has(image.imageId)" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-          </svg>
+        <!-- 组成员头部 -->
+        <div class="bf-group-header">
+          <button class="bf-group-select" @click="selectAllInGroup(groupKey)">
+            <span class="bf-icon">
+              {{ group.images.every(img => selectedImages.has(img.imageId)) ? '&#10003;' : '&#9744;' }}
+            </span>
+          </button>
+          <span class="bf-group-label">{{ getMemberLabel(group.memberId) }}</span>
+          <span class="bf-group-count">{{ group.images.length }} images</span>
         </div>
 
-        <!-- 图片预览 -->
-        <div class="bf-image-preview">
-          <img :src="image.url" :alt="image.fileName" loading="lazy" />
-        </div>
+        <!-- 组内图片网格 -->
+        <div class="bf-images-grid">
+          <div
+            v-for="image in group.images"
+            :key="image.imageId"
+            class="bf-image-card"
+            :class="{ 'bf-image-card--selected': selectedImages.has(image.imageId) }"
+            @click="toggleSelect(image.imageId)"
+          >
+            <!-- 选择指示器 -->
+            <div class="bf-image-checkbox">
+              <span v-if="selectedImages.has(image.imageId)" class="bf-icon">&#10003;</span>
+            </div>
 
-        <!-- 图片信息 -->
-        <div class="bf-image-info">
-          <div class="bf-image-name" :title="image.fileName">{{ image.fileName }}</div>
-          <div class="bf-image-meta">
-            <span class="bf-image-size">{{ formatFileSize(image.fileSize) }}</span>
-            <span class="bf-image-date">{{ formatDate(image.uploadedAt) }}</span>
+            <!-- 图片预览 -->
+            <div class="bf-image-preview">
+              <img :src="image.url" :alt="image.fileName" loading="lazy" />
+            </div>
+
+            <!-- 图片信息 -->
+            <div class="bf-image-info">
+              <div class="bf-image-name" :title="image.fileName">{{ image.fileName }}</div>
+              <div class="bf-image-meta">
+                <span>{{ formatFileSize(image.fileSize) }}</span>
+                <span>{{ formatDate(image.uploadedAt) }}</span>
+              </div>
+            </div>
+
+            <!-- 删除按钮 -->
+            <button
+              class="bf-image-delete"
+              @click.stop="deleteImage(image.imageId)"
+              :disabled="isDeleting"
+            >
+              <span class="bf-icon">&#10005;</span>
+            </button>
           </div>
         </div>
-
-        <!-- 删除按钮 -->
-        <button
-          class="bf-image-delete"
-          @click.stop="deleteImage(image.imageId)"
-          :disabled="isDeleting"
-          :title="translate('forum', 'admin.delete') || '删除'"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-          </svg>
-        </button>
       </div>
     </div>
 
@@ -261,9 +275,7 @@ onMounted(() => {
         :disabled="currentPage === 0"
         @click="goToPage(currentPage - 1)"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
+        <span class="bf-icon">&#8592;</span>
       </button>
 
       <div class="bf-pagination-info">
@@ -277,9 +289,7 @@ onMounted(() => {
         :disabled="currentPage >= totalPages - 1"
         @click="goToPage(currentPage + 1)"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
+        <span class="bf-icon">&#8594;</span>
       </button>
     </div>
   </div>
@@ -291,6 +301,11 @@ onMounted(() => {
   flex-direction: column;
   gap: 1rem;
   height: 100%;
+}
+
+.bf-icon {
+  font-family: monospace;
+  font-size: 1rem;
 }
 
 /* 头部 */
@@ -307,21 +322,14 @@ onMounted(() => {
 .bf-header-left {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .bf-section-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
   color: var(--bf-text-primary);
-}
-
-.bf-section-title svg {
-  color: var(--bf-primary, #FF6B35);
 }
 
 .bf-image-count {
@@ -408,14 +416,67 @@ onMounted(() => {
   color: var(--bf-text-muted);
 }
 
-/* 图片网格 */
-.bf-images-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 1rem;
+.bf-icon--large {
+  font-size: 4rem;
+}
+
+/* 图片容器 */
+.bf-images-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   padding: 0 1.5rem;
   overflow-y: auto;
   flex: 1;
+}
+
+/* 图片组 */
+.bf-image-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bf-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bf-input-bg, rgba(255, 255, 255, 0.03));
+  border-radius: var(--bf-radius-md, 8px);
+}
+
+.bf-group-select {
+  background: transparent;
+  border: none;
+  color: var(--bf-text-muted);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.bf-group-select:hover {
+  color: var(--bf-text-primary);
+}
+
+.bf-group-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--bf-text-primary);
+}
+
+.bf-group-count {
+  font-size: 0.75rem;
+  color: var(--bf-text-muted);
+  margin-left: auto;
+}
+
+/* 图片网格 */
+.bf-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
 }
 
 /* 图片卡片 */
@@ -442,16 +503,16 @@ onMounted(() => {
 /* 选择指示器 */
 .bf-image-checkbox {
   position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  width: 24px;
-  height: 24px;
+  top: 0.375rem;
+  left: 0.375rem;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.5);
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
+  border-radius: 4px;
   z-index: 2;
   color: white;
   opacity: 0;
@@ -483,11 +544,11 @@ onMounted(() => {
 
 /* 图片信息 */
 .bf-image-info {
-  padding: 0.75rem;
+  padding: 0.5rem;
 }
 
 .bf-image-name {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--bf-text-primary);
   white-space: nowrap;
@@ -499,23 +560,23 @@ onMounted(() => {
 .bf-image-meta {
   display: flex;
   gap: 0.5rem;
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   color: var(--bf-text-muted);
 }
 
 /* 删除按钮 */
 .bf-image-delete {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  width: 32px;
-  height: 32px;
+  top: 0.375rem;
+  right: 0.375rem;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(239, 68, 68, 0.8);
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   color: white;
   cursor: pointer;
   opacity: 0;
@@ -582,10 +643,13 @@ onMounted(() => {
     align-items: stretch;
   }
 
-  .bf-images-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 0.75rem;
+  .bf-images-container {
     padding: 0 1rem;
+  }
+
+  .bf-images-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
   }
 
   .bf-image-delete {
