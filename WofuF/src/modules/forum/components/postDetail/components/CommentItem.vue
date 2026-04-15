@@ -576,7 +576,7 @@ function formatDate(dateStr: string): string {
 
         <!-- 评论正文 -->
         <div class="bf-comment-text" :class="{ 'bf-comment-text--hidden': comment.isHidden && !isAdmin }">
-          <MarkdownRenderer :content="comment.text" />
+          <MarkdownRenderer :content="comment.text" size="thumbnail" />
         </div>
 
         <!-- 操作栏 -->

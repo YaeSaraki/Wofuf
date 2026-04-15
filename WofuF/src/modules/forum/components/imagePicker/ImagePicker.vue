@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { imageService } from '@M/forum/services/ImageService.ts'
 import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
+import type { ImageListItem } from '@M/forum/services/ImageService.ts'
 
 const emit = defineEmits<{
   (e: 'select', markdown: string): void
@@ -10,15 +11,18 @@ const emit = defineEmits<{
 
 /* ---------------- 状态 ---------------- */
 const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
-const images = ref<string[]>([])
-const selectedImage = ref<string | null>(null)
+const images = ref<ImageListItem[]>([])
+const selectedImage = ref<ImageListItem | null>(null)
 const searchQuery = ref('')
+const isUploading = ref(false)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 /* ---------------- 计算属性 ---------------- */
 const filteredImages = computed(() => {
   if (!searchQuery.value) return images.value
-  return images.value.filter(img => 
-    img.toLowerCase().includes(searchQuery.value.toLowerCase())
+  return images.value.filter(img =>
+    img.fileName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    img.md5.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 })
 
@@ -29,27 +33,27 @@ async function loadImages() {
     return await imageService.getExistingImages()
   })
 
-  if (result) {
-    images.value = result
+  if (result && result.images) {
+    images.value = result.images
   }
 }
 
 // 选择图片
-function selectImage(url: string) {
-  selectedImage.value = url
+function selectImage(img: ImageListItem) {
+  selectedImage.value = img
 }
 
 // 确认选择
 function confirmSelection() {
   if (selectedImage.value) {
-    const markdown = `![图片](${selectedImage.value})`
+    const markdown = `![${selectedImage.value.fileName}](${selectedImage.value.url})`
     emit('select', markdown)
   }
 }
 
 // 双击快速选择
-function handleDoubleClick(url: string) {
-  selectedImage.value = url
+function handleDoubleClick(img: ImageListItem) {
+  selectedImage.value = img
   confirmSelection()
 }
 
@@ -59,9 +63,49 @@ function close() {
 }
 
 // 获取图片文件名
-function getImageName(url: string): string {
-  const parts = url.split('/')
-  return parts[parts.length - 1] || url
+function getImageName(img: ImageListItem): string {
+  return img.fileName
+}
+
+// 触发文件上传
+function triggerUpload() {
+  fileInputRef.value?.click()
+}
+
+// 处理文件选择
+async function handleFileSelect(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  isUploading.value = true
+  errorMsg.value = ''
+
+  const result = await imageService.uploadImage(file, 'posts')
+
+  if (result.isSuccess) {
+    const uploadData = result.getValue()
+    // 添加到列表开头
+    const newImage: ImageListItem = {
+      imageId: uploadData.md5,
+      md5: uploadData.md5,
+      url: uploadData.url,
+      folder: 'posts',
+      fileName: file.name,
+      fileSize: file.size,
+      contentType: file.type,
+      uploadedAt: Date.now()
+    }
+    images.value.unshift(newImage)
+    // 自动选中新上传的图片
+    selectImage(newImage)
+  } else {
+    errorMsg.value = String(result.error)
+  }
+
+  isUploading.value = false
+  // 清空input
+  input.value = ''
 }
 
 onMounted(() => {
@@ -91,17 +135,35 @@ onMounted(() => {
           </button>
         </div>
 
-        <!-- 搜索框 -->
-        <div class="bf-picker-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
+        <!-- 搜索框和上传按钮 -->
+        <div class="bf-picker-search-bar">
+          <div class="bf-picker-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="搜索图片..."
+              class="bf-search-input"
+            />
+          </div>
+          <button class="bf-upload-btn" @click="triggerUpload" :disabled="isUploading">
+            <svg v-if="!isUploading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <div v-else class="bf-spinner bf-spinner--small"></div>
+            <span>{{ isUploading ? '上传中...' : '上传图片' }}</span>
+          </button>
           <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="搜索图片..."
-            class="bf-search-input"
+            ref="fileInputRef"
+            type="file"
+            accept="image/*"
+            class="bf-hidden-input"
+            @change="handleFileSelect"
           />
         </div>
 
@@ -126,24 +188,26 @@ onMounted(() => {
               <polyline points="21 15 16 10 5 21"/>
             </svg>
             <span>暂无图片</span>
+            <button class="bf-upload-hint-btn" @click="triggerUpload">点击上传第一张图片</button>
           </div>
 
           <!-- 图片列表 -->
           <div v-else class="bf-image-grid">
             <div
               v-for="img in filteredImages"
-              :key="img"
+              :key="img.imageId"
               class="bf-image-item"
-              :class="{ 'bf-image-item--selected': selectedImage === img }"
+              :class="{ 'bf-image-item--selected': selectedImage?.imageId === img.imageId }"
               @click="selectImage(img)"
               @dblclick="handleDoubleClick(img)"
             >
-              <img :src="img" :alt="getImageName(img)" class="bf-image-thumb" />
+              <img :src="img.url" :alt="img.fileName" class="bf-image-thumb" loading="lazy" />
               <div class="bf-image-overlay">
                 <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                   <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                 </svg>
               </div>
+              <div class="bf-image-name" :title="img.fileName">{{ img.fileName }}</div>
             </div>
           </div>
         </div>
@@ -242,13 +306,23 @@ onMounted(() => {
   color: var(--bf-text-primary);
 }
 
-/* 搜索框 */
-.bf-picker-search {
+/* 搜索框和上传栏 */
+.bf-picker-search-bar {
   display: flex;
   align-items: center;
   gap: var(--bf-space-sm, 8px);
   padding: var(--bf-space-sm, 8px) var(--bf-space-md, 16px);
   border-bottom: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.08));
+}
+
+.bf-picker-search {
+  display: flex;
+  align-items: center;
+  gap: var(--bf-space-sm, 8px);
+  flex: 1;
+  padding: var(--bf-space-sm, 8px);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
 }
 
 .bf-picker-search svg {
@@ -267,6 +341,54 @@ onMounted(() => {
 
 .bf-search-input::placeholder {
   color: var(--bf-text-muted);
+}
+
+/* 上传按钮 */
+.bf-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--bf-primary, #FF6B35);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--bf-transition-fast);
+}
+
+.bf-upload-btn:hover:not(:disabled) {
+  background: #ff7a47;
+}
+
+.bf-upload-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bf-hidden-input {
+  display: none;
+}
+
+/* 小spinner */
+.bf-spinner--small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+/* 空状态的上传提示 */
+.bf-upload-hint-btn {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: var(--bf-primary, #FF6B35);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.875rem;
+  cursor: pointer;
 }
 
 /* 错误提示 */

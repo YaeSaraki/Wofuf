@@ -23,9 +23,12 @@ renderer.code = function({ text, lang }: { text: string; lang?: string }) {
 
 marked.use({ renderer })
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   content: string
-}>()
+  size?: 'thumbnail' | 'normal' | 'large'
+}>(), {
+  size: 'normal'
+})
 
 // Emit 图片点击事件
 const emit = defineEmits<{
@@ -64,6 +67,7 @@ onMounted(() => {
 <template>
   <div
     class="bf-markdown-renderer"
+    :class="`bf-markdown-renderer--${size}`"
     v-html="renderedHtml"
     @click="handleImageClick"
   ></div>
@@ -114,6 +118,23 @@ onMounted(() => {
   margin: 1em 0;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 缩略图模式 - 评论中显示小图 */
+.bf-markdown-renderer--thumbnail img {
+  max-width: 240px;
+  max-height: 180px;
+  object-fit: cover;
+}
+
+/* 普通模式 - 默认大小 */
+.bf-markdown-renderer--normal img {
+  max-width: 480px;
+}
+
+/* 大图模式 - 帖子中显示较大图 */
+.bf-markdown-renderer--large img {
+  max-width: 720px;
 }
 
 .bf-markdown-renderer img:hover {

@@ -61,7 +61,7 @@ async function loadImages() {
       toast.add({
         severity: 'error',
         summary: translate('forum', 'admin.operationFailed'),
-        detail: result.error(),
+        detail: String(result.error),
         life: 3000,
       })
     }
@@ -129,7 +129,7 @@ async function deleteImage(imageId: string) {
       toast.add({
         severity: 'error',
         summary: translate('forum', 'admin.operationFailed'),
-        detail: result.error(),
+        detail: String(result.error),
         life: 3000,
       })
     }
@@ -208,6 +208,11 @@ function getMemberLabel(memberId: string | null): string {
   if (!memberId) return 'Anonymous'
   const member = searchResults.value.find(m => m.memberId === memberId)
   return member ? member.nickname : `Member: ${memberId.slice(0, 8)}...`
+}
+
+// 构建图片URL，使用后端代理接口
+function getImageUrl(md5: string): string {
+  return `/api/v1/forum/images/${md5}`
 }
 
 onMounted(() => {
@@ -333,7 +338,11 @@ onMounted(() => {
 
             <!-- 图片预览 -->
             <div class="bf-image-preview">
-              <img :src="image.url" :alt="image.fileName" loading="lazy" />
+              <img
+                :src="getImageUrl(image.md5)"
+                :alt="image.fileName"
+                loading="lazy"
+              />
             </div>
 
             <!-- 图片信息 -->

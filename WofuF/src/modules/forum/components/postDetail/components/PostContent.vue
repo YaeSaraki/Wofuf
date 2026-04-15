@@ -23,7 +23,7 @@ defineExpose({
 
 <template>
   <div class="bf-post-content" ref="postContentRef">
-    <MarkdownRenderer :content="content" @image-click="openLightbox" />
+    <MarkdownRenderer :content="content" size="large" @image-click="openLightbox" />
   </div>
 </template>
 

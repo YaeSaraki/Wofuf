@@ -194,7 +194,7 @@ export interface AdminStats {
 // ==================== 图片管理 ====================
 export interface ImageSummary {
   imageId: string
-  url: string
+  objectName: string
   md5: string
   folder: string
   uploaderId: string | null
@@ -214,4 +214,9 @@ export interface GetImagesResponse {
 export interface DeleteImageResponse {
   success: boolean
   message: string
+}
+
+export interface GetImageUrlResponse {
+  url: string
+  expiresInSeconds: number
 }

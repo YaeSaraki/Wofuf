@@ -15,7 +15,7 @@ const route = useRoute()
 const internalRouter = useRouter()
 
 // 当前选中的标签 - 从 URL 同步
-const activeTab = ref<'overview' | 'posts' | 'comments' | 'members'>(
+const activeTab = ref<'overview' | 'posts' | 'comments' | 'members' | 'images'>(
   (route.query.tab as any) || 'overview'
 )
 
@@ -86,7 +86,15 @@ async function loadUserPermissions() {
 
 // 快捷操作
 const quickActions = computed(() => {
-  const actions = []
+  type QuickActionKey = 'posts' | 'comments' | 'members'
+  interface QuickAction {
+    key: QuickActionKey
+    label: string
+    icon: string
+    count?: number
+    color: string
+  }
+  const actions: QuickAction[] = []
   if (userPermissions.value.includes('POST_REVIEW') || hasAdminAccess.value) {
     actions.push({ key: 'posts', label: translate('forum', 'admin.stats.pendingReview'), icon: '◆', count: stats.value?.pendingReview, color: 'blue' })
   }

@@ -10,6 +10,27 @@ export interface UploadImageResponse {
 }
 
 /**
+ * 图片列表项
+ */
+export interface ImageListItem {
+  imageId: string
+  md5: string
+  url: string
+  folder: string
+  fileName: string
+  fileSize: number
+  contentType: string
+  uploadedAt: number
+}
+
+/**
+ * 图片列表响应
+ */
+export interface ListImagesResponse {
+  images: ImageListItem[]
+}
+
+/**
  * 图片服务 - 处理图片上传相关操作
  */
 
@@ -26,7 +47,7 @@ export class ImageService {
    */
   public async uploadImage(
     file: File,
-    folder: string = 'posts'
+    folder: string = 'posts',
   ): Promise<Result<UploadImageResponse>> {
     try {
       const formData = new FormData()
@@ -41,7 +62,7 @@ export class ImageService {
             ...authService.getAuthHeaders(),
             'Content-Type': 'multipart/form-data',
           },
-        }
+        },
       )
 
       if (response.data.success) {
@@ -81,25 +102,28 @@ export class ImageService {
   /**
    * 获取已有图片列表
    * @param folder 文件夹名称，默认为 'posts'
+   * @param uploaderId 上传者ID，默认为当前用户
    */
-  public async getExistingImages(folder: string = 'posts'): Promise<string[]> {
+  public async getExistingImages(
+    folder?: string,
+    uploaderId?: string,
+  ): Promise<ListImagesResponse> {
     try {
-      const response = await http.get<ApiResponse<{ images: string[] }>>(
+      const response = await http.get<ApiResponse<ListImagesResponse>>(
         `/api/v1/forum/images/list`,
         {
-          params: { folder },
+          params: { folder, uploaderId },
           headers: authService.getAuthHeaders(),
-        }
+        },
       )
 
-      if (response.data.success && response.data.data?.images) {
-        return response.data.data.images
+      if (response.data.success && response.data.data) {
+        return response.data.data
       }
-      return []
+      return { images: [] }
     } catch (error) {
       console.warn('[ImageService] Failed to load existing images:', error)
-      // 返回空数组而不是抛出错误，让用户可以继续操作
-      return []
+      return { images: [] }
     }
   }
 }

@@ -20,6 +20,7 @@ import type {
   AdminStats,
   GetImagesResponse,
   DeleteImageResponse,
+  GetImageUrlResponse,
 } from '@M/forum/admin/dtos/Admin.ts'
 import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
 import { Result } from '@S/core/Result.ts'
@@ -114,6 +115,7 @@ export interface IAdminService {
     uploaderId?: string,
     options?: RequestOptions,
   ): Promise<Result<GetImagesResponse>>
+  getImageUrl(imageId: string, options?: RequestOptions): Promise<Result<GetImageUrlResponse>>
   deleteImage(imageId: string, options?: RequestOptions): Promise<Result<DeleteImageResponse>>
 }
 
@@ -609,6 +611,22 @@ export class AdminService implements IAdminService {
       )
       if (response.data.success) return Result.success(response.data.data)
       return Result.failure(response.data.message || '删除图片失败')
+    } catch (error) {
+      return this.handleError(error)
+    }
+  }
+
+  public async getImageUrl(
+    imageId: string,
+    options?: RequestOptions,
+  ): Promise<Result<GetImageUrlResponse>> {
+    try {
+      const response = await http.get<ApiResponse<GetImageUrlResponse>>(
+        `${AdminService.ADMIN_BASE}/images/${imageId}/url`,
+        { signal: options?.signal, headers: authService.getAuthHeaders() },
+      )
+      if (response.data.success) return Result.success(response.data.data)
+      return Result.failure(response.data.message || '获取图片URL失败')
     } catch (error) {
       return this.handleError(error)
     }
