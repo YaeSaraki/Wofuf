@@ -3,6 +3,7 @@ package dev.saraki.wofuf.modules.forum.infra.storage
 import io.minio.GetPresignedObjectUrlArgs
 import io.minio.MinioClient
 import io.minio.PutObjectArgs
+import io.minio.RemoveObjectArgs
 import io.minio.StatObjectArgs
 import io.minio.errors.ErrorResponseException
 import io.minio.http.Method
@@ -179,6 +180,24 @@ class ImageStorageService(
         // 基本URL格式验证
         val urlPattern = Regex("^https?://.+\\.(jpg|jpeg|png|gif|webp)(\\?.*)?$", RegexOption.IGNORE_CASE)
         return urlPattern.matches(url)
+    }
+
+    /**
+     * 删除图片
+     */
+    fun deleteImage(objectName: String) {
+        try {
+            minioClient.removeObject(
+                RemoveObjectArgs.builder()
+                    .bucket(minioProperties.bucketName)
+                    .`object`(objectName)
+                    .build()
+            )
+            logger.info("Image deleted from storage: $objectName")
+        } catch (e: Exception) {
+            logger.error("Failed to delete image from storage: ${e.message}")
+            throw ImageUploadException("Failed to delete image: ${e.message}")
+        }
     }
 }
 

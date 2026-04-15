@@ -1,5 +1,7 @@
 package dev.saraki.wofuf.modules.forum.useCases.images.uploadImage
 
+import dev.saraki.wofuf.modules.forum.domain.Image
+import dev.saraki.wofuf.modules.forum.infra.repos.ImageRepo
 import dev.saraki.wofuf.modules.forum.infra.storage.ImageStorageService
 import dev.saraki.wofuf.modules.forum.infra.storage.ImageUploadException
 import dev.saraki.wofuf.shared.core.Result
@@ -15,7 +17,8 @@ import org.springframework.web.multipart.MultipartFile
  */
 @Service
 class UploadImageUseCase(
-    private val imageStorageService: ImageStorageService
+    private val imageStorageService: ImageStorageService,
+    private val imageRepo: ImageRepo
 ) : UseCase<UploadImageUseCase.Request, UploadImageDto.Response> {
 
     private val logger = LoggerFactory.getLogger(UploadImageUseCase::class.java)
@@ -40,6 +43,21 @@ class UploadImageUseCase(
         try {
             // 上传图片（自动去重）
             val uploadResult = imageStorageService.uploadImage(file, folder)
+
+            // 如果不是重复上传，则保存图片元数据到数据库
+            if (!uploadResult.isDuplicate) {
+                val image = Image.create(
+                    url = uploadResult.url,
+                    md5 = uploadResult.md5,
+                    folder = folder,
+                    uploaderId = null, // TODO: 从JWT获取当前用户ID
+                    fileSize = file.size,
+                    contentType = file.contentType ?: "image/jpeg",
+                    fileName = file.originalFilename ?: "image"
+                )
+                imageRepo.save(image)
+                logger.info("Image metadata saved to database (MD5: ${uploadResult.md5})")
+            }
 
             // 生成Markdown格式
             val originalFilename = file.originalFilename ?: "image"

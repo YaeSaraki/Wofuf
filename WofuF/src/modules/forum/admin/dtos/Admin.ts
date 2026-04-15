@@ -190,3 +190,28 @@ export interface AdminStats {
   hiddenComments: number
   bannedMembers: number
 }
+
+// ==================== 图片管理 ====================
+export interface ImageSummary {
+  imageId: string
+  url: string
+  md5: string
+  folder: string
+  uploaderId: string | null
+  uploadedAt: number
+  fileSize: number
+  contentType: string
+  fileName: string
+}
+
+export interface GetImagesResponse {
+  images: ImageSummary[]
+  total: number
+  page: number
+  size: number
+}
+
+export interface DeleteImageResponse {
+  success: boolean
+  message: string
+}

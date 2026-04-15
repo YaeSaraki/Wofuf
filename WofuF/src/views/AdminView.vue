@@ -9,6 +9,7 @@ import router from '@S/infra/router'
 import PostsManagement from '@M/forum/admin/components/PostsManagement.vue'
 import CommentsManagement from '@M/forum/admin/components/CommentsManagement.vue'
 import MemberManagement from '@M/forum/admin/components/MemberManagement.vue'
+import ImagesManagement from '@M/forum/admin/components/ImagesManagement.vue'
 
 const route = useRoute()
 const internalRouter = useRouter()
@@ -106,6 +107,7 @@ const navItems = [
   { key: 'overview', labelKey: 'admin.nav.overview', icon: 'chart' },
   { key: 'posts', labelKey: 'admin.nav.posts', icon: 'document' },
   { key: 'comments', labelKey: 'admin.nav.comments', icon: 'chat' },
+  { key: 'images', labelKey: 'admin.nav.images', icon: 'image' },
   { key: 'members', labelKey: 'admin.nav.members', icon: 'users' },
 ]
 
@@ -209,6 +211,11 @@ onMounted(async () => {
             <template v-else-if="item.icon === 'chat'">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </template>
+            <template v-else-if="item.icon === 'image'">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </template>
             <template v-else-if="item.icon === 'users'">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="9" cy="7" r="4"/>
@@ -256,6 +263,11 @@ onMounted(async () => {
               </template>
               <template v-else-if="item.icon === 'chat'">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </template>
+              <template v-else-if="item.icon === 'image'">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
               </template>
               <template v-else-if="item.icon === 'users'">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -429,6 +441,11 @@ onMounted(async () => {
         <!-- 评论管理 -->
         <section v-else-if="activeTab === 'comments'" class="bf-content-section bf-no-padding">
           <CommentsManagement />
+        </section>
+
+        <!-- 图片管理 -->
+        <section v-else-if="activeTab === 'images'" class="bf-content-section bf-no-padding">
+          <ImagesManagement />
         </section>
 
         <!-- 成员管理 -->

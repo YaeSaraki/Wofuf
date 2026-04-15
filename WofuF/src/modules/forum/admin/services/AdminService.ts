@@ -18,6 +18,8 @@ import type {
   MemberProfile,
   GetMembersListResponse,
   AdminStats,
+  GetImagesResponse,
+  DeleteImageResponse,
 } from '@M/forum/admin/dtos/Admin.ts'
 import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
 import { Result } from '@S/core/Result.ts'
@@ -103,6 +105,18 @@ export interface IAdminService {
 
   /* ---------------- 统计数据 ---------------- */
   getAdminStats(options?: RequestOptions): Promise<Result<AdminStats>>
+
+  /* ---------------- 图片管理 ---------------- */
+  getImages(
+    page: number,
+    size: number,
+    folder?: string,
+    options?: RequestOptions,
+  ): Promise<Result<GetImagesResponse>>
+  deleteImage(
+    imageId: string,
+    options?: RequestOptions,
+  ): Promise<Result<DeleteImageResponse>>
 }
 
 /**
@@ -556,6 +570,46 @@ export class AdminService implements IAdminService {
       })
       if (response.data.success) return Result.success(response.data.data)
       return Result.failure(response.data.message || '获取统计数据失败')
+    } catch (error) {
+      return this.handleError(error)
+    }
+  }
+
+  /* ==================== 图片管理 ==================== */
+
+  public async getImages(
+    page: number = 0,
+    size: number = 20,
+    folder?: string,
+    options?: RequestOptions,
+  ): Promise<Result<GetImagesResponse>> {
+    try {
+      const response = await http.get<ApiResponse<GetImagesResponse>>(
+        `${AdminService.ADMIN_BASE}/images`,
+        {
+          signal: options?.signal,
+          headers: authService.getAuthHeaders(),
+          params: { page, size, folder: folder || undefined },
+        },
+      )
+      if (response.data.success) return Result.success(response.data.data)
+      return Result.failure(response.data.message || '获取图片列表失败')
+    } catch (error) {
+      return this.handleError(error)
+    }
+  }
+
+  public async deleteImage(
+    imageId: string,
+    options?: RequestOptions,
+  ): Promise<Result<DeleteImageResponse>> {
+    try {
+      const response = await http.delete<ApiResponse<DeleteImageResponse>>(
+        `${AdminService.ADMIN_BASE}/images/${imageId}`,
+        { signal: options?.signal, headers: authService.getAuthHeaders() },
+      )
+      if (response.data.success) return Result.success(response.data.data)
+      return Result.failure(response.data.message || '删除图片失败')
     } catch (error) {
       return this.handleError(error)
     }

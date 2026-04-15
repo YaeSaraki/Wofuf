@@ -654,6 +654,39 @@ const forumTranslations = {
     zh: '按昵称搜索...',
     en: 'Search by nickname...',
   },
+  // 图片管理
+  'admin.nav.images': {
+    zh: '图片管理',
+    en: 'Images',
+  },
+  'admin.images.title': {
+    zh: '图片管理',
+    en: 'Image Management',
+  },
+  'admin.images.count': {
+    zh: '张图片',
+    en: 'images',
+  },
+  'admin.images.empty': {
+    zh: '暂无图片',
+    en: 'No images',
+  },
+  'admin.images.delete': {
+    zh: '删除图片',
+    en: 'Delete Image',
+  },
+  'admin.delete': {
+    zh: '删除',
+    en: 'Delete',
+  },
+  'admin.batchDelete': {
+    zh: '删除选中',
+    en: 'Delete Selected',
+  },
+  'admin.deleteSuccess': {
+    zh: '删除成功',
+    en: 'Deleted successfully',
+  },
 }
 
 registerTranslations('forum', forumTranslations)
