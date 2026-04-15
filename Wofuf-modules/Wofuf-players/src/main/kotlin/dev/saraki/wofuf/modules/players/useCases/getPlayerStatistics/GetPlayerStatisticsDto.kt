@@ -9,6 +9,12 @@ import dev.saraki.wofuf.modules.players.dtos.PlayerStatisticDto
  *   @description:
  */
 class GetPlayerStatisticsDto {
-    data class Request(val playerUuid: String)
+    data class Request(
+        val playerUuid: String,
+        val category: String? = null,
+        val categories: Array<String>? = null,
+        val key: String? = null,
+        val keys: Array<String>? = null
+    )
     data class Response(val statistics: Map<String, PlayerStatisticDto>)
 }

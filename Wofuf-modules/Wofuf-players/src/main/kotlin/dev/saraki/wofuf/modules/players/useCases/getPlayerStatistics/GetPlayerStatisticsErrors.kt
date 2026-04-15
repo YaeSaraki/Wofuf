@@ -1,6 +1,6 @@
 package dev.saraki.wofuf.modules.players.useCases.getPlayerStatistics
 
-import dev.saraki.wofuf.modules.players.domain.Player
+import dev.saraki.wofuf.modules.players.dtos.PlayerStatisticDto
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCaseError
 
@@ -12,7 +12,7 @@ import dev.saraki.wofuf.shared.core.UseCaseError
  */
 class GetPlayerStatisticsErrors {
     // Failed to get player
-    class GetPlayerError() : Result.Failure<Player>(
+    class GetPlayerError() : Result.Failure<GetPlayerStatisticsDto.Response>(
         exception = UseCaseError(
             code = "GET_PLAYER_ERROR",
             message = "Failed to get player, player not found"

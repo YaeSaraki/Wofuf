@@ -1,10 +1,8 @@
 package dev.saraki.wofuf.modules.players.useCases.getPlayerAdvancements
 
 import dev.saraki.wofuf.modules.players.config.PlayerApiConstantV1
-import dev.saraki.wofuf.modules.players.mappers.PlayerMap
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
 /**
@@ -22,24 +20,15 @@ class GetPlayerAdvancementsController(
     @GetMapping
     fun getPlayerAdvancements(
         @PathVariable playerUuid: String,
-        @RequestParam includeRecipes: Boolean = false
+        @RequestParam(defaultValue = "false") includeRecipes: Boolean
     ): ApiResponse<GetPlayerAdvancementsDto.Response> {
         val result = getPlayerAdvancementsUseCase.execute(
-            GetPlayerAdvancementsDto.Request(
-                playerUuid
-            )
+            GetPlayerAdvancementsDto.Request(playerUuid, includeRecipes)
         )
-        if (result.isFailure) {
-            return ApiResponse.error(
-                result.exceptionOrThrow()
-            )
+        return if (result.isFailure) {
+            ApiResponse.error(result.exceptionOrThrow())
+        } else {
+            ApiResponse.success(result.getOrThrow())
         }
-        return ApiResponse.success(
-            GetPlayerAdvancementsDto.Response(
-                PlayerMap.from(result.getOrThrow())
-                    .advancements
-                    .filter { includeRecipes || !it.key.startsWith("recipes") } // 简化条件
-            )
-        )
     }
 }

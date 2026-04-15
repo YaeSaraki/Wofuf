@@ -2,6 +2,7 @@ package dev.saraki.wofuf.modules.players.useCases.getPlayerSkin
 
 import dev.saraki.wofuf.modules.players.config.PlayerApiConstantV1
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
+import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping(PlayerApiConstantV1.Data.SKINS)
 class GetPlayerSkinController(
     private val getPlayerSkinUseCase: GetPlayerSkinUseCase
-) {
+) : BaseController() {
 
     @GetMapping
     fun getPlayerSkin(@PathVariable playerUuid: String): ApiResponse<GetPlayerSkinDto.Response> {

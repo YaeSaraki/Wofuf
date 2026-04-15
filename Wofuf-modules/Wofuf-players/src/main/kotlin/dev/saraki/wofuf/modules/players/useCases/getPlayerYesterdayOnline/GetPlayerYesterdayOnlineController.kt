@@ -2,6 +2,7 @@ package dev.saraki.wofuf.modules.players.useCases.getPlayerYesterdayOnline
 
 import dev.saraki.wofuf.modules.players.config.PlayerApiConstantV1
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
+import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping(PlayerApiConstantV1.Features.YESTERDAY_ONLINE)
 class GetPlayerYesterdayOnlineController(
     private val getPlayerYesterdayOnlineUseCase: GetPlayerYesterdayOnlineUseCase,
-) {
+) : BaseController() {
     @GetMapping()
     fun yesterdayLoginPlayers(): ApiResponse<GetPlayerYesterdayOnlineDto.Response> {
         return ApiResponse.success(

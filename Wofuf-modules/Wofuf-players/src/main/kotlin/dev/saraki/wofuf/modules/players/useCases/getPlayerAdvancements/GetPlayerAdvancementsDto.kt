@@ -9,6 +9,9 @@ import dev.saraki.wofuf.modules.players.dtos.PlayerAdvancementDto
  *   @description:
  */
 class GetPlayerAdvancementsDto {
-    data class Request(val playerUuid: String)
+    data class Request(
+        val playerUuid: String,
+        val includeRecipes: Boolean = false
+    )
     data class Response(val advancements: List<PlayerAdvancementDto>)
 }
