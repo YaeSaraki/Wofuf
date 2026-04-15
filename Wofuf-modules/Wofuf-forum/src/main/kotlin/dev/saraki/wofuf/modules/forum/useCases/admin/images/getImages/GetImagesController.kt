@@ -18,10 +18,11 @@ class GetImagesController(
     fun getImages(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
-        @RequestParam(required = false) folder: String?
+        @RequestParam(required = false) folder: String?,
+        @RequestParam(required = false) uploaderId: String?
     ): ApiResponse<GetImagesDto.Response> {
         val result = getImagesUseCase.execute(
-            GetImagesDto.Request(page = page, size = size, folder = folder)
+            GetImagesDto.Request(page = page, size = size, folder = folder, uploaderId = uploaderId)
         ).getOrThrow()
         return ApiResponse.success(result)
     }

@@ -675,6 +675,18 @@ const forumTranslations = {
     zh: '删除图片',
     en: 'Delete Image',
   },
+  'admin.filterByMember': {
+    zh: '筛选成员',
+    en: 'Filter by Member',
+  },
+  'admin.searchMember': {
+    zh: '搜索成员...',
+    en: 'Search member...',
+  },
+  'admin.noMembersFound': {
+    zh: '未找到成员',
+    en: 'No members found',
+  },
   'admin.delete': {
     zh: '删除',
     en: 'Delete',

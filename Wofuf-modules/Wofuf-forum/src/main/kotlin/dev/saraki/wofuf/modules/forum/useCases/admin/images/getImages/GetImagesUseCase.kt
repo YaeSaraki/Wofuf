@@ -18,8 +18,8 @@ class GetImagesUseCase(
         val page = request.page.coerceAtLeast(0)
         val size = request.size.coerceIn(1, 100)
 
-        val images = imageRepo.findImages(page, size, request.folder)
-        val total = imageRepo.countImages(request.folder)
+        val images = imageRepo.findImages(page, size, request.folder, request.uploaderId)
+        val total = imageRepo.countImages(request.folder, request.uploaderId)
 
         val imageSummaries = images.map { image ->
             GetImagesDto.ImageSummary(

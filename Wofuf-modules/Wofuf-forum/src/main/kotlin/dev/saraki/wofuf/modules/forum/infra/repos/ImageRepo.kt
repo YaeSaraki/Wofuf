@@ -19,12 +19,12 @@ interface ImageRepo {
     /**
      * 分页获取图片列表
      */
-    fun findImages(page: Int, size: Int, folder: String?): List<Image>
+    fun findImages(page: Int, size: Int, folder: String?, uploaderId: String?): List<Image>
 
     /**
      * 统计图片数量
      */
-    fun countImages(folder: String?): Long
+    fun countImages(folder: String?, uploaderId: String?): Long
 
     /**
      * 保存图片

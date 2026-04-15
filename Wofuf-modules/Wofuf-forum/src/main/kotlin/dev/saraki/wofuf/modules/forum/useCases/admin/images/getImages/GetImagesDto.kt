@@ -4,7 +4,8 @@ class GetImagesDto {
     data class Request(
         val page: Int = 0,
         val size: Int = 20,
-        val folder: String? = null
+        val folder: String? = null,
+        val uploaderId: String? = null
     )
 
     data class Response(

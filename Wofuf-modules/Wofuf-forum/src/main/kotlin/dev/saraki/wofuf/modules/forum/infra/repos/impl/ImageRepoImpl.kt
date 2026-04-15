@@ -21,14 +21,14 @@ class ImageRepoImpl(
         return imageJpaRepo.findByMd5(md5)?.let(ImageEntityMapper::toDomain)
     }
 
-    override fun findImages(page: Int, size: Int, folder: String?): List<Image> {
-        return imageJpaRepo.findImages(folder, PageRequest.of(page, size))
+    override fun findImages(page: Int, size: Int, folder: String?, uploaderId: String?): List<Image> {
+        return imageJpaRepo.findImages(folder, uploaderId, PageRequest.of(page, size))
             .content
             .map(ImageEntityMapper::toDomain)
     }
 
-    override fun countImages(folder: String?): Long {
-        return imageJpaRepo.countByFolder(folder)
+    override fun countImages(folder: String?, uploaderId: String?): Long {
+        return imageJpaRepo.countByFolder(folder, uploaderId)
     }
 
     override fun save(image: Image): Image {

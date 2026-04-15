@@ -2,13 +2,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { adminService } from '@M/forum/admin/services/AdminService.ts'
 import { translate } from '@S/services/i18n'
-import type { ImageSummary } from '@M/forum/admin/dtos/Admin.ts'
+import type { ImageSummary, MemberSummary } from '@M/forum/admin/dtos/Admin.ts'
 import { useToast } from 'primevue/usetoast'
 
 const toast = useToast()
 
 /* ---------------- 状态 ---------------- */
 const images = ref<ImageSummary[]>([])
+const members = ref<MemberSummary[]>([])
 const isLoading = ref(false)
 const isDeleting = ref(false)
 const selectedImages = ref<Set<string>>(new Set())
@@ -16,9 +17,22 @@ const currentPage = ref(0)
 const pageSize = ref(24)
 const totalImages = ref(0)
 
+// 筛选状态
+const filterMemberId = ref<string | null>(null)
+const filterMemberNickname = ref('')
+
 /* ---------------- 计算属性 ---------------- */
 const totalPages = computed(() => Math.ceil(totalImages.value / pageSize.value))
 const hasImages = computed(() => images.value.length > 0)
+
+// 过滤后的成员列表（用于搜索）
+const filteredMembers = computed(() => {
+  if (!filterMemberNickname.value) return members.value.slice(0, 20)
+  const query = filterMemberNickname.value.toLowerCase()
+  return members.value.filter(m =>
+    m.nickname.toLowerCase().includes(query)
+  ).slice(0, 20)
+})
 
 // 按上传者分组的图片
 const groupedImages = computed(() => {
@@ -35,11 +49,29 @@ const groupedImages = computed(() => {
   return groups
 })
 
+// 选中的成员信息
+const selectedMember = computed(() => {
+  if (!filterMemberId.value) return null
+  return members.value.find(m => m.memberId === filterMemberId.value)
+})
+
 /* ---------------- 方法 ---------------- */
+async function loadMembers() {
+  try {
+    const result = await adminService.getMembersList(0, 100)
+    if (result.isSuccess) {
+      members.value = result.getValue().members
+    }
+  } catch (e) {
+    console.warn('[ImagesManagement] Failed to load members:', e)
+  }
+}
+
 async function loadImages() {
   isLoading.value = true
   try {
-    const result = await adminService.getImages(currentPage.value, pageSize.value)
+    // 根据是否有成员筛选来调用不同的API
+    const result = await adminService.getImages(currentPage.value, pageSize.value, filterMemberId.value || undefined)
     if (result.isSuccess) {
       const data = result.getValue()
       images.value = data.images
@@ -55,6 +87,28 @@ async function loadImages() {
   } finally {
     isLoading.value = false
   }
+}
+
+function selectMember(memberId: string | null) {
+  filterMemberId.value = memberId
+  filterMemberNickname.value = ''
+  currentPage.value = 0
+  loadImages()
+}
+
+function onMemberSearchInput(event: Event) {
+  const value = (event.target as HTMLInputElement).value
+  filterMemberNickname.value = value
+  if (!value) {
+    filterMemberId.value = null
+  }
+}
+
+function selectSearchResult(member: MemberSummary) {
+  filterMemberId.value = member.memberId
+  filterMemberNickname.value = member.nickname
+  currentPage.value = 0
+  loadImages()
 }
 
 async function deleteImage(imageId: string) {
@@ -160,11 +214,14 @@ function formatDate(timestamp: number): string {
 }
 
 function getMemberLabel(memberId: string | null): string {
-  return memberId ? `Member: ${memberId.slice(0, 8)}...` : 'Anonymous'
+  if (!memberId) return 'Anonymous'
+  const member = members.value.find(m => m.memberId === memberId)
+  return member ? member.nickname : `Member: ${memberId.slice(0, 8)}...`
 }
 
 onMounted(() => {
   loadImages()
+  loadMembers()
 })
 </script>
 
@@ -194,6 +251,50 @@ onMounted(() => {
           <span class="bf-icon">&#8635;</span>
           {{ translate('forum', 'admin.refresh') || '刷新' }}
         </button>
+      </div>
+    </div>
+
+    <!-- 成员筛选 -->
+    <div class="bf-member-filter">
+      <div class="bf-filter-label">
+        <span class="bf-icon">&#9787;</span>
+        <span>{{ translate('forum', 'admin.filterByMember') || '筛选成员' }}</span>
+      </div>
+
+      <div class="bf-member-search">
+        <input
+          type="text"
+          class="bf-search-input"
+          :placeholder="translate('forum', 'admin.searchMember') || '搜索成员...'"
+          :value="filterMemberNickname"
+          @input="onMemberSearchInput"
+        />
+
+        <!-- 搜索结果下拉 -->
+        <div v-if="filterMemberNickname && !filterMemberId" class="bf-search-results">
+          <div
+            v-for="member in filteredMembers"
+            :key="member.memberId"
+            class="bf-search-result-item"
+            @click="selectSearchResult(member)"
+          >
+            <span class="bf-member-nickname">{{ member.nickname }}</span>
+            <span class="bf-member-id">{{ member.memberId.slice(0, 8) }}...</span>
+          </div>
+          <div v-if="filteredMembers.length === 0" class="bf-search-no-results">
+            {{ translate('forum', 'admin.noMembersFound') || '未找到成员' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- 选中的成员标签 -->
+      <div v-if="selectedMember" class="bf-selected-member">
+        <span class="bf-member-name">{{ selectedMember.nickname }}</span>
+        <button class="bf-clear-filter" @click="selectMember(null)">&#10005;</button>
+      </div>
+      <div v-else-if="filterMemberId" class="bf-selected-member">
+        <span class="bf-member-name">{{ filterMemberId.slice(0, 8) }}...</span>
+        <button class="bf-clear-filter" @click="selectMember(null)">&#10005;</button>
       </div>
     </div>
 
@@ -340,6 +441,126 @@ onMounted(() => {
 .bf-header-actions {
   display: flex;
   gap: 0.5rem;
+}
+
+/* 成员筛选 */
+.bf-member-filter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--bf-input-bg, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--bf-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--bf-radius-lg, 10px);
+}
+
+.bf-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--bf-text-secondary);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.bf-member-search {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+}
+
+.bf-search-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bf-input-bg);
+  border: 1px solid var(--bf-border-default);
+  border-radius: var(--bf-radius-md, 8px);
+  color: var(--bf-text-primary);
+  font-size: 0.875rem;
+}
+
+.bf-search-input::placeholder {
+  color: var(--bf-text-muted);
+}
+
+.bf-search-input:focus {
+  outline: none;
+  border-color: var(--bf-primary);
+}
+
+.bf-search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  background: var(--bf-card-bg);
+  border: 1px solid var(--bf-border-default);
+  border-radius: var(--bf-radius-md, 8px);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.bf-search-result-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.bf-search-result-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.bf-member-nickname {
+  color: var(--bf-text-primary);
+  font-size: 0.875rem;
+}
+
+.bf-member-id {
+  color: var(--bf-text-muted);
+  font-size: 0.75rem;
+}
+
+.bf-search-no-results {
+  padding: 0.5rem 0.75rem;
+  color: var(--bf-text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.bf-selected-member {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--bf-primary);
+  border-radius: var(--bf-radius-md, 8px);
+  color: white;
+  font-size: 0.875rem;
+}
+
+.bf-member-name {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bf-clear-filter {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.8;
+  font-size: 0.75rem;
+}
+
+.bf-clear-filter:hover {
+  opacity: 1;
 }
 
 /* 按钮 */
@@ -641,6 +862,16 @@ onMounted(() => {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
+  }
+
+  .bf-member-filter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .bf-member-search {
+    max-width: none;
   }
 
   .bf-images-container {

@@ -111,12 +111,10 @@ export interface IAdminService {
     page: number,
     size: number,
     folder?: string,
+    uploaderId?: string,
     options?: RequestOptions,
   ): Promise<Result<GetImagesResponse>>
-  deleteImage(
-    imageId: string,
-    options?: RequestOptions,
-  ): Promise<Result<DeleteImageResponse>>
+  deleteImage(imageId: string, options?: RequestOptions): Promise<Result<DeleteImageResponse>>
 }
 
 /**
@@ -581,6 +579,7 @@ export class AdminService implements IAdminService {
     page: number = 0,
     size: number = 20,
     folder?: string,
+    uploaderId?: string,
     options?: RequestOptions,
   ): Promise<Result<GetImagesResponse>> {
     try {
@@ -589,7 +588,7 @@ export class AdminService implements IAdminService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-          params: { page, size, folder: folder || undefined },
+          params: { page, size, folder: folder || undefined, uploaderId: uploaderId || undefined },
         },
       )
       if (response.data.success) return Result.success(response.data.data)
