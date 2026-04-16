@@ -197,7 +197,8 @@ export interface ImageSummary {
   objectName: string
   md5: string
   folder: string
-  uploaderId: string | null
+  uploaderMemberId: string | null
+  uploaderNickname: string | null
   uploadedAt: number
   fileSize: number
   contentType: string
@@ -219,4 +220,49 @@ export interface DeleteImageResponse {
 export interface GetImageUrlResponse {
   url: string
   expiresInSeconds: number
+}
+
+// ==================== 操作日志 ====================
+export type OperationType =
+  | 'POST_PIN'
+  | 'POST_UNPIN'
+  | 'POST_FEATURE'
+  | 'POST_UNFEATURE'
+  | 'POST_HIDE'
+  | 'POST_SHOW'
+  | 'POST_SET_REVIEW'
+  | 'POST_APPROVE'
+  | 'POST_DELETE'
+  | 'POST_EDIT'
+  | 'COMMENT_HIDE'
+  | 'COMMENT_SHOW'
+  | 'COMMENT_DELETE'
+  | 'COMMENT_EDIT'
+  | 'MEMBER_BAN'
+  | 'MEMBER_UNBAN'
+  | 'MEMBER_GRANT_PERMISSION'
+  | 'MEMBER_REVOKE_PERMISSION'
+  | 'IMAGE_DELETE'
+  | 'UNKNOWN'
+
+export type TargetType = 'POST' | 'COMMENT' | 'MEMBER' | 'IMAGE'
+
+export interface OperationLogEntry {
+  logId: string
+  operationType: OperationType
+  operationName: string
+  targetType: TargetType
+  targetId: string
+  operatorId: string
+  operatorNickname: string | null
+  details: string | null
+  createdAt: number
+}
+
+export interface GetOperationLogsResponse {
+  logs: OperationLogEntry[]
+  total: number
+  page: number
+  size: number
+  totalPages: number
 }

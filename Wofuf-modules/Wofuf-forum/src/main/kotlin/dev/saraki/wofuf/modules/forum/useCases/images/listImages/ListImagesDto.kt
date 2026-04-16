@@ -3,7 +3,7 @@ package dev.saraki.wofuf.modules.forum.useCases.images.listImages
 class ListImagesDto {
     data class Request(
         val folder: String? = null,
-        val uploaderId: String? = null
+        val uploaderMemberId: String? = null
     )
 
     data class Response(

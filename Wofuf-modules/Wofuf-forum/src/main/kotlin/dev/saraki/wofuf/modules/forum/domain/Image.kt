@@ -1,5 +1,6 @@
 package dev.saraki.wofuf.modules.forum.domain
 
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.shared.domain.AggregateRoot
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import java.time.Instant
@@ -16,7 +17,7 @@ class Image private constructor(
     val objectName: String get() = props.objectName
     val md5: String get() = props.md5
     val folder: String get() = props.folder
-    val uploaderId: String? get() = props.uploaderId
+    val uploaderId: MemberId? get() = props.uploaderId
     val uploadedAt: Instant get() = props.uploadedAt
     val fileSize: Long get() = props.fileSize
     val contentType: String get() = props.contentType
@@ -28,7 +29,7 @@ class Image private constructor(
             objectName: String,
             md5: String,
             folder: String,
-            uploaderId: String?,
+            uploaderId: MemberId?,
             fileSize: Long,
             contentType: String,
             fileName: String,
@@ -53,7 +54,7 @@ class Image private constructor(
             objectName: String,
             md5: String,
             folder: String,
-            uploaderId: String?,
+            uploaderId: MemberId?,
             uploadedAt: Instant,
             fileSize: Long,
             contentType: String,
@@ -83,7 +84,7 @@ data class ImageProps(
     val objectName: String,
     val md5: String,
     val folder: String,
-    val uploaderId: String?,
+    val uploaderId: MemberId?,
     val uploadedAt: Instant,
     val fileSize: Long,
     val contentType: String,

@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.infra.repos
 
 import dev.saraki.wofuf.modules.forum.domain.Image
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 
 /**
  * 图片仓储接口
@@ -19,12 +20,12 @@ interface ImageRepo {
     /**
      * 分页获取图片列表
      */
-    fun findImages(page: Int, size: Int, folder: String?, uploaderId: String?): List<Image>
+    fun findImages(page: Int, size: Int, folder: String?, uploaderId: MemberId?): List<Image>
 
     /**
      * 统计图片数量
      */
-    fun countImages(folder: String?, uploaderId: String?): Long
+    fun countImages(folder: String?, uploaderId: MemberId?): Long
 
     /**
      * 保存图片

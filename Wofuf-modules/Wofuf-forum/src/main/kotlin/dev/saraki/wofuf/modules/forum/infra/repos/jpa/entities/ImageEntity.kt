@@ -6,11 +6,11 @@ import java.time.Instant
 
 @Entity
 @Table(
-    name = "forum_image",
+    name = "image",
     indexes = [
         Index(name = "idx_image_md5", columnList = "md5", unique = true),
         Index(name = "idx_image_folder", columnList = "folder"),
-        Index(name = "idx_image_uploader", columnList = "uploader_id"),
+        Index(name = "idx_image_uploader_member", columnList = "uploader_member_id"),
         Index(name = "idx_image_uploaded_at", columnList = "uploaded_at")
     ]
 )
@@ -28,8 +28,9 @@ data class ImageEntity(
     @Column(name = "folder", nullable = false, length = 64)
     val folder: String,
 
-    @Column(name = "uploader_id", nullable = true)
-    val uploaderId: String? = null,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uploader_member_id", nullable = true)
+    val uploaderMember: MemberEntity? = null,
 
     @Column(name = "uploaded_at", nullable = false)
     val uploadedAt: Instant,

@@ -2,6 +2,7 @@ package dev.saraki.wofuf.modules.forum.useCases.images.uploadImage
 
 import dev.saraki.wofuf.auth.infra.JwtAuthFilter
 import dev.saraki.wofuf.modules.forum.domain.Image
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.infra.repos.ImageRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.storage.ImageStorageService
@@ -63,7 +64,7 @@ class UploadImageUseCase(
             }
 
             val memberId = getCurrentMemberId()
-            val folder = if (memberId != null) "members/$memberId/$baseFolder" else baseFolder
+            val folder = if (memberId != null) "members/${memberId.stringValue}/$baseFolder" else baseFolder
 
             val uploadResult = imageStorageService.uploadImage(file, folder)
 
@@ -121,11 +122,11 @@ class UploadImageUseCase(
         }
     }
 
-    private fun getCurrentMemberId(): String? {
+    private fun getCurrentMemberId(): MemberId? {
         val userId = JwtAuthFilter.getCurrentUserId() ?: return null
         return try {
             val userIdVo = UserId.create(UniqueEntityId(userId)).getOrNull() ?: return null
-            memberRepo.findMemberByUserId(userIdVo)?.memberId?.stringValue
+            memberRepo.findMemberByUserId(userIdVo)?.memberId
         } catch (e: Exception) {
             logger.warn("Failed to get member ID for userId: $userId", e)
             null

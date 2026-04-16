@@ -102,17 +102,17 @@ export class ImageService {
   /**
    * 获取已有图片列表
    * @param folder 文件夹名称，默认为 'posts'
-   * @param uploaderId 上传者ID，默认为当前用户
+   * @param uploaderMemberId 上传者Member ID，默认为当前用户
    */
   public async getExistingImages(
     folder?: string,
-    uploaderId?: string,
+    uploaderMemberId?: string,
   ): Promise<ListImagesResponse> {
     try {
       const response = await http.get<ApiResponse<ListImagesResponse>>(
         `/api/v1/forum/images/list`,
         {
-          params: { folder, uploaderId },
+          params: { folder, uploaderMemberId },
           headers: authService.getAuthHeaders(),
         },
       )

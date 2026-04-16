@@ -21,6 +21,9 @@ import type {
   GetImagesResponse,
   DeleteImageResponse,
   GetImageUrlResponse,
+  GetOperationLogsResponse,
+  OperationType,
+  TargetType,
 } from '@M/forum/admin/dtos/Admin.ts'
 import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
 import { Result } from '@S/core/Result.ts'
@@ -112,11 +115,21 @@ export interface IAdminService {
     page: number,
     size: number,
     folder?: string,
-    uploaderId?: string,
+    uploaderMemberId?: string,
     options?: RequestOptions,
   ): Promise<Result<GetImagesResponse>>
   getImageUrl(imageId: string, options?: RequestOptions): Promise<Result<GetImageUrlResponse>>
   deleteImage(imageId: string, options?: RequestOptions): Promise<Result<DeleteImageResponse>>
+
+  /* ---------------- 操作日志 ---------------- */
+  getOperationLogs(
+    page?: number,
+    size?: number,
+    operatorId?: string,
+    operationType?: OperationType,
+    targetType?: TargetType,
+    options?: RequestOptions,
+  ): Promise<Result<GetOperationLogsResponse>>
 }
 
 /**
@@ -581,7 +594,7 @@ export class AdminService implements IAdminService {
     page: number = 0,
     size: number = 20,
     folder?: string,
-    uploaderId?: string,
+    uploaderMemberId?: string,
     options?: RequestOptions,
   ): Promise<Result<GetImagesResponse>> {
     try {
@@ -590,7 +603,7 @@ export class AdminService implements IAdminService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-          params: { page, size, folder: folder || undefined, uploaderId: uploaderId || undefined },
+          params: { page, size, folder: folder || undefined, uploaderMemberId: uploaderMemberId || undefined },
         },
       )
       if (response.data.success) return Result.success(response.data.data)
@@ -627,6 +640,33 @@ export class AdminService implements IAdminService {
       )
       if (response.data.success) return Result.success(response.data.data)
       return Result.failure(response.data.message || '获取图片URL失败')
+    } catch (error) {
+      return this.handleError(error)
+    }
+  }
+
+  /* ==================== 操作日志 ==================== */
+
+  public async getOperationLogs(
+    page: number = 0,
+    size: number = 20,
+    operatorId?: string,
+    operationType?: OperationType,
+    targetType?: TargetType,
+    options?: RequestOptions,
+  ): Promise<Result<GetOperationLogsResponse>> {
+    try {
+      const params: Record<string, string | number> = { page, size }
+      if (operatorId) params.operatorId = operatorId
+      if (operationType) params.operationType = operationType
+      if (targetType) params.targetType = targetType
+
+      const response = await http.get<ApiResponse<GetOperationLogsResponse>>(
+        `${AdminService.ADMIN_BASE}/logs`,
+        { signal: options?.signal, headers: authService.getAuthHeaders(), params },
+      )
+      if (response.data.success) return Result.success(response.data.data)
+      return Result.failure(response.data.message || '获取操作日志失败')
     } catch (error) {
       return this.handleError(error)
     }

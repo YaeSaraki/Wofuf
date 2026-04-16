@@ -17,10 +17,10 @@ class ListImagesController(
     @GetMapping("/list")
     fun listImages(
         @RequestParam(required = false) folder: String?,
-        @RequestParam(required = false) uploaderId: String?
+        @RequestParam(required = false) uploaderMemberId: String?
     ): ApiResponse<ListImagesDto.Response> {
         val result = listImagesUseCase.execute(
-            ListImagesDto.Request(folder = folder, uploaderId = uploaderId)
+            ListImagesDto.Request(folder = folder, uploaderMemberId = uploaderMemberId)
         ).getOrThrow()
         return ApiResponse.success(result)
     }

@@ -1,9 +1,11 @@
 package dev.saraki.wofuf.modules.forum.useCases.images.listImages
 
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.infra.repos.ImageRepo
 import dev.saraki.wofuf.modules.forum.infra.storage.ImageStorageService
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
+import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Service
 
 @Service
@@ -16,7 +18,11 @@ class ListImagesUseCase(
         val page = 0
         val size = 100 // 获取足够多的图片
 
-        val images = imageRepo.findImages(page, size, request.folder, request.uploaderId)
+        val uploaderMemberId = request.uploaderMemberId?.let {
+            MemberId.create(UniqueEntityId(it)).getOrNull()
+        }
+
+        val images = imageRepo.findImages(page, size, request.folder, uploaderMemberId)
 
         val imageInfos = images
             .filter { it.objectName.isNotBlank() } // 只返回有有效objectName的图片

@@ -29,12 +29,12 @@ const hasSelectedMember = computed(() => filterMemberId.value !== null)
 
 // 按上传者分组的图片
 const groupedImages = computed(() => {
-  const groups: Record<string, { memberId: string | null, images: ImageSummary[] }> = {}
+  const groups: Record<string, { memberId: string | null, nickname: string | null, images: ImageSummary[] }> = {}
 
   for (const img of images.value) {
-    const key = img.uploaderId || 'anonymous'
+    const key = img.uploaderMemberId || 'anonymous'
     if (!groups[key]) {
-      groups[key] = { memberId: img.uploaderId, images: [] }
+      groups[key] = { memberId: img.uploaderMemberId, nickname: img.uploaderNickname, images: [] }
     }
     groups[key].images.push(img)
   }
@@ -204,8 +204,9 @@ function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString()
 }
 
-function getMemberLabel(memberId: string | null): string {
+function getMemberLabel(memberId: string | null, uploaderNickname: string | null): string {
   if (!memberId) return 'Anonymous'
+  if (uploaderNickname) return uploaderNickname
   const member = searchResults.value.find(m => m.memberId === memberId)
   return member ? member.nickname : `Member: ${memberId.slice(0, 8)}...`
 }
@@ -318,7 +319,7 @@ onMounted(() => {
               {{ group.images.every(img => selectedImages.has(img.imageId)) ? '&#10003;' : '&#9744;' }}
             </span>
           </button>
-          <span class="bf-group-label">{{ getMemberLabel(group.memberId) }}</span>
+          <span class="bf-group-label">{{ getMemberLabel(group.memberId, group.nickname) }}</span>
           <span class="bf-group-count">{{ group.images.length }} images</span>
         </div>
 

@@ -1,8 +1,10 @@
 package dev.saraki.wofuf.modules.forum.infra.repos.impl
 
 import dev.saraki.wofuf.modules.forum.domain.Image
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.infra.repos.ImageRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.ImageJpaRepo
+import dev.saraki.wofuf.modules.forum.infra.repos.jpa.MemberJpaRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.mappers.ImageEntityMapper
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
@@ -10,7 +12,8 @@ import org.springframework.transaction.annotation.Transactional
 
 @Repository
 class ImageRepoImpl(
-    private val imageJpaRepo: ImageJpaRepo
+    private val imageJpaRepo: ImageJpaRepo,
+    private val memberJpaRepo: MemberJpaRepo
 ) : ImageRepo {
 
     override fun findById(imageId: String): Image? {
@@ -21,18 +24,19 @@ class ImageRepoImpl(
         return imageJpaRepo.findByMd5(md5)?.let(ImageEntityMapper::toDomain)
     }
 
-    override fun findImages(page: Int, size: Int, folder: String?, uploaderId: String?): List<Image> {
-        return imageJpaRepo.findImages(folder, uploaderId, PageRequest.of(page, size))
+    override fun findImages(page: Int, size: Int, folder: String?, uploaderId: MemberId?): List<Image> {
+        return imageJpaRepo.findImages(folder, uploaderId?.stringValue, PageRequest.of(page, size))
             .content
             .map(ImageEntityMapper::toDomain)
     }
 
-    override fun countImages(folder: String?, uploaderId: String?): Long {
-        return imageJpaRepo.countByFolder(folder, uploaderId)
+    override fun countImages(folder: String?, uploaderId: MemberId?): Long {
+        return imageJpaRepo.countByFolder(folder, uploaderId?.stringValue)
     }
 
     override fun save(image: Image): Image {
-        val entity = ImageEntityMapper.toEntity(image)
+        val uploaderMember = image.uploaderId?.let { memberJpaRepo.findById(it.stringValue).orElse(null) }
+        val entity = ImageEntityMapper.toEntity(image, uploaderMember)
         return ImageEntityMapper.toDomain(imageJpaRepo.save(entity))
     }
 

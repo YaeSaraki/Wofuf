@@ -2,7 +2,8 @@ package dev.saraki.wofuf.modules.forum.useCases.admin.images.deleteImage
 
 class DeleteImageDto {
     data class Request(
-        val imageId: String
+        val imageId: String,
+        val operatorMemberId: String,
     )
 
     data class Response(
