@@ -3,6 +3,7 @@ package dev.saraki.wofuf.modules.forum.infra.repos.impl
 import dev.saraki.wofuf.modules.forum.domain.Comment
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentDetails
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.jpa.CommentJpaRepo
@@ -134,5 +135,20 @@ class CommentRepoImpl(
         } else {
             commentJpaRepo.countByTextContainingIgnoreCaseAndIsHidden(contentSearch, false)
         }
+    }
+
+    // ==================== 成员资料页方法实现 ====================
+
+    override fun findCommentsByMemberId(memberId: MemberId, page: Int, size: Int): List<Comment> =
+        commentJpaRepo.findByMemberEntity_MemberIdOrderByCreatedAtDesc(memberId.stringValue, PageRequest.of(page, size))
+            .map(CommentEntityMapper::toDomain)
+
+    override fun countCommentsByMemberId(memberId: MemberId): Long =
+        commentJpaRepo.countByMemberEntity_MemberId(memberId.stringValue)
+
+    @Transactional
+    override fun deleteByIdAndMemberId(commentId: CommentId, memberId: MemberId): Boolean {
+        val count = commentJpaRepo.deleteByCommentIdAndMemberEntity_MemberId(commentId.stringValue, memberId.stringValue)
+        return count > 0
     }
 }

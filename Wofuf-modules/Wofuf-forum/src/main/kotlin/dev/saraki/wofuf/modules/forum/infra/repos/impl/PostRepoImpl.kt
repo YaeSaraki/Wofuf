@@ -85,24 +85,8 @@ class PostRepoImpl(
         postJpaRepo.existsById(postId.stringValue)
 
     override fun save(post: Post): Post {
-        // 查找现有实体
-        val existingEntity = postJpaRepo.findById(post.postId.stringValue).orElse(null)
-        
-        val entity = if (existingEntity != null) {
-            // 更新现有实体的可变字段
-            existingEntity.status = post.status.name
-            existingEntity.isPinned = post.isPinned
-            existingEntity.isFeatured = post.isFeatured
-            existingEntity.pinnedAt = post.pinnedAt
-            existingEntity.featuredAt = post.featuredAt
-            existingEntity.hiddenAt = post.hiddenAt
-            existingEntity.hiddenBy = post.hiddenBy?.stringValue
-            existingEntity
-        } else {
-            // 创建新实体
-            PostEntityMapper.toEntity(post)
-        }
-        
+        // 始终通过 mapper 创建实体（JPA @DynamicUpdate 会只更新变化的字段）
+        val entity = PostEntityMapper.toEntity(post)
         return PostEntityMapper.toDomain(postJpaRepo.save(entity))
     }
 
@@ -112,23 +96,23 @@ class PostRepoImpl(
     // ==================== 管理功能方法实现 ====================
 
     override fun findPinnedPosts(limit: Int): List<Post> =
-        postJpaRepo.findByIsPinnedTrueOrderByPinnedAtDesc(limit)
+        postJpaRepo.findPinnedPostsDb(limit)
             .map(PostEntityMapper::toDomain)
 
     override fun findFeaturedPosts(limit: Int): List<Post> =
-        postJpaRepo.findByIsFeaturedTrueOrderByFeaturedAtDesc(limit)
+        postJpaRepo.findFeaturedPostsDb(limit)
             .map(PostEntityMapper::toDomain)
 
     override fun findPostsByStatus(status: PostStatus, page: Int, size: Int): List<Post> =
-        postJpaRepo.findByStatusOrderByDateTimePostedDesc(status.name, page, size)
+        postJpaRepo.findByStatusOrderByDateTimePostedDescDb(status.name, PageRequest.of(page, size))
             .map(PostEntityMapper::toDomain)
 
     override fun findPostsForReview(page: Int, size: Int): List<Post> =
-        postJpaRepo.findByStatusOrderByDateTimePostedDesc(PostStatus.UNDER_REVIEW.name, page, size)
+        postJpaRepo.findByStatusOrderByDateTimePostedDescDb(PostStatus.UNDER_REVIEW.name, PageRequest.of(page, size))
             .map(PostEntityMapper::toDomain)
 
     override fun countByStatus(status: PostStatus): Long =
-        postJpaRepo.countByStatus(status.name)
+        postJpaRepo.countByStatusDb(status.name)
 
     override fun findPostsByMemberId(memberId: MemberId, page: Int, size: Int): List<Post> =
         postJpaRepo.findByMemberEntity_MemberIdOrderByDateTimePostedDesc(

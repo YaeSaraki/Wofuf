@@ -25,8 +25,17 @@ object ForumApiConstantV1 {
         /** /api/v1/forum/members */
         const val ROOT = "$BASE/members"
 
-        /** /api/v1/forum/members/{memberId} */
-        const val BY_ID = "$ROOT/{${Param.MEMBER_ID}}"
+        /** /api/v1/forum/members/{nickname} */
+        const val BY_NICKNAME = "$ROOT/{nickname}"
+
+        /** /api/v1/forum/members/id/{memberId} */
+        const val BY_ID = "$ROOT/id/{memberId}"
+
+        /** /api/v1/forum/members/{nickname}/profile */
+        const val MEMBER_PROFILE = "$BY_NICKNAME/profile"
+
+        /** /api/v1/forum/members/{nickname}/comments */
+        const val MEMBER_COMMENTS = "$BY_NICKNAME/comments"
 
         /** /api/v1/forum/members/current */
         const val CURRENT = "$ROOT/current"
@@ -235,6 +244,17 @@ object ForumApiConstantV1 {
             /** /api/v1/forum/admin/categories/{categoryId} */
             const val BY_ID = "$CATEGORIES_BASE/{categoryId}"
         }
+
+        // -------------------- 操作日志 --------------------
+        object Logs {
+            private const val LOGS_BASE = "$ADMIN_BASE/logs"
+
+            /** /api/v1/forum/admin/logs */
+            const val ROOT = LOGS_BASE
+        }
+
+        /** /api/v1/forum/admin/logs */
+        const val LOGS = Logs.ROOT
     }
 
     // ===================== 工具方法 =====================
@@ -276,10 +296,10 @@ object ForumApiConstantV1 {
 
     /**
      * 构建单个成员路径
-     * @param memberId 成员ID
-     * @return 完整路径，如 "/api/v1/forum/members/3001"
+     * @param nickname 成员昵称
+     * @return 完整路径，如 "/api/v1/forum/members/testuser"
      */
-    fun buildMemberPath(memberId: String): String {
-        return Members.BY_ID.replace("{${Param.MEMBER_ID}}", memberId)
+    fun buildMemberPath(nickname: String): String {
+        return Members.BY_NICKNAME.replace("{nickname}", nickname)
     }
 }

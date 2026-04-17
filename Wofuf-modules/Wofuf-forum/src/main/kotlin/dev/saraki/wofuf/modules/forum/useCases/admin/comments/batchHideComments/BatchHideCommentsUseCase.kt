@@ -1,5 +1,6 @@
 package dev.saraki.wofuf.modules.forum.useCases.admin.comments.batchHideComments
 
+import dev.saraki.wofuf.modules.forum.domain.OperationType
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
@@ -7,6 +8,7 @@ import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
 import dev.saraki.wofuf.modules.forum.infra.annotation.RequirePermission
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
+import dev.saraki.wofuf.modules.forum.infra.services.OperationLogService
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service
 class BatchHideCommentsUseCase(
     private val commentRepo: CommentRepo,
     private val memberRepo: MemberRepo,
+    private val operationLogService: OperationLogService,
 ) : UseCase<BatchHideCommentsDto.Request, BatchHideCommentsDto.Response> {
 
     @RequirePermission(PermissionPoint.COMMENT_DELETE_ANY, "Only users with COMMENT_DELETE_ANY permission can batch hide comments")
@@ -118,6 +121,15 @@ class BatchHideCommentsUseCase(
         // 保存
         try {
             val savedComment = commentRepo.save(hideResult.getOrThrow())
+
+            // 记录操作日志
+            operationLogService.logCommentAction(
+                operationType = OperationType.COMMENT_HIDE,
+                commentId = commentIdStr,
+                operatorId = operatorMemberId,
+                details = "Batch hide: ${comment.text.value.take(50)}"
+            )
+
             return Result.success(
                 BatchHideCommentsDto.BatchResult(
                     commentId = commentIdStr,

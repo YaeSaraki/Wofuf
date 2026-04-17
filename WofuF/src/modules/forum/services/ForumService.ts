@@ -14,6 +14,7 @@ import type {
   ReplyToCommentRequest,
   PostCategory,
 } from '@M/forum/dtos/Post.ts'
+import type { MemberProfileDto, GetMemberCommentsResponse } from '@M/forum/dtos/Member.ts'
 import type { ApiResponse } from '@S/infra/api/v1/models/ApiResponse.ts'
 import { Result } from '@S/core/Result.ts'
 import { http } from '@S/infra/api/http.ts'
@@ -44,6 +45,7 @@ export interface IForumService {
 
   /* ---------------- 帖子详情 ---------------- */
   getPostBySlug(slug: string, options?: RequestOptions): Promise<Result<GetPostResponse>>
+  getPostById(postId: string, options?: RequestOptions): Promise<Result<GetPostResponse>>
 
   /* ---------------- 帖子操作 ---------------- */
   createPost(
@@ -79,6 +81,34 @@ export interface IForumService {
     data: ReplyToCommentRequest,
     options?: RequestOptions,
   ): Promise<Result<void>>
+
+  /* ---------------- 成员资料 ---------------- */
+  getMemberProfile(
+    nickname: string,
+    page?: number,
+    size?: number,
+    options?: RequestOptions,
+  ): Promise<Result<MemberProfileDto>>
+
+  getMemberById(
+    memberId: string,
+    options?: RequestOptions,
+  ): Promise<Result<{ memberId: string; nickname: string }>>
+
+  updateNickname(
+    nickname: string,
+    newNickname: string,
+    options?: RequestOptions,
+  ): Promise<Result<void>>
+
+  getMemberComments(
+    nickname: string,
+    page?: number,
+    size?: number,
+    options?: RequestOptions,
+  ): Promise<Result<GetMemberCommentsResponse>>
+
+  deleteOwnComment(commentId: string, options?: RequestOptions): Promise<Result<void>>
 }
 
 export class ForumService implements IForumService {
@@ -276,6 +306,59 @@ export class ForumService implements IForumService {
     )
   }
 
+  /**
+   * 根据 ID 获取帖子
+   */
+  public async getPostById(
+    postId: string,
+    options?: RequestOptions,
+  ): Promise<Result<GetPostResponse>> {
+    const cacheKey = `post_id_${postId}`
+
+    return cacheService.withCacheAndDeduplication<Result<GetPostResponse>>(
+      ForumService.CACHE_MODULE,
+      cacheKey,
+      async () => {
+        try {
+          const tokens = authService.getTokens()
+          const params: Record<string, string> | undefined = tokens?.userId
+            ? { userId: tokens.userId }
+            : undefined
+
+          console.debug('[ForumService] 请求帖子详情 (by ID):', postId, 'params:', params)
+
+          const response = await http.get<ApiResponse<GetPostResponse>>(
+            `/api/v1/forum/posts/${postId}`,
+            {
+              signal: options?.signal,
+              params,
+            },
+          )
+
+          console.debug('[ForumService] 帖子响应:', response.data)
+
+          if (response.data.success) {
+            return Result.success(response.data.data)
+          }
+          console.error('[ForumService] API 返回失败:', response.data.message)
+          return Result.failure(response.data.message || '获取帖子失败')
+        } catch (error) {
+          const err = error as {
+            response?: { data?: { message?: string }; status?: number }
+            message?: string
+          }
+          console.error(
+            '[ForumService] 请求异常:',
+            err.response?.status,
+            err.message,
+            err.response?.data,
+          )
+          return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+        }
+      },
+    )
+  }
+
   /* ==================== 帖子操作 ==================== */
 
   /**
@@ -311,7 +394,7 @@ export class ForumService implements IForumService {
    */
   public async editPost(
     postId: string,
-    data: { title?: string; text?: string; link?: string },
+    data: { title?: string; text?: string; link?: string; category?: string },
     options?: RequestOptions,
   ): Promise<Result<void>> {
     try {
@@ -629,6 +712,141 @@ export class ForumService implements IForumService {
         return Result.success(undefined)
       }
       return Result.failure(response.data.message || '回复失败')
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+    }
+  }
+
+  /* ==================== 成员资料 ==================== */
+
+  /**
+   * 获取成员资料
+   */
+  public async getMemberProfile(
+    nickname: string,
+    page: number = 0,
+    size: number = 10,
+    options?: RequestOptions,
+  ): Promise<Result<MemberProfileDto>> {
+    try {
+      const response = await http.get<ApiResponse<MemberProfileDto>>(
+        `/api/v1/forum/members/${nickname}/profile`,
+        {
+          signal: options?.signal,
+          params: { page, size },
+        },
+      )
+
+      if (response.data.success) {
+        return Result.success(response.data.data)
+      }
+      return Result.failure(response.data.message || '获取成员资料失败')
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+    }
+  }
+
+  /**
+   * 根据 ID 获取成员基本信息（用于通过 ID 查找成员的昵称）
+   */
+  public async getMemberById(
+    memberId: string,
+    options?: RequestOptions,
+  ): Promise<Result<{ memberId: string; nickname: string }>> {
+    try {
+      const response = await http.get<ApiResponse<{ memberId: string; nickname: string }>>(
+        `/api/v1/forum/members/id/${memberId}`,
+        {
+          signal: options?.signal,
+        },
+      )
+
+      if (response.data.success) {
+        return Result.success(response.data.data)
+      }
+      return Result.failure(response.data.message || '获取成员信息失败')
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+    }
+  }
+
+  /**
+   * 更新昵称
+   */
+  public async updateNickname(
+    nickname: string,
+    newNickname: string,
+    options?: RequestOptions,
+  ): Promise<Result<void>> {
+    try {
+      const response = await http.put<ApiResponse<void>>(
+        `/api/v1/forum/members/${nickname}/profile`,
+        { newNickname },
+        {
+          signal: options?.signal,
+          headers: authService.getAuthHeaders(),
+        },
+      )
+
+      if (response.data.success) {
+        return Result.success(undefined)
+      }
+      return Result.failure(response.data.message || '更新昵称失败')
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+    }
+  }
+
+  /**
+   * 获取成员的评论列表
+   */
+  public async getMemberComments(
+    nickname: string,
+    page: number = 0,
+    size: number = 10,
+    options?: RequestOptions,
+  ): Promise<Result<GetMemberCommentsResponse>> {
+    try {
+      const response = await http.get<ApiResponse<GetMemberCommentsResponse>>(
+        `/api/v1/forum/members/${nickname}/comments`,
+        {
+          signal: options?.signal,
+          params: { page, size },
+        },
+      )
+
+      if (response.data.success) {
+        return Result.success(response.data.data)
+      }
+      return Result.failure(response.data.message || '获取评论列表失败')
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } }; message?: string }
+      return Result.failure(err.response?.data?.message || err.message || '网络请求失败')
+    }
+  }
+
+  /**
+   * 删除自己的评论
+   */
+  public async deleteOwnComment(
+    commentId: string,
+    options?: RequestOptions,
+  ): Promise<Result<void>> {
+    try {
+      const response = await http.delete<ApiResponse<void>>(`/api/v1/forum/comments/${commentId}`, {
+        signal: options?.signal,
+        headers: authService.getAuthHeaders(),
+      })
+
+      if (response.data.success) {
+        cacheService.clearModule(ForumService.CACHE_MODULE)
+        return Result.success(undefined)
+      }
+      return Result.failure(response.data.message || '删除评论失败')
     } catch (error) {
       const err = error as { response?: { data?: { message?: string } }; message?: string }
       return Result.failure(err.response?.data?.message || err.message || '网络请求失败')

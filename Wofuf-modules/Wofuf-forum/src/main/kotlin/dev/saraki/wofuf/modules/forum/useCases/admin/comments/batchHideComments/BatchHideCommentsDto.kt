@@ -3,7 +3,7 @@ package dev.saraki.wofuf.modules.forum.useCases.admin.comments.batchHideComments
 class BatchHideCommentsDto {
     data class Request(
         val commentIds: List<String>,
-        val userId: String  // 当前操作用户的 ID
+        val userId: String,  // 当前操作用户的 ID
     )
 
     data class Response(

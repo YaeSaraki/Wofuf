@@ -708,6 +708,188 @@ const forumTranslations = {
     zh: '删除成功',
     en: 'Deleted successfully',
   },
+  // ==================== 成员资料页 ====================
+  'profile.title': {
+    zh: '个人资料',
+    en: 'Member Profile',
+  },
+  'profile.editNickname': {
+    zh: '修改昵称',
+    en: 'Edit Nickname',
+  },
+  'profile.newNickname': {
+    zh: '新昵称',
+    en: 'New Nickname',
+  },
+  'profile.memberSince': {
+    zh: '加入于',
+    en: 'Member since',
+  },
+  'profile.posts': {
+    zh: '帖子',
+    en: 'Posts',
+  },
+  'profile.comments': {
+    zh: '评论',
+    en: 'Comments',
+  },
+  'profile.reputation': {
+    zh: '声望',
+    en: 'Reputation',
+  },
+  'profile.viewPlayerStats': {
+    zh: '查看玩家数据',
+    en: 'View Player Stats',
+  },
+  'profile.noPosts': {
+    zh: '暂无帖子',
+    en: 'No posts yet',
+  },
+  'profile.noComments': {
+    zh: '暂无评论',
+    en: 'No comments yet',
+  },
+  'profile.editPost': {
+    zh: '编辑',
+    en: 'Edit',
+  },
+  'profile.deletePost': {
+    zh: '删除',
+    en: 'Delete',
+  },
+  'profile.delete': {
+    zh: '删除',
+    en: 'Delete',
+  },
+  'profile.deleteComment': {
+    zh: '删除评论',
+    en: 'Delete Comment',
+  },
+  'profile.confirmDelete': {
+    zh: '确定要删除吗？',
+    en: 'Are you sure?',
+  },
+  'profile.confirmDeletePost': {
+    zh: '确定要删除这篇帖子吗？',
+    en: 'Are you sure you want to delete this post?',
+  },
+  'profile.confirmDeleteComment': {
+    zh: '确定要删除这条评论吗？',
+    en: 'Are you sure you want to delete this comment?',
+  },
+  'profile.joinedAt': {
+    zh: '加入于',
+    en: 'Joined',
+  },
+  'profile.save': {
+    zh: '保存',
+    en: 'Save',
+  },
+  'profile.cancel': {
+    zh: '取消',
+    en: 'Cancel',
+  },
+  'profile.nicknameUpdated': {
+    zh: '昵称已更新',
+    en: 'Nickname updated',
+  },
+  'profile.nicknameUpdateFailed': {
+    zh: '昵称更新失败',
+    en: 'Failed to update nickname',
+  },
+  'profile.editSuccess': {
+    zh: '帖子已更新',
+    en: 'Post updated',
+  },
+  'profile.commentDeleted': {
+    zh: '评论已删除',
+    en: 'Comment deleted',
+  },
+  'profile.commentDeleteFailed': {
+    zh: '评论删除失败',
+    en: 'Failed to delete comment',
+  },
+  // ==================== 操作日志 ====================
+  'admin.nav.logs': {
+    zh: '操作日志',
+    en: 'Operation Logs',
+  },
+  'admin.logs.title': {
+    zh: '操作日志',
+    en: 'Operation Logs',
+  },
+  'admin.logs.operation': {
+    zh: '操作',
+    en: 'Operation',
+  },
+  'admin.logs.operator': {
+    zh: '操作者',
+    en: 'Operator',
+  },
+  'admin.logs.target': {
+    zh: '目标',
+    en: 'Target',
+  },
+  'admin.logs.targetType': {
+    zh: '目标类型',
+    en: 'Target Type',
+  },
+  'admin.logs.targetId': {
+    zh: '目标ID',
+    en: 'Target ID',
+  },
+  'admin.logs.details': {
+    zh: '详情',
+    en: 'Details',
+  },
+  'admin.logs.time': {
+    zh: '时间',
+    en: 'Time',
+  },
+  'admin.logs.noLogs': {
+    zh: '暂无操作日志',
+    en: 'No operation logs',
+  },
+  'admin.logs.filterByOperator': {
+    zh: '按操作者昵称筛选',
+    en: 'Filter by operator nickname',
+  },
+  'admin.logs.filterByOperatorId': {
+    zh: '按操作者ID筛选',
+    en: 'Filter by operator ID',
+  },
+  'admin.logs.filterByType': {
+    zh: '按操作类型筛选',
+    en: 'Filter by operation type',
+  },
+  'admin.logs.filterByTarget': {
+    zh: '按目标类型筛选',
+    en: 'Filter by target type',
+  },
+  'admin.logs.allOperations': {
+    zh: '全部操作',
+    en: 'All Operations',
+  },
+  'admin.logs.allTargets': {
+    zh: '全部目标',
+    en: 'All Targets',
+  },
+  'admin.logs.postOperations': {
+    zh: '帖子操作',
+    en: 'Post Operations',
+  },
+  'admin.logs.commentOperations': {
+    zh: '评论操作',
+    en: 'Comment Operations',
+  },
+  'admin.logs.memberOperations': {
+    zh: '成员操作',
+    en: 'Member Operations',
+  },
+  'admin.logs.imageOperations': {
+    zh: '图片操作',
+    en: 'Image Operations',
+  },
 }
 
 registerTranslations('forum', forumTranslations)

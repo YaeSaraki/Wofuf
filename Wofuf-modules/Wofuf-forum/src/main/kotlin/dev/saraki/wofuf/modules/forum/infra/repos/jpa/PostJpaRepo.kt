@@ -5,12 +5,17 @@ import dev.saraki.wofuf.modules.forum.infra.repos.jpa.entities.PostEntity
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface PostJpaRepo : JpaRepository<PostEntity, String> {
 
+    @EntityGraph(attributePaths = ["memberEntity"])
     fun findBySlug(slug: String): PostEntity?
+
+    @EntityGraph(attributePaths = ["memberEntity"])
     fun findPostEntityByLink(link: String): PostEntity?
+
     fun countByPostId(postId: String): Long
 
     fun findAllByOrderByDateTimePostedDescPointsDesc(pageable: Pageable): List<PostEntity>
@@ -23,6 +28,7 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
     fun findByStatusOrderByPointsDescDateTimePostedDesc(status: String, pageable: Pageable): List<PostEntity>
     fun findByStatusAndCategoryOrderByPointsDescDateTimePostedDesc(status: String, category: String, pageable: Pageable): List<PostEntity>
 
+    @EntityGraph(attributePaths = ["memberEntity"])
     fun findRecentPosts(page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
@@ -51,6 +57,16 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
         ).content.filter { it.category == category.name }.take(safeSize)
     }
 
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT p FROM PostEntity p WHERE p.category = :category ORDER BY p.isPinned DESC, p.dateTimePosted DESC, p.points DESC"
+    )
+    fun findRecentPostsByCategoryDb(category: String, pageable: PageRequest): List<PostEntity>
+
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT p FROM PostEntity p WHERE p.category = :category ORDER BY p.isPinned DESC, p.points DESC, p.dateTimePosted DESC"
+    )
+    fun findPopularPostsByCategoryDb(category: String, pageable: PageRequest): List<PostEntity>
+
     fun findPopularPosts(page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
@@ -66,6 +82,7 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
     }
 
     // 分类热门（不过滤状态，由 Repository/UseCase 层决定）
+    @EntityGraph(attributePaths = ["memberEntity"])
     fun findPopularPostsByCategory(category: PostCategory, page: Int?, size: Int?): List<PostEntity> {
         val safeSize = size?.coerceAtLeast(1) ?: 10
         val safePage = page ?: 0
@@ -82,27 +99,35 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
 
     // ==================== 管理功能方法 ====================
 
-    fun findByIsPinnedTrueOrderByPinnedAtDesc(limit: Int): List<PostEntity> {
-        return findAll(
-            PageRequest.of(0, limit, Sort.by(Sort.Order.desc("pinnedAt")))
-        ).content.filter { it.isPinned }
-    }
+    @EntityGraph(attributePaths = ["memberEntity"])
+    fun findByIsPinnedTrueOrderByPinnedAtDesc(limit: Int): List<PostEntity>
 
-    fun findByIsFeaturedTrueOrderByFeaturedAtDesc(limit: Int): List<PostEntity> {
-        return findAll(
-            PageRequest.of(0, limit, Sort.by(Sort.Order.desc("featuredAt")))
-        ).content.filter { it.isFeatured }
-    }
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT p FROM PostEntity p WHERE p.isPinned = true ORDER BY p.pinnedAt DESC"
+    )
+    fun findPinnedPostsDb(limit: Int): List<PostEntity>
 
-    fun findByStatusOrderByDateTimePostedDesc(status: String, page: Int, size: Int): List<PostEntity> {
-        return findAll(
-            PageRequest.of(page, size, Sort.by(Sort.Order.desc("dateTimePosted")))
-        ).content.filter { it.status == status }
-    }
+    @EntityGraph(attributePaths = ["memberEntity"])
+    fun findByIsFeaturedTrueOrderByFeaturedAtDesc(limit: Int): List<PostEntity>
+
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT p FROM PostEntity p WHERE p.isFeatured = true ORDER BY p.featuredAt DESC"
+    )
+    fun findFeaturedPostsDb(limit: Int): List<PostEntity>
+
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT p FROM PostEntity p WHERE p.status = :status ORDER BY p.dateTimePosted DESC"
+    )
+    fun findByStatusOrderByDateTimePostedDescDb(status: String, pageable: PageRequest): List<PostEntity>
 
     fun countByStatus(status: String): Long {
         return findAll().count { it.status == status }.toLong()
     }
+
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT COUNT(p) FROM PostEntity p WHERE p.status = :status"
+    )
+    fun countByStatusDb(status: String): Long
 
     // ==================== 管理功能：获取所有帖子（不限状态）====================
 
@@ -134,29 +159,21 @@ interface PostJpaRepo : JpaRepository<PostEntity, String> {
     /**
      * 按分类获取所有帖子，不限状态，置顶优先
      */
-    fun findAllByCategoryOrderByDateTimePostedDesc(category: String, page: Int, size: Int): List<PostEntity> {
-        return findAll(
-            PageRequest.of(page, size * 2, Sort.by(
-                Sort.Order.desc("isPinned"),
-                Sort.Order.desc("dateTimePosted")
-            ))
-        ).content.filter { it.category == category }.take(size)
-    }
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT p FROM PostEntity p WHERE p.category = :category ORDER BY p.isPinned DESC, p.dateTimePosted DESC"
+    )
+    fun findAllByCategoryOrderByDateTimePostedDescDb(category: String, pageable: PageRequest): List<PostEntity>
 
     /**
      * 按分类获取所有帖子，不限状态，按热度排序，置顶优先
      */
-    fun findAllByCategoryOrderByPointsDescDateTimePostedDesc(category: String, page: Int, size: Int): List<PostEntity> {
-        return findAll(
-            PageRequest.of(page, size * 2, Sort.by(
-                Sort.Order.desc("isPinned"),
-                Sort.Order.desc("points"),
-                Sort.Order.desc("dateTimePosted")
-            ))
-        ).content.filter { it.category == category }.take(size)
-    }
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT p FROM PostEntity p WHERE p.category = :category ORDER BY p.isPinned DESC, p.points DESC, p.dateTimePosted DESC"
+    )
+    fun findAllByCategoryOrderByPointsDescDateTimePostedDescDb(category: String, pageable: PageRequest): List<PostEntity>
 
     // 按 memberId 查询帖子（管理功能）
+    @EntityGraph(attributePaths = ["memberEntity"])
     fun findByMemberEntity_MemberIdOrderByDateTimePostedDesc(memberId: String, pageable: Pageable): List<PostEntity>
 
     // ==================== 搜索功能 ====================

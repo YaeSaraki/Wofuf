@@ -34,7 +34,8 @@ class EditPostController(
                 currentUserId = currentUserId,
                 title = request.title,
                 text = request.text,
-                link = request.link
+                link = request.link,
+                category = request.category
             )
         ).getOrThrow()
         return ApiResponse.success(result)

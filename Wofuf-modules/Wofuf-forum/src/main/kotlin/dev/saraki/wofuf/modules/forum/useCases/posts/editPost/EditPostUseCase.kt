@@ -2,6 +2,7 @@ package dev.saraki.wofuf.modules.forum.useCases.posts.editPost
 
 import dev.saraki.wofuf.auth.infra.JwtAuthFilter
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostCategory
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLink
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostLinkProps
@@ -30,11 +31,11 @@ class EditPostUseCase(
 
     override fun execute(request: EditPostDto.Request): Result<EditPostDto.Response> {
         // 1. 验证用户已登录
-        if (request.currentUserId.isBlank()) {
+        if (request.currentUserId.isNullOrBlank()) {
             return EditPostErrors.UnauthorizedError()
         }
 
-        val userIdOrError = UserId.create(UniqueEntityId(request.currentUserId))
+        val userIdOrError = UserId.create(UniqueEntityId(request.currentUserId!!))
         if (userIdOrError.isFailure) {
             return EditPostErrors.UnauthorizedError()
         }
@@ -46,7 +47,7 @@ class EditPostUseCase(
         }
 
         // 3. 检查至少有一个字段需要更新
-        if (request.title == null && request.text == null && request.link == null) {
+        if (request.title == null && request.text == null && request.link == null && request.category == null) {
             return EditPostErrors.NoUpdateDataError()
         }
 
@@ -77,6 +78,7 @@ class EditPostUseCase(
         var newTitle: PostTitle? = null
         var newText: PostText? = null
         var newLink: PostLink? = null
+        var newCategory: PostCategory? = null
 
         if (request.title != null) {
             val titleOrError = PostTitle.create(request.title)
@@ -107,11 +109,16 @@ class EditPostUseCase(
             newLink = linkOrError.getOrThrow()
         }
 
+        if (request.category != null) {
+            newCategory = PostCategory.fromString(request.category)
+        }
+
         // 9. 编辑帖子
         val editResult = post.edit(
             title = newTitle,
             text = newText,
-            link = newLink
+            link = newLink,
+            category = newCategory
         )
         if (editResult.isFailure) {
             return EditPostErrors.UpdateFailedError(request.postId)
@@ -128,6 +135,7 @@ class EditPostUseCase(
                 title = savedPost.title.value,
                 text = savedPost.text?.value,
                 link = savedPost.link?.value,
+                category = savedPost.category.name,
                 success = true
             )
         )

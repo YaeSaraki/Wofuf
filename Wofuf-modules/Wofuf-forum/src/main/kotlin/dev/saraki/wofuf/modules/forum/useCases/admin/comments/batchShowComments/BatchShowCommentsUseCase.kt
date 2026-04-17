@@ -1,5 +1,6 @@
 package dev.saraki.wofuf.modules.forum.useCases.admin.comments.batchShowComments
 
+import dev.saraki.wofuf.modules.forum.domain.OperationType
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
@@ -7,6 +8,7 @@ import dev.saraki.wofuf.modules.users.domain.valueObjects.UserId
 import dev.saraki.wofuf.modules.forum.infra.annotation.RequirePermission
 import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
+import dev.saraki.wofuf.modules.forum.infra.services.OperationLogService
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service
 class BatchShowCommentsUseCase(
     private val commentRepo: CommentRepo,
     private val memberRepo: MemberRepo,
+    private val operationLogService: OperationLogService,
 ) : UseCase<BatchShowCommentsDto.Request, BatchShowCommentsDto.Response> {
 
     @RequirePermission(PermissionPoint.COMMENT_DELETE_ANY, "Only users with COMMENT_DELETE_ANY permission can batch show comments")
@@ -45,7 +48,7 @@ class BatchShowCommentsUseCase(
         var failCount = 0
 
         for (commentIdStr in request.commentIds) {
-            val result = showSingleComment(commentIdStr)
+            val result = showSingleComment(commentIdStr, member.memberId)
             if (result.isSuccess) {
                 successCount++
             } else {
@@ -64,7 +67,7 @@ class BatchShowCommentsUseCase(
         )
     }
 
-    private fun showSingleComment(commentIdStr: String): Result<BatchShowCommentsDto.BatchResult> {
+    private fun showSingleComment(commentIdStr: String, operatorMemberId: MemberId): Result<BatchShowCommentsDto.BatchResult> {
         // 解析 commentId
         val commentIdOrError = CommentId.create(UniqueEntityId(commentIdStr))
         if (commentIdOrError.isFailure) {
@@ -118,6 +121,15 @@ class BatchShowCommentsUseCase(
         // 保存
         try {
             val savedComment = commentRepo.save(showResult.getOrThrow())
+
+            // 记录操作日志
+            operationLogService.logCommentAction(
+                operationType = OperationType.COMMENT_SHOW,
+                commentId = commentIdStr,
+                operatorId = operatorMemberId,
+                details = "Batch show: ${comment.text.value.take(50)}"
+            )
+
             return Result.success(
                 BatchShowCommentsDto.BatchResult(
                     commentId = commentIdStr,

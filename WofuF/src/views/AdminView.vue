@@ -10,12 +10,13 @@ import PostsManagement from '@M/forum/admin/components/PostsManagement.vue'
 import CommentsManagement from '@M/forum/admin/components/CommentsManagement.vue'
 import MemberManagement from '@M/forum/admin/components/MemberManagement.vue'
 import ImagesManagement from '@M/forum/admin/components/ImagesManagement.vue'
+import OperationLogManagement from '@M/forum/admin/components/OperationLogManagement.vue'
 
 const route = useRoute()
 const internalRouter = useRouter()
 
 // 当前选中的标签 - 从 URL 同步
-const activeTab = ref<'overview' | 'posts' | 'comments' | 'members' | 'images'>(
+const activeTab = ref<'overview' | 'posts' | 'comments' | 'members' | 'images' | 'logs'>(
   (route.query.tab as any) || 'overview'
 )
 
@@ -117,6 +118,7 @@ const navItems = [
   { key: 'comments', labelKey: 'admin.nav.comments', icon: 'chat' },
   { key: 'images', labelKey: 'admin.nav.images', icon: 'image' },
   { key: 'members', labelKey: 'admin.nav.members', icon: 'users' },
+  { key: 'logs', labelKey: 'admin.nav.logs', icon: 'scroll' },
 ]
 
 // 权限标签颜色
@@ -230,6 +232,10 @@ onMounted(async () => {
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </template>
+            <template v-else-if="item.icon === 'scroll'">
+              <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/>
+              <path d="M19 17V5a2 2 0 0 0-2-2H4"/>
+            </template>
           </svg>
           <span>{{ translate('forum', item.labelKey) }}</span>
         </button>
@@ -282,6 +288,10 @@ onMounted(async () => {
                 <circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </template>
+              <template v-else-if="item.icon === 'scroll'">
+                <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/>
+                <path d="M19 17V5a2 2 0 0 0-2-2H4"/>
               </template>
             </svg>
             <span class="bf-nav-label">{{ translate('forum', item.labelKey) }}</span>
@@ -459,6 +469,11 @@ onMounted(async () => {
         <!-- 成员管理 -->
         <section v-else-if="activeTab === 'members'" class="bf-content-section bf-no-padding">
           <MemberManagement />
+        </section>
+
+        <!-- 操作日志 -->
+        <section v-else-if="activeTab === 'logs'" class="bf-content-section bf-no-padding">
+          <OperationLogManagement />
         </section>
       </main>
     </div>

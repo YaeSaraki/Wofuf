@@ -1,4 +1,4 @@
-import {createRouter, createWebHistory} from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -24,6 +24,11 @@ const router = createRouter({
       component: () => import('@/views/CreatePostView.vue'),
     },
     {
+      path: '/forum/edit/:slug',
+      name: 'editPost',
+      component: () => import('@/views/EditPostView.vue'),
+    },
+    {
       path: '/forum/posts/:slug',
       name: 'post',
       component: () => import('@/views/PostView.vue'),
@@ -42,6 +47,11 @@ const router = createRouter({
       path: '/forum/admin',
       name: 'admin',
       component: () => import('@/views/AdminView.vue'),
+    },
+    {
+      path: '/forum/members/:nickname',
+      name: 'memberProfile',
+      component: () => import('@/views/MemberProfileView.vue'),
     },
     {
       path: '/about',

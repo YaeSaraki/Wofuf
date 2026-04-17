@@ -160,6 +160,14 @@ class Member private constructor(
         return LocalDateTime.now().isAfter(until)
     }
 
+    /**
+     * 更新昵称
+     */
+    fun updateNickname(newNickname: NickName): Result<Member> {
+        val newProps = props.copy(nickName = newNickname)
+        return Member.create(newProps, _id)
+    }
+
     companion object {
         fun create(props: MemberProps, id: UniqueEntityId?): Result<Member> {
             val guardResult = Guard.againstNullOrUndefinedBulk(

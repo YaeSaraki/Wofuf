@@ -27,6 +27,14 @@ class PinPostErrors {
         )
     )
 
+    /** Invalid operator */
+    class InvalidOperatorError : Result.Failure<PinPostDto.Response>(
+        exception = UseCaseError(
+            code = "INVALID_OPERATOR_ERROR",
+            message = "Invalid operator ID"
+        )
+    )
+
     /** Post not found */
     class PostNotFoundError(val postId: String) : Result.Failure<PinPostDto.Response>(
         exception = UseCaseError(

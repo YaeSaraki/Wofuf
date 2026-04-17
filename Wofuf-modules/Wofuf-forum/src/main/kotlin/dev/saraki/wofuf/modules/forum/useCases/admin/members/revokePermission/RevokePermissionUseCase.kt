@@ -1,9 +1,11 @@
 package dev.saraki.wofuf.modules.forum.useCases.admin.members.revokePermission
 
+import dev.saraki.wofuf.modules.forum.domain.OperationType
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
 import dev.saraki.wofuf.modules.forum.infra.annotation.RequirePermission
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
+import dev.saraki.wofuf.modules.forum.infra.services.OperationLogService
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service
 @Service
 class RevokePermissionUseCase(
     private val memberRepo: MemberRepo,
+    private val operationLogService: OperationLogService,
 ) : UseCase<RevokePermissionDto.Request, RevokePermissionDto.Response> {
 
     @RequirePermission(PermissionPoint.PERMISSION_GRANT, "Only users with PERMISSION_GRANT permission can revoke permissions")
@@ -20,11 +23,21 @@ class RevokePermissionUseCase(
             return RevokePermissionErrors.MemberIdEmptyError()
         }
 
+        if (request.operatorMemberId.isBlank()) {
+            return RevokePermissionErrors.InvalidOperatorError()
+        }
+
         val memberIdOrError = MemberId.create(UniqueEntityId(request.memberId))
         if (memberIdOrError.isFailure) {
             return RevokePermissionErrors.InvalidMemberIdError(request.memberId)
         }
         val memberId = memberIdOrError.getOrThrow()
+
+        val operatorMemberIdOrError = MemberId.create(UniqueEntityId(request.operatorMemberId))
+        if (operatorMemberIdOrError.isFailure) {
+            return RevokePermissionErrors.InvalidOperatorError()
+        }
+        val operatorMemberId = operatorMemberIdOrError.getOrThrow()
 
         val member = memberRepo.findMemberById(memberId)
             ?: return RevokePermissionErrors.MemberNotFoundError(request.memberId)
@@ -36,6 +49,14 @@ class RevokePermissionUseCase(
 
         try {
             memberRepo.save(revokeResult.getOrThrow())
+
+            // 记录操作日志
+            operationLogService.logMemberAction(
+                operationType = OperationType.MEMBER_REVOKE_PERMISSION,
+                memberId = memberId,
+                operatorId = operatorMemberId,
+                details = "Revoked ${request.permission.name} from member"
+            )
         } catch (e: Exception) {
             return RevokePermissionErrors.SaveFailedError(request.memberId)
         }

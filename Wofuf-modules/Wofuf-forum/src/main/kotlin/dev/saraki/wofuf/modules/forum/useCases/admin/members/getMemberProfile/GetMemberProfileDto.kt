@@ -22,7 +22,9 @@ class GetMemberProfileDto {
         val bannedReason: String?,
         val bannedBy: String?,
         val postHistory: List<PostSummary>,
-        val totalPosts: Long
+        val totalPosts: Long,
+        val commentCount: Long,
+        val joinedAt: String?
     )
 
     data class PostSummary(

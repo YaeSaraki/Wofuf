@@ -603,7 +603,12 @@ export class AdminService implements IAdminService {
         {
           signal: options?.signal,
           headers: authService.getAuthHeaders(),
-          params: { page, size, folder: folder || undefined, uploaderMemberId: uploaderMemberId || undefined },
+          params: {
+            page,
+            size,
+            folder: folder || undefined,
+            uploaderMemberId: uploaderMemberId || undefined,
+          },
         },
       )
       if (response.data.success) return Result.success(response.data.data)

@@ -29,8 +29,9 @@ async function fetchPlayerProfile() {
       if (apiResult.isSuccess) {
         const realPlayerData = apiResult.getValue()
 
-        if (playerName.value.length < 36) {
-          await router.replace(`/players/${encodeURIComponent(realPlayerData.id)}`)
+        // If accessed via playerId (UUID >= 36 chars), redirect to playerName
+        if (playerName.value.length >= 36) {
+          await router.replace(`/players/${encodeURIComponent(realPlayerData.name)}`)
         }
         return realPlayerData
       }

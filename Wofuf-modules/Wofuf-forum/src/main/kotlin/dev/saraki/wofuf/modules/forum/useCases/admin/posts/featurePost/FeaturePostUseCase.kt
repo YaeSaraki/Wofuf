@@ -1,9 +1,12 @@
 package dev.saraki.wofuf.modules.forum.useCases.admin.posts.featurePost
 
+import dev.saraki.wofuf.modules.forum.domain.OperationType
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostId
 import dev.saraki.wofuf.modules.forum.infra.annotation.RequirePermission
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
+import dev.saraki.wofuf.modules.forum.infra.services.OperationLogService
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
 import dev.saraki.wofuf.shared.domain.UniqueEntityId
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service
 @Service
 class FeaturePostUseCase(
     private val postRepo: PostRepo,
+    private val operationLogService: OperationLogService,
 ) : UseCase<FeaturePostDto.Request, FeaturePostDto.Response> {
 
     @RequirePermission(PermissionPoint.POST_FEATURE, "Only users with POST_FEATURE permission can feature posts")
@@ -20,11 +24,21 @@ class FeaturePostUseCase(
             return FeaturePostErrors.PostIdEmptyError()
         }
 
+        if (request.operatorMemberId.isBlank()) {
+            return FeaturePostErrors.InvalidOperatorError()
+        }
+
         val postIdOrError = PostId.create(UniqueEntityId(request.postId))
         if (postIdOrError.isFailure) {
             return FeaturePostErrors.InvalidPostIdError(request.postId)
         }
         val postId = postIdOrError.getOrThrow()
+
+        val operatorMemberIdOrError = MemberId.create(UniqueEntityId(request.operatorMemberId))
+        if (operatorMemberIdOrError.isFailure) {
+            return FeaturePostErrors.InvalidOperatorError()
+        }
+        val operatorMemberId = operatorMemberIdOrError.getOrThrow()
 
         val post = postRepo.findPostByPostId(postId)
             ?: return FeaturePostErrors.PostNotFoundError(request.postId)
@@ -36,6 +50,14 @@ class FeaturePostUseCase(
 
         try {
             postRepo.save(featureResult.getOrThrow())
+
+            // 记录操作日志
+            operationLogService.logPostAction(
+                operationType = OperationType.POST_FEATURE,
+                postId = request.postId,
+                operatorId = operatorMemberId,
+                details = "Featured post: ${post.title}"
+            )
         } catch (e: Exception) {
             return FeaturePostErrors.SaveFailedError(request.postId)
         }

@@ -24,6 +24,11 @@ interface MemberRepo {
     fun findMemberByNickName(nickName: NickName): Member?
     fun save(member: Member): Member?
 
+    /**
+     * 更新成员昵称
+     */
+    fun updateNickname(memberId: MemberId, newNickname: NickName): Boolean
+
     // ==================== 管理功能方法 ====================
 
     /**

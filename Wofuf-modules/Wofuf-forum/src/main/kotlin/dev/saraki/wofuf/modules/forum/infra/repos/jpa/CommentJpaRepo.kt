@@ -72,4 +72,15 @@ interface CommentJpaRepo : JpaRepository<CommentEntity, String> {
 
     // 统计内容关键词搜索结果数量（按隐藏状态）
     fun countByTextContainingIgnoreCaseAndIsHidden(text: String, isHidden: Boolean): Long
+
+    // ==================== 成员资料页方法 ====================
+
+    // 按成员ID分页查询评论
+    fun findByMemberEntity_MemberIdOrderByCreatedAtDesc(memberId: String, pageable: Pageable): List<CommentEntity>
+
+    // 统计成员评论数量
+    fun countByMemberEntity_MemberId(memberId: String): Long
+
+    // 删除评论（仅当评论属于指定成员时）
+    fun deleteByCommentIdAndMemberEntity_MemberId(commentId: String, memberId: String): Long
 }

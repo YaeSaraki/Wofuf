@@ -12,6 +12,10 @@ class ShowPostErrors {
         exception = UseCaseError(code = "INVALID_POST_ID_ERROR", message = "Invalid post ID format: $postId")
     )
 
+    class InvalidOperatorError : Result.Failure<ShowPostDto.Response>(
+        exception = UseCaseError(code = "INVALID_OPERATOR_ERROR", message = "Invalid operator ID")
+    )
+
     class PostNotFoundError(val postId: String) : Result.Failure<ShowPostDto.Response>(
         exception = UseCaseError(code = "POST_NOT_FOUND_ERROR", message = "Couldn't find a post by postId {$postId}")
     )

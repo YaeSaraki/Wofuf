@@ -1,4 +1,4 @@
-import {createApp} from 'vue'
+import { createApp } from 'vue'
 import router from '@S/infra/router'
 import App from '@M/app/App.vue'
 import PrimeVue from 'primevue/config'
@@ -27,7 +27,7 @@ import '@S/assets/primevue.css'
 ;(function initTheme() {
   const savedTheme = localStorage.getItem('theme')
   let isDark = false
-  
+
   if (savedTheme === 'dark') {
     isDark = true
   } else if (savedTheme === 'light') {
@@ -36,13 +36,13 @@ import '@S/assets/primevue.css'
     // system 或未设置时跟随系统
     isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
   }
-  
+
   if (isDark) {
     document.documentElement.classList.add('dark')
   } else {
     document.documentElement.classList.remove('dark')
   }
-  
+
   // 监听系统主题变化
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
     const currentTheme = localStorage.getItem('theme')

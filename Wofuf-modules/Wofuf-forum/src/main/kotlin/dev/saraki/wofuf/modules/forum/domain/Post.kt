@@ -33,7 +33,7 @@ data class PostProps(
     val text: PostText?,
     val link: PostLink?,
     val totalNumComments: Int?,
-    var points: Int,
+    val points: Int,
     val dateTimePosted: LocalDateTime,
     // 管理功能相关字段
     val status: PostStatus = PostStatus.NORMAL,
@@ -108,9 +108,11 @@ class Post private constructor(
     /**
      * 更新基础积分（总点赞-总点踩）
      * 用于从持久化层加载最新基础积分
+     * 返回新的 Post 实例（不可变模式）
      */
-    fun updateScore(totalNumUpvotes: Int, totalNumDownvotes: Int) {
-        props.points = totalNumUpvotes - totalNumDownvotes
+    fun updateScore(totalNumUpvotes: Int, totalNumDownvotes: Int): Post {
+        val newProps = props.copy(points = totalNumUpvotes - totalNumDownvotes)
+        return Post.create(newProps, _id).getOrThrow()
     }
 
     fun edit(

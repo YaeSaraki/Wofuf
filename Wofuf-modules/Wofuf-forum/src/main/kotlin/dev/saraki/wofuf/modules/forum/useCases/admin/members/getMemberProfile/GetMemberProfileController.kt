@@ -5,7 +5,7 @@ import dev.saraki.wofuf.shared.infra.http.api.v1.models.ApiResponse
 import dev.saraki.wofuf.shared.infra.http.api.v1.models.BaseController
 import org.springframework.web.bind.annotation.*
 
-@RestController
+@RestController("adminGetMemberProfileController")
 @RequestMapping(ForumApiConstantV1.Admin.Members.PROFILE)
 class GetMemberProfileController(
     private val getMemberProfileUseCase: GetMemberProfileUseCase

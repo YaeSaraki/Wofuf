@@ -3,6 +3,7 @@ package dev.saraki.wofuf.modules.forum.infra.repos
 import dev.saraki.wofuf.modules.forum.domain.Comment
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentDetails
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.CommentId
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PostSlug
 
 /**
@@ -76,4 +77,21 @@ interface CommentRepo {
      * 统计按内容关键词搜索的评论数量
      */
     fun countCommentsByContentSearch(contentSearch: String, includeHidden: Boolean): Long
+
+    // ==================== 成员资料页方法 ====================
+
+    /**
+     * 按成员ID分页查询评论
+     */
+    fun findCommentsByMemberId(memberId: MemberId, page: Int, size: Int): List<Comment>
+
+    /**
+     * 统计成员评论数量
+     */
+    fun countCommentsByMemberId(memberId: MemberId): Long
+
+    /**
+     * 删除评论（仅当评论属于指定成员时）
+     */
+    fun deleteByIdAndMemberId(commentId: CommentId, memberId: MemberId): Boolean
 }

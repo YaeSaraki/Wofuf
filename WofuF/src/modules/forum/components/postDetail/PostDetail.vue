@@ -205,29 +205,54 @@ function updateLightboxIndex(index: number) {
 
 // 获取帖子详情
 async function fetchPost() {
-  const slug = route.params.slug as string
-  console.debug('[PostDetail] 开始获取帖子, slug:', slug, 'route.params:', route.params)
+  const slugOrId = route.params.slug as string
+  console.debug('[PostDetail] 开始获取帖子, slugOrId:', slugOrId, 'route.params:', route.params)
 
-  if (!slug) {
+  if (!slugOrId) {
     console.error('[PostDetail] slug 参数为空')
     return
   }
 
+  // 检测是 UUID 还是 slug
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId)
+
   const result = await executePostAsync(
     async (signal) => {
-      console.debug('[PostDetail] 调用 forumService.getPostBySlug...')
-      const apiResult = await forumService.getPostBySlug(slug, { signal })
+      if (isUUID) {
+        console.debug('[PostDetail] 检测为 UUID，调用 getPostById...')
+        const apiResult = await forumService.getPostById(slugOrId, { signal })
 
-      console.debug('[PostDetail] API 结果:', apiResult)
+        console.debug('[PostDetail] API 结果:', apiResult)
 
-      if (apiResult.isSuccess) {
-        const value = apiResult.getValue()
-        console.debug('[PostDetail] 获取成功:', value)
-        return value
+        if (apiResult.isSuccess) {
+          const value = apiResult.getValue()
+          console.debug('[PostDetail] 获取成功:', value)
+          // 如果是 UUID 访问且帖子被置顶，重定向到 slug URL
+          if (value.post.isPinned && value.post.slug) {
+            console.debug('[PostDetail] 帖子已置顶，重定向到 slug URL')
+            router.replace(`/forum/posts/${value.post.slug}`)
+            return null
+          }
+          return value
+        }
+
+        console.error('[PostDetail] 获取帖子失败:', apiResult.error)
+        throw new Error(`获取帖子失败: ${apiResult.error || '未知错误'}`)
+      } else {
+        console.debug('[PostDetail] 检测为 slug，调用 getPostBySlug...')
+        const apiResult = await forumService.getPostBySlug(slugOrId, { signal })
+
+        console.debug('[PostDetail] API 结果:', apiResult)
+
+        if (apiResult.isSuccess) {
+          const value = apiResult.getValue()
+          console.debug('[PostDetail] 获取成功:', value)
+          return value
+        }
+
+        console.error('[PostDetail] 获取帖子失败:', apiResult.error)
+        throw new Error(`获取帖子失败: ${apiResult.error || '未知错误'}`)
       }
-
-      console.error('[PostDetail] 获取帖子失败:', apiResult.error)
-      throw new Error(`获取帖子失败: ${apiResult.error || '未知错误'}`)
     },
     translate('forum', 'error'),
   )

@@ -1,4 +1,4 @@
-package dev.saraki.wofuf.modules.forum.infra.commentVote
+package dev.saraki.wofuf.modules.forum.domain.services.impl
 
 import dev.saraki.wofuf.modules.forum.domain.Comment
 import dev.saraki.wofuf.modules.forum.domain.CommentVote
@@ -105,8 +105,8 @@ class CommentVoteDomainServiceImpl(
     private fun updateCommentScore(comment: Comment, commentId: CommentId): Result<VoteResult> {
         val up = commentVotesRepo.countCommentUpvotesByCommentId(commentId)
         val down = commentVotesRepo.countCommentDownvotesByCommentId(commentId)
-        comment.updateScore(up, down)
-        commentRepo.save(comment)
+        val updatedComment = comment.updateScore(up, down)
+        commentRepo.save(updatedComment)
         return Result.success(VoteResult(up - down, commentId.stringValue))
     }
 }

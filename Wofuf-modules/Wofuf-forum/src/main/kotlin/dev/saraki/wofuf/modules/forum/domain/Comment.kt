@@ -23,7 +23,7 @@ data class CommentProps(
     val text: CommentText,
     val postId: PostId,
     val parentCommentId: CommentId?,
-    var points: Int?,
+    val points: Int?,
     // 所属主评论ID（用于Bilibili风格评论）
     // 主评论的 rootCommentId = null
     // 子评论的 rootCommentId = 所属主评论的ID
@@ -89,9 +89,11 @@ class Comment private constructor(
     /**
      * 更新基础积分（总点赞-总点踩）
      * 由 CommentVoteDomainService 调用
+     * 返回新的 Comment 实例（不可变模式）
      */
-    fun updateScore(totalNumUpvotes: Int, totalNumDownvotes: Int) {
-        props.points = totalNumUpvotes - totalNumDownvotes
+    fun updateScore(totalNumUpvotes: Int, totalNumDownvotes: Int): Comment {
+        val newProps = props.copy(points = totalNumUpvotes - totalNumDownvotes)
+        return create(newProps, _id).getOrThrow()
     }
 
     fun editText(newText: CommentText): Result<Comment> {

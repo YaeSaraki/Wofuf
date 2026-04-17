@@ -9,6 +9,7 @@ package dev.saraki.wofuf.modules.forum.useCases.admin.posts.pinPost
 class PinPostDto {
     data class Request(
         val postId: String,
+        val operatorMemberId: String,
     )
 
     data class Response(

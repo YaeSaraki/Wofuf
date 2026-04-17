@@ -203,7 +203,7 @@ function scrollToComment(e: MouseEvent) {
   }
 
   // 主评论：直接在当前组件内处理
-  let element = document.getElementById(targetId)
+  const element = document.getElementById(targetId)
 
   if (element) {
     // 确保子评论列表已展开
@@ -478,6 +478,14 @@ function formatDate(dateStr: string): string {
   if (diffDays < 30) return `${diffDays}d`
   return date.toLocaleDateString('yyyy-MM-dd', { year: 'numeric', month: '2-digit', day: '2-digit' })
 }
+
+// 跳转到成员资料页
+function goToMemberProfile() {
+  const nickname = comment.memberNickname
+  if (nickname) {
+    router.push(`/forum/members/${nickname}`)
+  }
+}
 </script>
 
 <template>
@@ -527,14 +535,15 @@ function formatDate(dateStr: string): string {
           <img
             v-if="getCommentAvatar(comment.playerId)"
             :src="getCommentAvatar(comment.playerId)"
-            class="bf-comment-avatar"
+            class="bf-comment-avatar bf-clickable"
             alt=""
+            @click="goToMemberProfile"
           />
-          <div v-else class="bf-comment-avatar-placeholder">
+          <div v-else class="bf-comment-avatar-placeholder bf-clickable" @click="goToMemberProfile">
             {{ (comment.memberNickname || comment.memberId).charAt(0).toUpperCase() }}
           </div>
 
-          <span class="bf-comment-author">
+          <span class="bf-comment-author bf-clickable" @click="goToMemberProfile">
             {{ comment.memberNickname || comment.memberId }}
           </span>
 
@@ -799,6 +808,16 @@ function formatDate(dateStr: string): string {
 .bf-comment-author {
   font-weight: 500;
   color: var(--bf-primary, #ff6b35);
+}
+
+/* 可点击元素 */
+.bf-clickable {
+  cursor: pointer;
+  transition: opacity var(--bf-transition-fast, 0.15s ease);
+}
+
+.bf-clickable:hover {
+  opacity: 0.7;
 }
 
 /* 短 ID 样式 */

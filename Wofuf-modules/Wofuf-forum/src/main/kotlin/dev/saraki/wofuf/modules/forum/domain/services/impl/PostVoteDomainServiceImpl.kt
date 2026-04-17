@@ -1,4 +1,4 @@
-package dev.saraki.wofuf.modules.forum.infra.postVote
+package dev.saraki.wofuf.modules.forum.domain.services.impl
 
 import dev.saraki.wofuf.modules.forum.domain.Post
 import dev.saraki.wofuf.modules.forum.domain.PostVote
@@ -105,8 +105,8 @@ class PostVoteDomainServiceImpl(
     private fun updatePostScore(post: Post, postId: PostId): Result<VoteResult> {
         val up = postVotesRepo.countPostUpvotesByPostId(postId)
         val down = postVotesRepo.countPostDownvotesByPostId(postId)
-        post.updateScore(up, down)
-        postRepo.save(post)
+        val updatedPost = post.updateScore(up, down)
+        postRepo.save(updatedPost)
         return Result.success(VoteResult(up - down, postId.stringValue))
     }
 }

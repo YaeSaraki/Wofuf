@@ -12,6 +12,10 @@ class GrantPermissionErrors {
         exception = UseCaseError(code = "INVALID_MEMBER_ID_ERROR", message = "Invalid member ID format: $memberId")
     )
 
+    class InvalidOperatorError : Result.Failure<GrantPermissionDto.Response>(
+        exception = UseCaseError(code = "INVALID_OPERATOR_ERROR", message = "Invalid operator ID")
+    )
+
     class MemberNotFoundError(val memberId: String) : Result.Failure<GrantPermissionDto.Response>(
         exception = UseCaseError(code = "MEMBER_NOT_FOUND_ERROR", message = "Couldn't find a member by memberId {$memberId}")
     )

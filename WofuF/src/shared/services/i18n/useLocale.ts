@@ -1,6 +1,6 @@
 // 国际化组合式函数
-import {computed, ref} from 'vue'
-import {translate} from '@S/services/i18n/index.ts'
+import { computed, ref } from 'vue'
+import { translate } from '@S/services/i18n/index.ts'
 
 // 支持的语言
 export type Locale = 'zh' | 'en'
@@ -9,7 +9,7 @@ export type Locale = 'zh' | 'en'
 const defaultLocale: Locale = 'zh'
 
 // 当前语言
-const currentLocale = ref<Locale>(getBrowserLocale() || defaultLocale)
+export const currentLocale = ref<Locale>(getBrowserLocale() || defaultLocale)
 
 // 设置语言
 export function setLocale(locale: Locale) {

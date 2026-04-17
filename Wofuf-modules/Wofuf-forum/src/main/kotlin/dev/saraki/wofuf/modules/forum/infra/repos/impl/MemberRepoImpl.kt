@@ -67,6 +67,14 @@ class MemberRepoImpl(
         return MemberEntityMapper.toDomain(savedEntity)
     }
 
+    @Transactional
+    override fun updateNickname(memberId: MemberId, newNickname: NickName): Boolean {
+        val member = findMemberById(memberId) ?: return false
+        val updated = member.updateNickname(newNickname).getOrThrow()
+        save(updated)
+        return true
+    }
+
     // ==================== 管理功能方法实现 ====================
 
     override fun findBannedMembers(page: Int, size: Int): List<Member> =

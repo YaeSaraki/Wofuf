@@ -1,38 +1,36 @@
 package dev.saraki.wofuf.modules.forum.useCases.admin.members.getMemberProfile
 
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
-import dev.saraki.wofuf.modules.forum.infra.annotation.RequirePermission
+import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
+import dev.saraki.wofuf.modules.forum.infra.repos.CommentRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.MemberRepo
 import dev.saraki.wofuf.modules.forum.infra.repos.PostRepo
-import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
 import dev.saraki.wofuf.shared.core.Result
 import dev.saraki.wofuf.shared.core.UseCase
-import dev.saraki.wofuf.shared.domain.UniqueEntityId
 import org.springframework.stereotype.Service
 
 @Service
 class GetMemberProfileUseCase(
     private val memberRepo: MemberRepo,
     private val postRepo: PostRepo,
+    private val commentRepo: CommentRepo,
 ) : UseCase<GetMemberProfileDto.Request, GetMemberProfileDto.Response> {
 
-    @RequirePermission(PermissionPoint.VIEW_MEMBER_PROFILES, "Only users with VIEW_MEMBER_PROFILES permission can view member profiles")
     override fun execute(request: GetMemberProfileDto.Request): Result<GetMemberProfileDto.Response> {
         if (request.memberId.isBlank()) {
             return GetMemberProfileErrors.MemberIdEmptyError()
         }
 
-        val memberIdOrError = MemberId.create(UniqueEntityId(request.memberId))
-        if (memberIdOrError.isFailure) {
-            return GetMemberProfileErrors.InvalidMemberIdError(request.memberId)
-        }
-        val memberId = memberIdOrError.getOrThrow()
+        val memberIdObj = MemberId.create(
+            dev.saraki.wofuf.shared.domain.UniqueEntityId(request.memberId)
+        ).getOrNull()
+            ?: return GetMemberProfileErrors.InvalidMemberIdError(request.memberId)
 
-        val member = memberRepo.findMemberById(memberId)
-            ?: return GetMemberProfileErrors.MemberNotFoundError(request.memberId)
+        val member = memberRepo.findMemberById(memberIdObj)
+            ?: return GetMemberProfileErrors.MemberNotFoundByIdError(request.memberId)
 
         // Get post history
-        val posts = postRepo.findPostsByMemberId(memberId, request.page, request.size)
+        val posts = postRepo.findPostsByMemberId(member.memberId, request.page, request.size)
         val postSummaries = posts.map { post ->
             GetMemberProfileDto.PostSummary(
                 postId = post.postId.stringValue,
@@ -48,6 +46,12 @@ class GetMemberProfileUseCase(
             )
         }
 
+        // Get comment count
+        val commentCount = commentRepo.countCommentsByMemberId(member.memberId)
+
+        // Get joined date from member's createdAt
+        val joinedAt = member._createdAt?.toString()
+
         return Result.success(
             GetMemberProfileDto.Response(
                 memberId = member.memberId.stringValue,
@@ -62,7 +66,9 @@ class GetMemberProfileUseCase(
                 bannedReason = member.bannedReason,
                 bannedBy = member.bannedBy?.stringValue,
                 postHistory = postSummaries,
-                totalPosts = postSummaries.size.toLong()
+                totalPosts = postSummaries.size.toLong(),
+                commentCount = commentCount,
+                joinedAt = joinedAt
             )
         )
     }

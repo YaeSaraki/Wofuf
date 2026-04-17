@@ -5,7 +5,8 @@ import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
 class RevokePermissionDto {
     data class Request(
         val memberId: String,
-        val permission: PermissionPoint
+        val permission: PermissionPoint,
+        val operatorMemberId: String,
     )
     data class Response(
         val memberId: String,
