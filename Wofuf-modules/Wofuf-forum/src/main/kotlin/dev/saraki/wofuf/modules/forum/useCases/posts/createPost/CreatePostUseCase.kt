@@ -25,14 +25,6 @@ class CreatePostUseCase(
 ) : UseCase<Pair<String, CreatePostDto.Request>, CreatePostDto.Response> {
     override fun execute(request: Pair<String, CreatePostDto.Request>): Result<CreatePostDto.Response> {
         val (currentUserId, dto) = request
-        // Debug: 打印请求内容
-        println("=== CreatePost Debug ===")
-        println("userId: '$currentUserId'")
-        println("title: '${dto.title}'")
-        println("type: '${dto.type}'")
-        println("text: '${dto.text}'")
-        println("link: '${dto.link}'")
-        println("========================")
 
         if (currentUserId.isBlank()) {
             return CreatePostErrors.UserIdEmptyError()

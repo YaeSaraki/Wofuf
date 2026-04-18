@@ -24,9 +24,6 @@ import dev.saraki.wofuf.shared.domain.UniqueEntityId
 object PostEntityMapper {
 
     fun toDomain(entity: PostEntity): Post {
-        // Debug logging for management fields
-        println("[PostEntityMapper] Entity ${entity.postId}: isPinned=${entity.isPinned}, isFeatured=${entity.isFeatured}, status=${entity.status}")
-        
         val guardResult = Guard.againstNullOrUndefinedBulk(
             listOf(
                 Guard.GuardArgument(entity.postId, "postId"),

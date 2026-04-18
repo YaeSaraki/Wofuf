@@ -26,8 +26,6 @@ class PinPostUseCase(
 
     @RequirePermission(PermissionPoint.POST_PIN, "Only users with POST_PIN permission can pin posts")
     override fun execute(request: PinPostDto.Request): Result<PinPostDto.Response> {
-        println("[PinPostUseCase] Starting pin for post: ${request.postId}")
-
         // 1. Validate post ID
         if (request.postId.isBlank()) {
             return PinPostErrors.PostIdEmptyError()
@@ -53,8 +51,6 @@ class PinPostUseCase(
         // 3. Find the post
         val post = postRepo.findPostByPostId(postId)
             ?: return PinPostErrors.PostNotFoundError(request.postId)
-
-        println("[PinPostUseCase] Found post ${request.postId}: isPinned=${post.isPinned}")
 
         // 4. Pin the post
         val pinResult = post.pin()
