@@ -126,10 +126,10 @@ class PostRepoImpl(
         postJpaRepo.count()
 
     override fun countPostsUnderReview(): Long =
-        postJpaRepo.countByStatus(PostStatus.UNDER_REVIEW.name)
+        postJpaRepo.countByStatusDb(PostStatus.UNDER_REVIEW.name)
 
     override fun countHiddenPosts(): Long =
-        postJpaRepo.countByStatus(PostStatus.HIDDEN.name)
+        postJpaRepo.countByStatusDb(PostStatus.HIDDEN.name)
 
     // ==================== 搜索功能实现 ====================
 
