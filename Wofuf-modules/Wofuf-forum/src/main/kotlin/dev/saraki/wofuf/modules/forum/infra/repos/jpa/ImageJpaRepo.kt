@@ -17,7 +17,8 @@ interface ImageJpaRepo : JpaRepository<ImageEntity, String> {
 
     fun deleteByMd5(md5: String)
 
-    @Query("SELECT i FROM ImageEntity i WHERE (:folder IS NULL OR i.folder = :folder) AND (:uploaderMemberId IS NULL OR i.uploaderMember.memberId = :uploaderMemberId) ORDER BY i.uploadedAt DESC")
+    @org.springframework.data.jpa.repository.Query("SELECT i FROM ImageEntity i WHERE (:folder IS NULL OR i.folder = :folder) AND (:uploaderMemberId IS NULL OR i.uploaderMember.memberId = :uploaderMemberId) ORDER BY i.uploadedAt DESC")
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = ["uploaderMember"])
     fun findImages(@Param("folder") folder: String?, @Param("uploaderMemberId") uploaderMemberId: String?, pageable: Pageable): Page<ImageEntity>
 
     @Query("SELECT COUNT(i) FROM ImageEntity i WHERE (:folder IS NULL OR i.folder = :folder) AND (:uploaderMemberId IS NULL OR i.uploaderMember.memberId = :uploaderMemberId)")
