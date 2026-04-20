@@ -4,8 +4,8 @@
 auth:
   jwt:
     secret: your-secret-key-must-be-at-least-32-bytes-long-and-secure!
-    expiration: 3600000  # 1小时
-    refresh-expiration: 604800000  # 7天
+    expiration: 14400000  # 4小时
+    refresh-expiration: 2592000000  # 30天
     issuer: auth-service
     clock-skew: 60  # 60秒时钟偏差
     token-version: '0'

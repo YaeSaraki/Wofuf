@@ -47,7 +47,7 @@ class RedisUserAuthService(
         val jti = UUID.randomUUID().toString()
         val refreshToken = UUID.randomUUID().toString()
 
-        val versionKey = UserAuthRedisKeys.tokenVersion(jwtConfig.tokenVersion)
+        val versionKey = UserAuthRedisKeys.tokenVersion(userId)
         val tokenVersion =
             redis.opsForValue().get(versionKey) as? String ?: "0"
 
