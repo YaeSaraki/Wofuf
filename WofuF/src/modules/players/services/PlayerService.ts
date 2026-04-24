@@ -216,7 +216,7 @@ export class PlayerService implements IPlayerService {
   }
 
   public async renderAvatar(skinBase64: string, size: number): Promise<string> {
-    const cacheKey = `avatar_${skinBase64.substring(0, 32)}_${size}`
+    const cacheKey = `avatar_${skinBase64.substring(0, 64)}_${size}`
 
     return cacheService.withCacheAndDeduplication<string>(
       PlayerService.CACHE_MODULE,

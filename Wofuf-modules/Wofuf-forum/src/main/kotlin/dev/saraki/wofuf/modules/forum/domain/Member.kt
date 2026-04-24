@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.domain
 
 import dev.saraki.wofuf.modules.forum.domain.events.MemberCreated
+import dev.saraki.wofuf.modules.forum.domain.events.MemberLoggedOut
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.MemberId
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.NickName
 import dev.saraki.wofuf.modules.forum.domain.valueObjects.PermissionPoint
@@ -166,6 +167,13 @@ class Member private constructor(
     fun updateNickname(newNickname: NickName): Result<Member> {
         val newProps = props.copy(nickName = newNickname)
         return Member.create(newProps, _id)
+    }
+
+    /**
+     * 添加退出事件
+     */
+    fun addLogoutEvent(jti: String) {
+        addDomainEvent(MemberLoggedOut(this, jti))
     }
 
     companion object {

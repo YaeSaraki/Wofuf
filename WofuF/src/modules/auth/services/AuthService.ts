@@ -31,7 +31,10 @@ export interface IAuthService {
   login(data: LoginRequest, options?: RequestOptions): Promise<Result<LoginResponse>>
 
   // 刷新令牌
-  refreshToken(refreshToken: string, options?: RequestOptions): Promise<Result<RefreshTokenResponse>>
+  refreshToken(
+    refreshToken: string,
+    options?: RequestOptions,
+  ): Promise<Result<RefreshTokenResponse>>
 
   // 注销登录
   logout(options?: RequestOptions): Promise<Result<void>>
@@ -83,7 +86,7 @@ export class AuthService implements IAuthService {
       const response = await http.post<ApiResponse<RegisterResponse>>(
         UserApiConstantV1.Base.ROOT,
         data,
-        { signal: options?.signal }
+        { signal: options?.signal },
       )
 
       if (response.data.success) {
@@ -97,19 +100,18 @@ export class AuthService implements IAuthService {
   }
 
   /* ==================== 用户登录 ==================== */
-  public async login(
-    data: LoginRequest,
-    options?: RequestOptions,
-  ): Promise<Result<LoginResponse>> {
+  public async login(data: LoginRequest, options?: RequestOptions): Promise<Result<LoginResponse>> {
     try {
       const response = await http.post<ApiResponse<LoginResponse>>(
         UserApiConstantV1.Me.SESSIONS,
         data,
-        { signal: options?.signal }
+        { signal: options?.signal },
       )
 
       if (response.data.success) {
         const loginData = response.data.data
+        // 登录前清理旧的用户数据缓存（防止切换用户后返回旧缓存）
+        cacheService.clearModule('member_service')
         // 保存令牌
         this.saveTokens({
           userId: loginData.userId,
@@ -137,7 +139,7 @@ export class AuthService implements IAuthService {
         {
           signal: options?.signal,
           headers: this.getAuthHeaders(),
-        }
+        },
       )
 
       if (response.data.success) {
@@ -163,13 +165,10 @@ export class AuthService implements IAuthService {
   /* ==================== 注销登录 ==================== */
   public async logout(options?: RequestOptions): Promise<Result<void>> {
     try {
-      const response = await http.delete<ApiResponse<void>>(
-        UserApiConstantV1.Me.SESSIONS,
-        {
-          signal: options?.signal,
-          headers: this.getAuthHeaders(),
-        }
-      )
+      const response = await http.delete<ApiResponse<void>>(UserApiConstantV1.Me.SESSIONS, {
+        signal: options?.signal,
+        headers: this.getAuthHeaders(),
+      })
 
       // 无论成功失败都清除本地令牌
       this.clearTokens()
@@ -196,13 +195,10 @@ export class AuthService implements IAuthService {
     }
 
     try {
-      const response = await http.get<ApiResponse<User>>(
-        UserApiConstantV1.Base.ME,
-        {
-          signal: options?.signal,
-          headers: this.getAuthHeaders(),
-        }
-      )
+      const response = await http.get<ApiResponse<User>>(UserApiConstantV1.Base.ME, {
+        signal: options?.signal,
+        headers: this.getAuthHeaders(),
+      })
 
       if (response.data.success) {
         const user = response.data.data
@@ -219,13 +215,10 @@ export class AuthService implements IAuthService {
   /* ==================== 删除用户 ==================== */
   public async deleteUser(options?: RequestOptions): Promise<Result<void>> {
     try {
-      const response = await http.delete<ApiResponse<void>>(
-        UserApiConstantV1.Base.ROOT,
-        {
-          signal: options?.signal,
-          headers: this.getAuthHeaders(),
-        }
-      )
+      const response = await http.delete<ApiResponse<void>>(UserApiConstantV1.Base.ROOT, {
+        signal: options?.signal,
+        headers: this.getAuthHeaders(),
+      })
 
       // 删除用户后清除所有数据
       this.clearTokens()
@@ -397,6 +390,8 @@ export class AuthService implements IAuthService {
     this.refreshPromise = null
     this.lastRefreshTime = 0
     cacheService.clearModule(AuthService.CACHE_MODULE)
+    // 清除 member 服务的缓存（防止切换用户后返回旧用户的缓存数据）
+    cacheService.clearModule('member_service')
     try {
       localStorage.removeItem(AuthService.TOKEN_KEY)
       localStorage.removeItem(AuthService.USER_KEY)

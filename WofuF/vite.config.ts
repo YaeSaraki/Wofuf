@@ -1,6 +1,6 @@
-import {fileURLToPath, URL} from 'node:url'
+import { fileURLToPath, URL } from 'node:url'
 
-import {defineConfig} from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
@@ -21,6 +21,23 @@ export default defineConfig({
   server: {
     host: 'localhost',
     port: 5173,
+    https: {
+      key: './certs/local.key',
+      cert: './certs/local.crt',
+    },
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8005',
+        changeOrigin: true,
+      },
+    },
+  },
+  preview: {
+    host: 'localhost',
+    https: {
+      key: './certs/local.key',
+      cert: './certs/local.crt',
+    },
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:8005',

@@ -757,7 +757,7 @@ watch(() => profile.value?.playerId, (playerId) => {
 .avatar-img {
   width: 100px;
   height: 100px;
-  border-radius: 50%;
+  border-radius: 16px;
   object-fit: cover;
   border: 3px solid var(--bf-card-bg);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
@@ -773,7 +773,7 @@ watch(() => profile.value?.playerId, (playerId) => {
 .avatar-placeholder {
   width: 100px;
   height: 100px;
-  border-radius: 50%;
+  border-radius: 16px;
   background: var(--bf-surface);
   border: 3px solid var(--bf-card-bg);
   display: flex;

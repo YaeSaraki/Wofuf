@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.modules.forum.config
 
 import dev.saraki.wofuf.auth.infra.JwtAuthFilter
+import dev.saraki.wofuf.modules.forum.infra.security.ForumJwtAuthFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -25,6 +26,9 @@ class ForumSecurityConfig {
     @Autowired
     private lateinit var jwtAuthFilter: JwtAuthFilter
 
+    @Autowired
+    private lateinit var forumJwtAuthFilter: ForumJwtAuthFilter
+
     @Bean
     @Order(1)
     fun forumFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -48,6 +52,8 @@ class ForumSecurityConfig {
                     .requestMatchers(ForumApiConstantV1.Comments.UPVOTE).authenticated()
                     .requestMatchers(ForumApiConstantV1.Comments.DOWNVOTE).authenticated()
                     .requestMatchers(ForumApiConstantV1.Comments.UNVOTE).authenticated()
+                    // 登出需要认证
+                    .requestMatchers("/api/v1/forum/members/logout").authenticated()
                     // 其他接口公开访问
                     .requestMatchers(ForumApiConstantV1.Members.ROOT + "/**").permitAll()
                     .requestMatchers(ForumApiConstantV1.Posts.ROOT + "/**").permitAll()
@@ -55,6 +61,7 @@ class ForumSecurityConfig {
                     .requestMatchers(ForumApiConstantV1.Images.ROOT + "/**").permitAll()
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterAfter(forumJwtAuthFilter, JwtAuthFilter::class.java)
 
         return http.build()
     }

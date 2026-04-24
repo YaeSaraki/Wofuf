@@ -20,9 +20,10 @@ export async function renderAvatar(skinUrlOrBase64: string, size: number): Promi
       // 绘制头部侧面（40,8,8,8）
       ctx.drawImage(image, 40, 8, 8, 8, 0, 0, size, size)
 
-      // 转换为 base64 或 blob
+      // 转换为 base64 或 blob，添加 skin hash 避免浏览器缓存冲突
+      const skinHash = skinUrlOrBase64.substring(0, 32).replace(/[^a-zA-Z0-9]/g, '')
       const dataUrl = canvas.toDataURL('image/png')
-      resolve(dataUrl)
+      resolve(`${dataUrl}#${skinHash}_${size}`)
     }
 
     image.onerror = () => {

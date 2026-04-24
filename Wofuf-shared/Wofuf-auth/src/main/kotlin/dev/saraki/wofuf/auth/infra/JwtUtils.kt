@@ -1,6 +1,7 @@
 package dev.saraki.wofuf.auth.infra
 
 import dev.saraki.wofuf.auth.config.JwtConfig
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -49,7 +50,8 @@ class JwtUtils(private val jwtConfig: JwtConfig) {
             JwtUserInfo(
                 userId = payload["uid"] as String,
                 username = payload.subject ?: "",
-                isAdmin = payload["admin"] as? Boolean ?: false
+                isAdmin = payload["admin"] as? Boolean ?: false,
+                jti = payload.id  // 提取 JWT ID
             )
         } catch (e: Exception) {
             log.debug("JWT 验证失败: ${e.message}")
@@ -78,6 +80,28 @@ class JwtUtils(private val jwtConfig: JwtConfig) {
             null
         }
     }
+
+    /**
+     * 解析 JWT Claims（包含完整信息，包括 jti）
+     *
+     * @param token JWT Token
+     * @return Claims 如果 Token 有效，否则 null
+     */
+    fun parseClaims(token: String): Claims? {
+        return try {
+            val clean = token.removePrefix("Bearer ").trim()
+            val payload = Jwts.parser()
+                .verifyWith(secretKey)
+                .clockSkewSeconds(jwtConfig.clockSkew.toLong())
+                .build()
+                .parseSignedClaims(clean)
+                .payload
+            payload
+        } catch (e: Exception) {
+            log.debug("JWT Claims 解析失败: ${e.message}")
+            null
+        }
+    }
 }
 
 /**
@@ -87,16 +111,19 @@ class JwtUtils(private val jwtConfig: JwtConfig) {
 data class JwtUserInfo(
     val userId: String,
     val username: String,
-    val isAdmin: Boolean
+    val isAdmin: Boolean,
+    val jti: String? = null  // JWT ID，用于令牌撤销
 ) {
     /**
      * 将用户信息转换为 JSON 字符串
      * 用于存储在 authentication.details 中
      */
     fun toJson(): String {
-        return """
-            {"userId":"$userId","username":"$username","isAdmin":$isAdmin}
-        """.trimIndent()
+        return if (jti != null) {
+            """{"userId":"$userId","username":"$username","isAdmin":$isAdmin,"jti":"$jti"}"""
+        } else {
+            """{"userId":"$userId","username":"$username","isAdmin":$isAdmin}"""
+        }
     }
 
     companion object {
@@ -109,7 +136,10 @@ data class JwtUserInfo(
                 val userId = json.substringAfter("\"userId\":\"").substringBefore("\"")
                 val username = json.substringAfter("\"username\":\"").substringBefore("\"")
                 val isAdmin = json.substringAfter("\"isAdmin\":").substringBefore("}").toBoolean()
-                JwtUserInfo(userId, username, isAdmin)
+                val jti = if (json.contains("\"jti\":")) {
+                    json.substringAfter("\"jti\":\"").substringBefore("\"")
+                } else null
+                JwtUserInfo(userId, username, isAdmin, jti)
             } catch (e: Exception) {
                 null
             }

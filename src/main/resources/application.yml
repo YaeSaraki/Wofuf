@@ -46,7 +46,7 @@ collector:
     pop-delay-ms: 600000
 
 # ===================== Spring Boot =====================
-debug: true
+  logging:
 server:
   port: 8005
 spring:
