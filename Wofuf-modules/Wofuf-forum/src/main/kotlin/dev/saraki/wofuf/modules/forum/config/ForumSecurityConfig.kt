@@ -39,6 +39,10 @@ class ForumSecurityConfig {
                 auth
                     // 图片上传需要认证
                     .requestMatchers(ForumApiConstantV1.Images.UPLOAD).authenticated()
+                    // 图片列表需要认证（后端根据登录用户返回对应图片）
+                    .requestMatchers("/api/v1/forum/images/list").authenticated()
+                    // 获取图片公开（查看他人帖子中的图片）
+                    .requestMatchers(ForumApiConstantV1.Images.BY_MD5).permitAll()
                     // 管理员接口需要认证 (权限由 PermissionAspect 检查)
                     .requestMatchers(ForumApiConstantV1.Admin.ROOT + "/**").authenticated()
                     // 创建帖子需要认证
@@ -58,7 +62,6 @@ class ForumSecurityConfig {
                     .requestMatchers(ForumApiConstantV1.Members.ROOT + "/**").permitAll()
                     .requestMatchers(ForumApiConstantV1.Posts.ROOT + "/**").permitAll()
                     .requestMatchers(ForumApiConstantV1.Comments.ROOT + "/**").permitAll()
-                    .requestMatchers(ForumApiConstantV1.Images.ROOT + "/**").permitAll()
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterAfter(forumJwtAuthFilter, JwtAuthFilter::class.java)

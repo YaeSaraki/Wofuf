@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import { imageService } from '@M/forum/services/ImageService.ts'
+import { authService } from '@M/auth/services/AuthService.ts'
 import { useAsyncLoader } from '@SU/async/useAsyncLoader.ts'
 import type { ImageListItem } from '@M/forum/services/ImageService.ts'
 
@@ -27,8 +28,13 @@ const filteredImages = computed(() => {
 })
 
 /* ---------------- 方法 ---------------- */
-// 加载图片列表
+// 加载图片列表 - 后端根据登录状态自动返回当前用户的图片
 async function loadImages() {
+  if (!authService.isAuthenticated()) {
+    images.value = []
+    return
+  }
+
   const result = await executeAsync(async () => {
     return await imageService.getExistingImages()
   })
@@ -36,6 +42,33 @@ async function loadImages() {
   if (result && result.images) {
     images.value = result.images
   }
+}
+
+// 删除图片
+const isDeleting = ref(false)
+const deleteError = ref('')
+
+async function deleteImage(img: ImageListItem, event: Event) {
+  event.stopPropagation()
+  
+  if (!confirm(`确定要删除图片 "${img.fileName}" 吗？`)) {
+    return
+  }
+
+  isDeleting.value = true
+  deleteError.value = ''
+
+  const result = await imageService.deleteImage(img.imageId)
+
+  if (result.isSuccess) {
+    // 从列表中移除
+    images.value = images.value.filter(i => i.imageId !== img.imageId)
+  } else {
+    deleteError.value = String(result.error)
+    setTimeout(() => { deleteError.value = '' }, 3000)
+  }
+
+  isDeleting.value = false
 }
 
 // 选择图片
@@ -171,6 +204,9 @@ onMounted(() => {
         <div v-if="errorMsg" class="bf-error-message">
           <span>{{ errorMsg }}</span>
         </div>
+        <div v-if="deleteError" class="bf-error-message bf-error-message--delete">
+          <span>{{ deleteError }}</span>
+        </div>
 
         <!-- 图片网格 -->
         <div class="bf-picker-content">
@@ -208,6 +244,17 @@ onMounted(() => {
                 </svg>
               </div>
               <div class="bf-image-name" :title="img.fileName">{{ img.fileName }}</div>
+              <button 
+                class="bf-image-delete-btn" 
+                @click="(e) => deleteImage(img, e)"
+                :disabled="isDeleting"
+                title="删除图片"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -496,6 +543,67 @@ onMounted(() => {
 
 .bf-image-overlay svg {
   color: white;
+}
+
+/* 图片名称 */
+.bf-image-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 20px;
+  padding: 4px 8px;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+  color: white;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 删除按钮 */
+.bf-image-delete-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.9);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.bf-image-item:hover .bf-image-delete-btn {
+  opacity: 1;
+}
+
+.bf-image-delete-btn:hover:not(:disabled) {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.bf-image-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 删除错误提示 */
+.bf-error-message--delete {
+  background: rgba(239, 68, 68, 0.15);
+  border-bottom-color: rgba(239, 68, 68, 0.3);
+  animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+  0%, 80% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 /* 底部 */

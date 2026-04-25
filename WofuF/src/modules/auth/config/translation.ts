@@ -178,6 +178,14 @@ const authTranslations = {
     zh: '立即登录',
     en: 'Login now',
   },
+  alreadyLoggedIn: {
+    zh: '您已登录',
+    en: 'You are logged in',
+  },
+  backToForum: {
+    zh: '返回论坛',
+    en: 'Back to Forum',
+  },
 
   // 错误信息
   errorUsernameRequired: {

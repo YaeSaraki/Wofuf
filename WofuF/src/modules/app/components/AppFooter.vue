@@ -1,6 +1,8 @@
+<script setup lang="ts"></script>
 <template>
   <footer class="footer">
     <p>© 2026 WofuF · Minecraft Server</p>
+    <p>豫ICP备2026015355号</p>
   </footer>
 </template>
 

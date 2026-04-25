@@ -15,9 +15,12 @@ import FloatLabel from 'primevue/floatlabel'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import type { LoginRequest } from '@M/auth/dtos/User.ts'
+import { useAuth } from '@M/auth/composables/useAuth.ts'
+import { forumService } from '@M/forum/services/ForumService'
 
 const router = useRouter()
 const { isLoading, errorMsg, executeAsync } = useAsyncLoader()
+const { currentUser, isAuthenticated, logout, loadCurrentUser } = useAuth()
 
 // 表单数据
 const formData = ref<LoginRequest>({
@@ -112,9 +115,35 @@ const handleSubmit = async () => {
 const goToRegister = () => router.push('/forum/register')
 const goBack = () => router.push('/forum')
 
+async function goToProfile() {
+  const user = currentUser.value
+  if (!user) return
+
+  // 如果有 nickname 直接跳转，否则通过 userId 获取
+  if (user.nickname) {
+    router.push(`/forum/members/${user.nickname}`)
+    return
+  }
+
+  // 通过 userId 获取 nickname
+  const result = await forumService.getMemberById(user.userId)
+  if (result.isSuccess) {
+    router.push(`/forum/members/${result.getValue().nickname}`)
+  } else {
+    // 获取失败时用 username 作为后备
+    router.push(`/forum/members/${user.username}`)
+  }
+}
+
+const handleLogout = async () => {
+  await logout()
+  router.push('/forum')
+}
+
 // 动画控制
 const isLoaded = ref(false)
 onMounted(() => {
+  loadCurrentUser()
   setTimeout(() => {
     isLoaded.value = true
   }, 100)
@@ -137,71 +166,127 @@ onMounted(() => {
 
     <!-- 登录卡片 -->
     <div class="login-card" :class="{ loaded: isLoaded }">
-      <!-- 头部 -->
-      <div class="card-header">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
-          </svg>
-        </div>
-        <h1 class="card-title">{{ translate('auth', 'welcomeBack') }}</h1>
-        <p class="card-subtitle">{{ translate('auth', 'loginSubtitle') }}</p>
-      </div>
-
-      <!-- 表单 -->
-      <form @submit.prevent="handleSubmit" class="login-form">
-        <Message v-if="errorMsg" severity="error" :closable="false" class="error-msg">
-          {{ errorMsg }}
-        </Message>
-
-        <!-- 用户名 -->
-        <div class="form-group">
-          <FloatLabel variant="on">
-            <InputText
-              id="username"
-              v-model="formData.username"
-              :invalid="!!formErrors.username"
-              autocomplete="username"
-              fluid
-            />
-            <label for="username">{{ translate('auth', 'username') }}</label>
-          </FloatLabel>
-          <small v-if="formErrors.username" class="error-text">{{ formErrors.username }}</small>
+      <!-- 已登录状态：显示用户信息和退出按钮 -->
+      <template v-if="isAuthenticated()">
+        <!-- 头部 -->
+        <div class="card-header">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+          </div>
+          <h1 class="card-title">{{ translate('auth', 'welcomeBack') }}</h1>
+          <p class="card-subtitle">{{ currentUser?.username }}</p>
         </div>
 
-        <!-- 密码 -->
-        <div class="form-group">
-          <FloatLabel variant="on">
-            <Password
-              id="password"
-              v-model="formData.password"
-              :feedback="false"
-              toggleMask
-              :invalid="!!formErrors.password"
-              autocomplete="current-password"
-              fluid
-            />
-            <label for="password">{{ translate('auth', 'password') }}</label>
-          </FloatLabel>
-          <small v-if="formErrors.password" class="error-text">{{ formErrors.password }}</small>
+        <!-- 用户信息 -->
+        <div class="user-info">
+          <div class="info-item">
+            <span class="info-label">{{ translate('auth', 'username') }}</span>
+            <span class="info-value">{{ currentUser?.username }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Email</span>
+            <span class="info-value">{{ currentUser?.email }}</span>
+          </div>
         </div>
 
-        <!-- 提交按钮 -->
-        <Button
-          type="submit"
-          :label="translate('auth', 'login')"
-          :loading="isLoading"
-          :disabled="!canSubmit"
-          class="submit-btn"
-          fluid
-        />
-      </form>
+        <!-- 查看资料按钮 -->
+        <div class="profile-section">
+          <Button
+            :label="translate('profile', 'viewProfile') || '查看资料'"
+            @click="goToProfile"
+            class="profile-btn"
+            fluid
+          />
+        </div>
 
-      <!-- 底部 -->
-      <div class="card-footer">
-        <span class="footer-text">{{ translate('auth', 'noAccount') }}</span>
-        <a class="footer-link" @click="goToRegister">{{ translate('auth', 'registerNow') }}</a>
-      </div>
+        <!-- 退出按钮 -->
+        <div class="logout-section">
+          <Button
+            :label="translate('auth', 'logout')"
+            severity="danger"
+            @click="handleLogout"
+            class="logout-btn"
+            fluid
+          />
+        </div>
+
+        <!-- 底部 -->
+        <div class="card-footer">
+          <span class="footer-text">{{ translate('auth', 'alreadyLoggedIn') }}</span>
+          <a class="footer-link" @click="goBack">{{ translate('auth', 'backToForum') }}</a>
+        </div>
+      </template>
+
+      <!-- 未登录状态：显示登录表单 -->
+      <template v-else>
+        <!-- 头部 -->
+        <div class="card-header">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+            </svg>
+          </div>
+          <h1 class="card-title">{{ translate('auth', 'welcomeBack') }}</h1>
+          <p class="card-subtitle">{{ translate('auth', 'loginSubtitle') }}</p>
+        </div>
+
+        <!-- 表单 -->
+        <form @submit.prevent="handleSubmit" class="login-form">
+          <Message v-if="errorMsg" severity="error" :closable="false" class="error-msg">
+            {{ errorMsg }}
+          </Message>
+
+          <!-- 用户名 -->
+          <div class="form-group">
+            <FloatLabel variant="on">
+              <InputText
+                id="username"
+                v-model="formData.username"
+                :invalid="!!formErrors.username"
+                autocomplete="username"
+                fluid
+              />
+              <label for="username">{{ translate('auth', 'username') }}</label>
+            </FloatLabel>
+            <small v-if="formErrors.username" class="error-text">{{ formErrors.username }}</small>
+          </div>
+
+          <!-- 密码 -->
+          <div class="form-group">
+            <FloatLabel variant="on">
+              <Password
+                id="password"
+                v-model="formData.password"
+                :feedback="false"
+                toggleMask
+                :invalid="!!formErrors.password"
+                autocomplete="current-password"
+                fluid
+              />
+              <label for="password">{{ translate('auth', 'password') }}</label>
+            </FloatLabel>
+            <small v-if="formErrors.password" class="error-text">{{ formErrors.password }}</small>
+          </div>
+
+          <!-- 提交按钮 -->
+          <Button
+            type="submit"
+            :label="translate('auth', 'login')"
+            :loading="isLoading"
+            :disabled="!canSubmit"
+            class="submit-btn"
+            fluid
+          />
+        </form>
+
+        <!-- 底部 -->
+        <div class="card-footer">
+          <span class="footer-text">{{ translate('auth', 'noAccount') }}</span>
+          <a class="footer-link" @click="goToRegister">{{ translate('auth', 'registerNow') }}</a>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -484,6 +569,87 @@ onMounted(() => {
   text-align: center;
   background: #f9fafb;
   border-top: 1px solid #f3f4f6;
+}
+
+/* 用户信息区域 */
+.user-info {
+  padding: 1.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+}
+
+.dark .info-item {
+  background: #252535;
+}
+
+.info-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.dark .info-label {
+  color: #9ca3af;
+}
+
+.info-value {
+  font-size: 0.875rem;
+  color: #111827;
+  font-weight: 600;
+}
+
+.dark .info-value {
+  color: #f9fafb;
+}
+
+/* 退出按钮区域 */
+.logout-section {
+  padding: 0 2rem 1.25rem;
+}
+
+/* 查看资料按钮区域 */
+.profile-section {
+  padding: 0 2rem 1rem;
+}
+
+.profile-btn {
+  height: 3rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.profile-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.logout-btn {
+  height: 3rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  background: #ef4444;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
 }
 
 .dark .card-footer {

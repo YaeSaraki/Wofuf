@@ -250,6 +250,10 @@ const forumTranslations = {
     zh: '登录后发帖',
     en: 'Login to Post',
   },
+  alreadyHaveAccount: {
+    zh: '已有账号？登录',
+    en: 'Already have an account? Login',
+  },
   loginToVote: {
     zh: '登录后投票',
     en: 'Login to Vote',
@@ -808,6 +812,14 @@ const forumTranslations = {
   'profile.commentDeleteFailed': {
     zh: '评论删除失败',
     en: 'Failed to delete comment',
+  },
+  'profile.viewProfile': {
+    zh: '查看资料',
+    en: 'View Profile',
+  },
+  'login': {
+    zh: '查看信息',
+    en: 'My Profile',
   },
   // ==================== 操作日志 ====================
   'admin.nav.logs': {

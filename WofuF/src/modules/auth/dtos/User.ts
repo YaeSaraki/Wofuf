@@ -7,6 +7,7 @@ export interface User {
   userId: string
   username: string
   email: string
+  nickname?: string // 论坛昵称（可选）
   isEmailVerified?: boolean
   isAdminUser?: boolean
 }
@@ -20,8 +21,8 @@ export interface AuthSession {
   userId: string
   accessToken: JwtToken
   refreshToken: RefreshToken
-  expiresAt?: number  // Token 过期时间戳（毫秒）
-  expiresIn?: number  // Token 有效期（毫秒）
+  expiresAt?: number // Token 过期时间戳（毫秒）
+  expiresIn?: number // Token 有效期（毫秒）
 }
 
 // 注册请求

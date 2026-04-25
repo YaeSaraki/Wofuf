@@ -48,13 +48,23 @@ onMounted(() => {
         <p class="hero-subtitle">
           {{ translate('forum', 'forumSubtitle') }}
         </p>
-        <button class="hero-button liquid-glass-strong" @click="goToCreatePost">
-          <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          <span>{{ isLoggedIn ? translate('forum', 'create_post') : translate('forum', 'loginToPost') }}</span>
-        </button>
+        <div class="hero-actions">
+          <button v-if="!isLoggedIn" class="hero-button liquid-glass-strong" @click="router.push('/forum/login')">
+            <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            <span>{{ translate('forum', 'loginToPost') }}</span>
+          </button>
+          <button v-if="isLoggedIn" class="hero-button liquid-glass-strong" @click="router.push('/forum/login')">
+            <svg class="button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span>{{ translate('forum', 'login') }}</span>
+          </button>
+        </div>
       </div>
 
       <div class="hero-fade"></div>
@@ -185,6 +195,55 @@ onMounted(() => {
 
 .hero-button:hover {
   transform: translateY(-2px);
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.login-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base) ease;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.login-button .button-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.login-link {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+
+.login-link:hover {
+  color: white;
 }
 
 .button-icon {
